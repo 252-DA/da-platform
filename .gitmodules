@@ -1,0 +1,15 @@
+[submodule "core-api"]
+	path = core-api
+	url = git@github.com:252-DA/core-api.git
+[submodule "web"]
+	path = web
+	url = git@github.com:252-DA/web.git
+[submodule "worker"]
+	path = worker
+	url = git@github.com:252-DA/worker.git
+[submodule "packages-ai"]
+	path = packages-ai
+	url = git@github.com:252-DA/core-chunking.git
+[submodule "report"]
+	path = report
+	url = git@github.com:252-DA/report.git

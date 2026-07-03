@@ -1,0 +1,391 @@
+x-common-env: &common-env
+  APP__ENV: development
+  APP__LOG_LEVEL: INFO
+  APP__JSON_LOGS: "true"
+  # Qdrant
+  QDRANT__HOST: qdrant
+  QDRANT__PORT: "6333"
+  QDRANT__COLLECTION_NAME: documents
+  QDRANT__VECTOR_SIZE: "1024"
+  # MinIO
+  MINIO__ENDPOINT: minio:9000
+  MINIO__ACCESS_KEY: minioadmin
+  MINIO__SECRET_KEY: minioadmin
+  MINIO__BUCKET_NAME: documents
+  MINIO__SECURE: "false"
+  # PostgreSQL
+  SQL__ENABLED: "true"
+  SQL__DSN: postgresql://postgres:postgres@postgres:5432/chunking
+  SQL__POOL_SIZE: "5"
+  # Neo4j
+  NEO4J__ENABLED: "true"
+  NEO4J__URI: bolt://neo4j:7687
+  NEO4J__USERNAME: neo4j
+  NEO4J__PASSWORD: changeme123
+  NEO4J__DATABASE: neo4j
+  # Redis
+  REDIS__HOST: redis
+  REDIS__PORT: "6379"
+  # Outbox
+  OUTBOX__ENABLED: "true"
+  OUTBOX__POLL_INTERVAL_SECONDS: "5"
+  OUTBOX__BATCH_SIZE: "100"
+  # Embedder
+  EMBEDDER__PROVIDER: bge
+  EMBEDDER__BGE_MODEL: BAAI/bge-m3
+  EMBEDDER__BGE_USE_FP16: "true"
+  # Tracing (disabled by default)
+  TRACING__ENABLED: "false"
+  # LLM (GenerateCurriculumQuiz + enrichment)
+  LLM__PROVIDER: gemini
+  LLM__MODEL: gemini-3-flash-preview
+  LLM__API_KEY: ${GEMINI_API_KEY:-}
+  # Metrics
+  METRICS__ENABLED: "true"
+
+x-chunking-v2-volumes: &chunking-v2-volumes
+  - ./scripts/dev_reload.py:/app/dev_reload.py:ro
+  - ./packages-ai/src:/app/src
+  - ./packages-ai/examples:/app/examples
+  - ./packages-ai/pyproject.toml:/app/pyproject.toml:ro
+  - ./packages-ai/uv.lock:/app/uv.lock:ro
+
+x-worker-volumes: &worker-volumes
+  - ./scripts/dev_reload.py:/app/worker/dev_reload.py:ro
+  - ./worker/worker:/app/worker/worker
+  - ./worker/pyproject.toml:/app/worker/pyproject.toml:ro
+  - ./worker/uv.lock:/app/worker/uv.lock:ro
+  - ./packages-ai/src:/app/packages-ai/src
+  - ./packages-ai/pyproject.toml:/app/packages-ai/pyproject.toml:ro
+  - ./packages-ai/uv.lock:/app/packages-ai/uv.lock:ro
+
+x-worker-entrypoint: &worker-entrypoint ["uv", "run", "--frozen", "python", "-m"]
+
+# ─────────────────────────────────────────────────────────
+# Infrastructure
+# ─────────────────────────────────────────────────────────
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: chunking
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata18:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      default: {}
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      default: {}
+
+  qdrant:
+    image: qdrant/qdrant:v1.12.1
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrantdata:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "bash -lc 'echo > /dev/tcp/localhost/6333'"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      default: {}
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      default: {}
+
+  neo4j:
+    image: neo4j:5-community
+    environment:
+      NEO4J_AUTH: neo4j/changeme123
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4jdata:/data
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p changeme123 'RETURN 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      default: {}
+
+  # ─────────────────────────────────────────────────────────
+  # Application — gRPC server
+  # ─────────────────────────────────────────────────────────
+  grpc-server:
+    build:
+      context: ./packages-ai
+      dockerfile: Dockerfile
+    command: ["dev_reload", "document_chunk.delivery.grpc.server", "/app/src"]
+    environment:
+      <<: *common-env
+      PYTHONPATH: /app/src
+      GRPC__HOST: "0.0.0.0"
+      GRPC__PORT: "50051"
+      GRPC__MAX_WORKERS: "10"
+      METRICS__PORT: "9090"
+    ports:
+      - "50051:50051"
+      - "9090:9090"
+    volumes: *chunking-v2-volumes
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      default: {}
+
+  # ─────────────────────────────────────────────────────────
+  # HTTP API (FastAPI / Swagger) — LMS-facing
+  # ─────────────────────────────────────────────────────────
+  http-api:
+    build:
+      context: ./packages-ai
+      dockerfile: Dockerfile
+    command: ["uvicorn", "document_chunk.delivery.http.api:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app/src"]
+    environment:
+      <<: *common-env
+      PYTHONPATH: /app/src
+    ports:
+      - "8000:8000"
+    volumes: *chunking-v2-volumes
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      default: {}
+
+  # ─────────────────────────────────────────────────────────
+  # Next.js frontend (placeholder — scaffolded in web/)
+  # ─────────────────────────────────────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      target: dev
+    command: ["pnpm", "dev", "--hostname", "0.0.0.0"]
+    environment:
+      NODE_ENV: development
+      NEXT_TELEMETRY_DISABLED: "1"
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+      REDIS_URL: redis://redis:6379
+      CORE_API_INTERNAL_URL: http://core-api:4000
+      BFF_TO_CORE_PRIVATE_KEY_PATH: /keys/bff-to-core.pem
+      BFF_TO_CORE_KEY_ID: bff-2026-05
+      GRPC_HOST: ${GRPC_HOST:-grpc-server:50051}
+      LTI_LMS_TYPE: ${LTI_LMS_TYPE:-openedx}
+      LTI_PLATFORM_URL: ${LTI_PLATFORM_URL:-http://local.edly.io}
+      LTI_ISSUER_URL: ${LTI_ISSUER_URL:-}
+      LTI_AUTH_URL: ${LTI_AUTH_URL:-}
+      LTI_JWKS_URL: ${LTI_JWKS_URL:-}
+      LTI_TOKEN_URL: ${LTI_TOKEN_URL:-}
+      LTI_DEPLOYMENT_ID: ${LTI_DEPLOYMENT_ID:-}
+      LTI_REDIRECT_URI: ${LTI_REDIRECT_URI:-http://localhost:3000/lti/launch}
+      LTI_KEY_ID: ${LTI_KEY_ID:-ai-nextjs-1}
+      LTI_CLIENT_ID: ${LTI_CLIENT_ID:-ai-nextjs-1}
+      LTI_PRIVATE_KEY_PATH: /keys/lti.pem
+      LTI_PUBLIC_KEY_PATH: /keys/lti.pub.pem
+      LTI_COOKIE_SAMESITE: ${LTI_COOKIE_SAMESITE:-lax}
+      LTI_COOKIE_SECURE: ${LTI_COOKIE_SECURE:-}
+    volumes:
+      - "./web:/app"
+      - "./core-api/proto:/app/proto:ro"
+      - web_node_modules:/app/node_modules
+      - web_next_cache:/app/.next
+      - "./web/keys:/keys:ro"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - core-api
+      - redis
+    restart: unless-stopped
+    networks:
+      default: {}
+
+  # ─────────────────────────────────────────────────────────
+  # NestJS Business Logic Core API
+  # ─────────────────────────────────────────────────────────
+  core-api:
+    build:
+      context: .
+      dockerfile: core-api/Dockerfile
+      target: dev
+    command: ["./node_modules/.bin/nest", "start", "--watch"]
+    environment:
+      NODE_ENV: development
+      PORT: "4000"
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/chunking
+      REDIS_URL: redis://redis:6379
+      MINIO__ENDPOINT: minio:9000
+      MINIO__ACCESS_KEY: minioadmin
+      MINIO__SECRET_KEY: minioadmin
+      MINIO__BUCKET_NAME: documents
+      MINIO__SECURE: "false"
+      BFF_TO_CORE_PUBLIC_KEY_PATH: /app/keys/bff-to-core.pub.pem
+      BFF_TO_CORE_JWT_ISSUER: web-bff
+      BFF_TO_CORE_JWT_AUDIENCE: core-api
+      CI: "true"
+    volumes:
+      - "./core-api:/app"
+      - core_api_node_modules:/app/node_modules
+      - "./core-api/keys:/app/keys:ro"
+    ports:
+      - "4000:4000"
+      - "50052:50051"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      default: {}
+
+  # ─────────────────────────────────────────────────────────
+  # Workers
+  # ─────────────────────────────────────────────────────────
+  document-worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    entrypoint: *worker-entrypoint
+    command: ["dev_reload", "worker.runners.document_worker", "/app/worker/worker", "/app/packages-ai/src"]
+    environment:
+      <<: *common-env
+      WORKER_TYPE: document
+      WORKER_CONCURRENCY: "3"
+      HEALTH_PORT: "8081"
+      METRICS__PORT: "9091"
+    ports:
+      - "8081:8081"
+      - "9091:9091"
+    volumes: *worker-volumes
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+
+  enrichment-worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    entrypoint: *worker-entrypoint
+    command: ["dev_reload", "worker.runners.enrichment_worker", "/app/worker/worker", "/app/packages-ai/src"]
+    environment:
+      <<: *common-env
+      WORKER_TYPE: enrichment
+      WORKER_CONCURRENCY: "4"
+      HEALTH_PORT: "8082"
+      METRICS__PORT: "9092"
+    ports:
+      - "8082:8082"
+      - "9092:9092"
+    volumes: *worker-volumes
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  outbox-worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    entrypoint: *worker-entrypoint
+    command: ["dev_reload", "worker.runners.outbox_worker", "/app/worker/worker", "/app/packages-ai/src"]
+    environment:
+      <<: *common-env
+      WORKER_TYPE: outbox
+      WORKER_CONCURRENCY: "1"
+      HEALTH_PORT: "8083"
+      METRICS__PORT: "9093"
+    ports:
+      - "8083:8083"
+      - "9093:9093"
+    volumes: *worker-volumes
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata18:
+  redisdata:
+  qdrantdata:
+  miniodata:
+  neo4jdata:
+  web_node_modules:
+  web_next_cache:
+  core_api_node_modules:
+
+networks:
+  default: {}

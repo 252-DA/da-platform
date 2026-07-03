@@ -1,0 +1,159 @@
+name: chunking-grpc-test
+
+# Usage:
+#   docker compose -f docker-compose.grpc-test.yml up -d --build qdrant minio redis grpc-server http-server
+#   docker compose -f docker-compose.grpc-test.yml run --rm grpc-client process /workspace/packages-ai/examples/grpc/sample.md --language vi --document-id demo-md --meta course_id=course-demo --meta owner_id=teacher-demo
+#   docker compose -f docker-compose.grpc-test.yml run --rm grpc-client search "heading hierarchy" --top-k 3
+#   open http://localhost:8000/docs for Swagger UI
+#   after changing Python code: docker compose -f docker-compose.grpc-test.yml restart grpc-server http-server
+
+x-chunking-build: &chunking-build
+  context: ./packages-ai
+  dockerfile: Dockerfile
+
+x-chunking-env: &chunking-env
+  APP__ENV: development
+  APP__LOG_LEVEL: INFO
+  APP__JSON_LOGS: "true"
+  GRPC__HOST: "0.0.0.0"
+  GRPC__PORT: "50051"
+  GRPC__MAX_WORKERS: "4"
+  HTTP__HOST: "0.0.0.0"
+  HTTP__PORT: "8000"
+  QDRANT__HOST: qdrant
+  QDRANT__PORT: "6333"
+  QDRANT__COLLECTION_NAME: documents
+  QDRANT__VECTOR_SIZE: "1024"
+  MINIO__ENDPOINT: minio:9000
+  MINIO__ACCESS_KEY: minioadmin
+  MINIO__SECRET_KEY: minioadmin
+  MINIO__BUCKET_NAME: documents
+  MINIO__SECURE: "false"
+  REDIS__HOST: redis
+  REDIS__PORT: "6379"
+  SQL__ENABLED: "false"
+  NEO4J__ENABLED: "false"
+  PARSER__OCR_ENABLED: "false"
+  PARSER__DOCLING_DO_OCR: "false"
+  EMBEDDER__PROVIDER: bge
+  EMBEDDER__BGE_MODEL: BAAI/bge-m3
+  EMBEDDER__BGE_USE_FP16: "false"
+  TRACING__ENABLED: "false"
+  METRICS__ENABLED: "true"
+  METRICS__PORT: "9090"
+  HF_HOME: /root/.cache/huggingface
+
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.12.1
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  grpc-server:
+    image: da-chunking-grpc-test:latest
+    build: *chunking-build
+    environment:
+      <<: *chunking-env
+    ports:
+      - "50051:50051"
+      - "9090:9090"
+    volumes:
+      - hf-cache:/root/.cache/huggingface
+      - ./packages-ai/src:/app/src:ro
+      - ./packages-ai/examples:/app/examples:ro
+    depends_on:
+      - qdrant
+      - minio
+      - redis
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-m",
+          "document_chunk.delivery.grpc.test_client",
+          "--target",
+          "127.0.0.1:50051",
+          "--timeout",
+          "10",
+          "health",
+        ]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  grpc-client:
+    image: da-chunking-grpc-test:latest
+    build: *chunking-build
+    profiles: ["tools"]
+    environment:
+      GRPC_TARGET: grpc-server:50051
+    entrypoint: ["python", "-m", "document_chunk.delivery.grpc.test_client"]
+    command: ["health"]
+    volumes:
+      - ./packages-ai:/workspace/packages-ai:ro
+    depends_on:
+      grpc-server:
+        condition: service_healthy
+
+  http-server:
+    image: da-chunking-grpc-test:latest
+    build: *chunking-build
+    command: ["document_chunk.delivery.http.server"]
+    environment:
+      <<: *chunking-env
+      METRICS__PORT: "9094"
+    ports:
+      - "8000:8000"
+      - "9094:9094"
+    volumes:
+      - hf-cache:/root/.cache/huggingface
+      - ./packages-ai/src:/app/src:ro
+      - ./packages-ai/examples:/app/examples:ro
+    depends_on:
+      - qdrant
+      - minio
+      - redis
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=10).read()",
+        ]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+volumes:
+  qdrant-data:
+  minio-data:
+  hf-cache:

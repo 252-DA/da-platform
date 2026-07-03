@@ -1,0 +1,80 @@
+# Observability stack — Prometheus + Loki + Grafana + Alloy
+#
+# Chạy CHUNG với compose chính để cùng network "default" (scrape theo tên service):
+#   docker compose -f docker-compose.yml -f deploy/docker-compose.observability.yml up -d
+#
+# Đường dẫn volume tính từ thư mục project (nơi có docker-compose.yml = repo root),
+# nên dùng ./deploy/... ; mọi bind-mount có :z cho SELinux của Fedora.
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    volumes:
+      - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml:z
+      - promdata:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=15d"
+    ports:
+      - "9095:9090"   # host 9095 để khỏi đụng grpc-server (đang giữ host 9090)
+    restart: unless-stopped
+    networks:
+      default: {}
+
+  loki:
+    image: grafana/loki:3.2.1
+    command: ["-config.file=/etc/loki/config.yml"]
+    volumes:
+      - ./deploy/loki-config.yml:/etc/loki/config.yml:z
+      - lokidata:/loki
+    restart: unless-stopped
+    networks:
+      default: {}
+
+  alloy:
+    image: grafana/alloy:v1.5.0
+    command:
+      - "run"
+      - "--server.http.listen-addr=0.0.0.0:12345"
+      - "/etc/alloy/config.alloy"
+    volumes:
+      - ./deploy/alloy-config.alloy:/etc/alloy/config.alloy:z
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloydata:/var/lib/alloy/data
+    # Fedora SELinux thường chặn đọc docker.sock từ container -> tắt label cho riêng nó:
+    security_opt:
+      - label=disable
+    depends_on:
+      - loki
+    restart: unless-stopped
+    networks:
+      default: {}
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      # khi phơi qua Cloudflare subdomain:
+      # GF_SERVER_ROOT_URL: https://grafana.canxphung.dev
+    volumes:
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning:z
+      - grafanadata:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+      - loki
+    restart: unless-stopped
+    networks:
+      default: {}
+
+volumes:
+  promdata:
+  lokidata:
+  grafanadata:
+  alloydata:
+
+networks:
+  default: {}

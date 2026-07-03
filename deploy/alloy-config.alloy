@@ -1,0 +1,36 @@
+// Grafana Alloy: gom log mọi container Docker -> đẩy sang Loki.
+// (Alloy thay cho promtail; đọc log qua docker.sock, không phá `docker logs`.)
+
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "containers" {
+  targets = discovery.docker.containers.targets
+
+  // tên container -> label `container` (bỏ dấu "/" đầu)
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  // stdout/stderr -> label `stream`
+  rule {
+    source_labels = ["__meta_docker_container_log_stream"]
+    target_label  = "stream"
+  }
+}
+
+loki.source.docker "containers" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.containers.output
+  labels     = { job = "docker" }
+  forward_to = [loki.write.default.receiver]
+}
+
+loki.write "default" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

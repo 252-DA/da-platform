@@ -1,0 +1,28 @@
+# ===== Secrets =====
+.env
+.env.*
+!.env.*.example
+*.pem
+keys/
+
+# ===== Tài liệu tham khảo (đồ án nhóm khác — không đẩy lên GitHub) =====
+tham-khao/
+
+# ===== Build / cache / junk =====
+__pycache__/
+*.py[cod]
+node_modules/
+dist/
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+*.log
+*.aux
+
+# ===== Editor / agent =====
+.claude/
+.codex
+.idea/
+.vscode/
+.agents/

@@ -1,0 +1,38 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Prometheus tự giám sát chính nó
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # chunking gRPC server (METRICS__PORT=9090 trong container)
+  - job_name: chunking-grpc
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["grpc-server:9090"]
+
+  # 3 workers (METRICS__PORT 9091/9092/9093)
+  - job_name: workers
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - "document-worker:9091"
+          - "enrichment-worker:9092"
+          - "outbox-worker:9093"
+        labels:
+          tier: worker
+
+  # http-api: METRICS__ENABLED=true nhưng chưa rõ port/path -> bật sau khi verify
+  # - job_name: http-api
+  #   metrics_path: /metrics
+  #   static_configs:
+  #     - targets: ["http-api:8000"]
+
+  # core-api (NestJS): cần gắn prom-client + expose /metrics trước
+  # - job_name: core-api
+  #   metrics_path: /metrics
+  #   static_configs:
+  #     - targets: ["core-api:4000"]
