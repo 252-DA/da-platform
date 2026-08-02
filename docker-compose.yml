@@ -26,10 +26,6 @@ x-common-env: &common-env
   # Redis
   REDIS__HOST: redis
   REDIS__PORT: "6379"
-  # Outbox
-  OUTBOX__ENABLED: "true"
-  OUTBOX__POLL_INTERVAL_SECONDS: "5"
-  OUTBOX__BATCH_SIZE: "100"
   # Embedder
   EMBEDDER__PROVIDER: bge
   EMBEDDER__BGE_MODEL: BAAI/bge-m3
@@ -58,6 +54,8 @@ x-worker-volumes: &worker-volumes
   - ./packages-ai/src:/app/packages-ai/src
   - ./packages-ai/pyproject.toml:/app/packages-ai/pyproject.toml:ro
   - ./packages-ai/uv.lock:/app/packages-ai/uv.lock:ro
+  - ./ai-sdk/src:/app/ai-sdk/src
+  - ./ai-sdk/pyproject.toml:/app/ai-sdk/pyproject.toml:ro
 
 x-worker-entrypoint: &worker-entrypoint ["uv", "run", "--frozen", "python", "-m"]
 
@@ -213,6 +211,46 @@ services:
       default: {}
 
   # ─────────────────────────────────────────────────────────
+  # MCP learning-context server — model/agent-facing retrieval
+  # ─────────────────────────────────────────────────────────
+  mcp-server:
+    build:
+      context: ./packages-ai
+      dockerfile: Dockerfile
+    command: ["dev_reload", "document_chunk.delivery.mcp.server", "/app/src"]
+    environment:
+      <<: *common-env
+      PYTHONPATH: /app/src
+      MCP__HOST: "0.0.0.0"
+      MCP__PORT: "8001"
+      MCP__PATH: /mcp
+      METRICS__ENABLED: "false"
+    ports:
+      - "8001:8001"
+    volumes: *chunking-v2-volumes
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import socket; s=socket.create_connection(('127.0.0.1',8001),2); s.close()",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      default: {}
+
+  # ─────────────────────────────────────────────────────────
   # Next.js frontend (placeholder — scaffolded in web/)
   # ─────────────────────────────────────────────────────────
   web:
@@ -352,6 +390,42 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  content-generation-worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    entrypoint: *worker-entrypoint
+    command:
+      [
+        "dev_reload",
+        "worker.runners.content_generation_worker",
+        "/app/worker/worker",
+        "/app/packages-ai/src",
+        "/app/ai-sdk/src",
+      ]
+    environment:
+      <<: *common-env
+      WORKER_TYPE: content_generation
+      WORKER_CONCURRENCY: "2"
+      HEALTH_PORT: "8084"
+      METRICS__PORT: "9094"
+      LEARNING_CONTEXT_MCP_ENABLED: "true"
+      LEARNING_CONTEXT_MCP_URL: http://mcp-server:8001/mcp
+      LEARNING_CONTEXT_MCP_TIMEOUT_SECONDS: "30"
+      LEARNING_CONTEXT_MCP_FALLBACK_TO_LOCAL: "true"
+    ports:
+      - "8084:8084"
+      - "9094:9094"
+    volumes: *worker-volumes
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mcp-server:
+        condition: service_healthy
+    restart: unless-stopped
+
   outbox-worker:
     build:
       context: .
@@ -372,6 +446,8 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      qdrant:
         condition: service_healthy
       neo4j:
         condition: service_healthy
