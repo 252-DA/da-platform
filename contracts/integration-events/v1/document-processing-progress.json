@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/document-processing-progress.json",
+  "title": "DOCUMENT_PROCESSING_PROGRESS",
+  "description": "AI result event → Core (queue: core_writeback). Progress theo sequence: 10 PARSING, 20 CHUNKING, 30 EMBEDDING, 40 INDEXED, 50 ENRICHING, 60 GENERATED_DRAFT.",
+  "type": "object",
+  "allOf": [{ "$ref": "envelope.json" }],
+  "properties": {
+    "event_type": { "const": "DOCUMENT_PROCESSING_PROGRESS" },
+    "aggregate_type": { "const": "document" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "document_id": { "type": "string", "format": "uuid" },
+        "run_id": { "type": "string", "format": "uuid" },
+        "revision": { "type": "integer", "minimum": 1 },
+        "sequence": {
+          "type": "integer",
+          "enum": [10, 20, 30, 40, 50, 60]
+        },
+        "status": {
+          "enum": ["PARSING", "CHUNKING", "EMBEDDING", "INDEXED", "ENRICHING", "GENERATED_DRAFT"]
+        }
+      },
+      "required": ["document_id", "run_id", "revision", "sequence", "status"],
+      "additionalProperties": false
+    }
+  }
+}

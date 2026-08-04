@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/document-enrichment-completed.json",
+  "title": "DOCUMENT_ENRICHMENT_COMPLETED",
+  "description": "AI result event → Core (queue: core_writeback). Core chỉ persist card/quiz có lo_id hợp lệ; generated_count có thể bằng 0.",
+  "type": "object",
+  "allOf": [{ "$ref": "envelope.json" }],
+  "properties": {
+    "event_type": { "const": "DOCUMENT_ENRICHMENT_COMPLETED" },
+    "aggregate_type": { "const": "document" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "document_id": { "type": "string", "format": "uuid" },
+        "run_id": { "type": "string", "format": "uuid" },
+        "revision": { "type": "integer", "minimum": 1 },
+        "generated_count": { "type": "integer", "minimum": 0 },
+        "artifact": {
+          "$ref": "https://da-platform.dev/contracts/artifacts/v1/artifact-pointer.json"
+        }
+      },
+      "required": ["document_id", "run_id", "revision", "generated_count", "artifact"],
+      "additionalProperties": false
+    }
+  }
+}

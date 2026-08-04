@@ -1,0 +1,36 @@
+{
+  "event_id": "22222222-2222-4222-8222-222222222222",
+  "event_type": "CONTENT_GENERATION_REQUESTED",
+  "schema_version": 1,
+  "occurred_at": "2026-08-02T10:05:00Z",
+  "producer": "core-api",
+  "correlation_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "causation_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+  "aggregate_type": "content_generation_request",
+  "aggregate_id": "55555555-5555-4555-8555-555555555555",
+  "payload": {
+    "request_id": "55555555-5555-4555-8555-555555555555",
+    "course_id": "33333333-3333-4333-8333-333333333333",
+    "type": "quiz",
+    "target": {
+      "kind": "chapter",
+      "id": "66666666-6666-4666-8666-666666666666"
+    },
+    "targets": [
+      {
+        "position": 0,
+        "lo_id": "77777777-7777-4777-8777-777777777777",
+        "lo_code": "L.O.3.1",
+        "bloom_level": 4
+      },
+      {
+        "position": 1,
+        "lo_id": "88888888-8888-4888-8888-888888888888",
+        "lo_code": "L.O.3.2",
+        "bloom_level": 3
+      }
+    ],
+    "count_per_lo": 5,
+    "style": "quiz"
+  }
+}

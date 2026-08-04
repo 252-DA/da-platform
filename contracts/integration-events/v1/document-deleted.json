@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/document-deleted.json",
+  "title": "DOCUMENT_DELETED",
+  "description": "Core command → AI (queue: outbox_relay). Bất biến; mọi result event đến sau deletion đều bị ignore.",
+  "type": "object",
+  "allOf": [{ "$ref": "envelope.json" }],
+  "properties": {
+    "event_type": { "const": "DOCUMENT_DELETED" },
+    "aggregate_type": { "const": "document" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "document_id": { "type": "string", "format": "uuid" },
+        "active_run_id": { "type": ["string", "null"], "format": "uuid" },
+        "revision": { "type": "integer", "minimum": 1 },
+        "storage_key": { "type": "string", "minLength": 1 },
+        "deleted_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["document_id", "active_run_id", "revision", "storage_key", "deleted_at"],
+      "additionalProperties": false
+    }
+  }
+}

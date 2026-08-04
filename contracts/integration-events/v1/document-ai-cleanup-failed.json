@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/document-ai-cleanup-failed.json",
+  "title": "DOCUMENT_AI_CLEANUP_FAILED",
+  "description": "AI result event → Core (queue: core_writeback).",
+  "type": "object",
+  "allOf": [{ "$ref": "envelope.json" }],
+  "properties": {
+    "event_type": { "const": "DOCUMENT_AI_CLEANUP_FAILED" },
+    "aggregate_type": { "const": "document" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "document_id": { "type": "string", "format": "uuid" },
+        "revision": { "type": "integer", "minimum": 1 },
+        "error": { "$ref": "definitions.json#/$defs/errorPayload" }
+      },
+      "required": ["document_id", "revision", "error"],
+      "additionalProperties": false
+    }
+  }
+}

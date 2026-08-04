@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/envelope.json",
+  "title": "IntegrationEventEnvelopeV1",
+  "description": "Common envelope cho mọi integration event giữa Core và AI workers. Snake_case, bất biến. Checksum tính trên canonical JSON UTF-8 (sort key đệ quy, không whitespace thừa).",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUIDv5 deterministic: da:event:v1:{event_type}:{aggregate_id}:{run_id-or-command-event-id}:{sequence}"
+    },
+    "event_type": { "type": "string" },
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC"
+    },
+    "producer": { "type": "string" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "causation_id": { "type": "string", "format": "uuid" },
+    "aggregate_type": { "type": "string" },
+    "aggregate_id": { "type": "string", "format": "uuid" },
+    "payload": { "type": "object" }
+  },
+  "required": [
+    "event_id",
+    "event_type",
+    "schema_version",
+    "occurred_at",
+    "producer",
+    "correlation_id",
+    "causation_id",
+    "aggregate_type",
+    "aggregate_id",
+    "payload"
+  ],
+  "additionalProperties": false
+}

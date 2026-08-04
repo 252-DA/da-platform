@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/document-indexed.json",
+  "title": "DOCUMENT_INDEXED",
+  "description": "AI result event → Core (queue: core_writeback). Document đã index (projection done); kích hoạt enrichment ở Core.",
+  "type": "object",
+  "allOf": [{ "$ref": "envelope.json" }],
+  "properties": {
+    "event_type": { "const": "DOCUMENT_INDEXED" },
+    "aggregate_type": { "const": "document" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "document_id": { "type": "string", "format": "uuid" },
+        "run_id": { "type": "string", "format": "uuid" },
+        "revision": { "type": "integer", "minimum": 1 },
+        "chunk_count": { "type": "integer", "minimum": 0 },
+        "artifact": {
+          "$ref": "https://da-platform.dev/contracts/artifacts/v1/artifact-pointer.json"
+        }
+      },
+      "required": ["document_id", "run_id", "revision", "chunk_count", "artifact"],
+      "additionalProperties": false
+    }
+  }
+}

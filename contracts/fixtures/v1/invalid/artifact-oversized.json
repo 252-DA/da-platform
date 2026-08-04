@@ -1,0 +1,27 @@
+{
+  "event_id": "55555555-5555-4555-8555-555555555555",
+  "event_type": "DOCUMENT_INDEXED",
+  "schema_version": 1,
+  "occurred_at": "2026-08-02T10:21:00Z",
+  "producer": "projection-worker",
+  "correlation_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "causation_id": "11111111-1111-4111-8111-111111111111",
+  "aggregate_type": "document",
+  "aggregate_id": "11111111-1111-4111-8111-111111111111",
+  "payload": {
+    "document_id": "11111111-1111-4111-8111-111111111111",
+    "run_id": "22222222-2222-4222-8222-222222222222",
+    "revision": 1,
+    "chunk_count": 12,
+    "artifact": {
+      "bucket": "ai-artifacts",
+      "key": "document-index/11111111-1111-4111-8111-111111111111/22222222-2222-4222-8222-222222222222.json.gz",
+      "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+      "compressed_size": 52428801,
+      "uncompressed_size": 20480,
+      "content_encoding": "gzip",
+      "media_type": "application/json",
+      "schema_version": 1
+    }
+  }
+}

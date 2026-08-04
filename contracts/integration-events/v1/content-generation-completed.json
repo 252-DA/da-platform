@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/content-generation-completed.json",
+  "title": "CONTENT_GENERATION_COMPLETED",
+  "description": "AI result event → Core (queue: core_writeback). Core persist một atomic batch duy nhất.",
+  "type": "object",
+  "allOf": [{ "$ref": "envelope.json" }],
+  "properties": {
+    "event_type": { "const": "CONTENT_GENERATION_COMPLETED" },
+    "aggregate_type": { "const": "content_generation_request" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "request_id": { "type": "string", "format": "uuid" },
+        "course_id": { "type": "string", "format": "uuid" },
+        "target_lo_count": { "type": "integer", "minimum": 1, "maximum": 20 },
+        "total_quiz_items": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "artifact": {
+          "$ref": "https://da-platform.dev/contracts/artifacts/v1/artifact-pointer.json"
+        }
+      },
+      "required": ["request_id", "course_id", "target_lo_count", "total_quiz_items", "artifact"],
+      "additionalProperties": false
+    }
+  }
+}

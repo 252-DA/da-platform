@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/content-generation-started.json",
+  "title": "CONTENT_GENERATION_STARTED",
+  "description": "AI result event → Core (queue: core_writeback).",
+  "type": "object",
+  "allOf": [{ "$ref": "envelope.json" }],
+  "properties": {
+    "event_type": { "const": "CONTENT_GENERATION_STARTED" },
+    "aggregate_type": { "const": "content_generation_request" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "request_id": { "type": "string", "format": "uuid" },
+        "course_id": { "type": "string", "format": "uuid" }
+      },
+      "required": ["request_id", "course_id"],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/content-generation-failed.json",
+  "title": "CONTENT_GENERATION_FAILED",
+  "description": "AI result event → Core (queue: core_writeback). Chỉ phát ở BullMQ attempt cuối. Không persist partial quiz.",
+  "type": "object",
+  "allOf": [{ "$ref": "envelope.json" }],
+  "properties": {
+    "event_type": { "const": "CONTENT_GENERATION_FAILED" },
+    "aggregate_type": { "const": "content_generation_request" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "request_id": { "type": "string", "format": "uuid" },
+        "course_id": { "type": "string", "format": "uuid" },
+        "attempt": { "type": "integer", "minimum": 1 },
+        "error": { "$ref": "definitions.json#/$defs/errorPayload" }
+      },
+      "required": ["request_id", "course_id", "attempt", "error"],
+      "additionalProperties": false
+    }
+  }
+}

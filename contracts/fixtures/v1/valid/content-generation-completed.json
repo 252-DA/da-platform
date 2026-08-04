@@ -1,0 +1,27 @@
+{
+  "event_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+  "event_type": "CONTENT_GENERATION_COMPLETED",
+  "schema_version": 1,
+  "occurred_at": "2026-08-02T11:20:00Z",
+  "producer": "content-generation-worker",
+  "correlation_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "causation_id": "22222222-2222-4222-8222-222222222222",
+  "aggregate_type": "content_generation_request",
+  "aggregate_id": "55555555-5555-4555-8555-555555555555",
+  "payload": {
+    "request_id": "55555555-5555-4555-8555-555555555555",
+    "course_id": "33333333-3333-4333-8333-333333333333",
+    "target_lo_count": 2,
+    "total_quiz_items": 10,
+    "artifact": {
+      "bucket": "ai-artifacts",
+      "key": "content-generation/55555555-5555-4555-8555-555555555555/dddddddd-dddd-4ddd-8ddd-dddddddddddd.json.gz",
+      "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+      "compressed_size": 8192,
+      "uncompressed_size": 40960,
+      "content_encoding": "gzip",
+      "media_type": "application/json",
+      "schema_version": 1
+    }
+  }
+}

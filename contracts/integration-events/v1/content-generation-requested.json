@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/content-generation-requested.json",
+  "title": "CONTENT_GENERATION_REQUESTED",
+  "description": "Core command → content-generation worker (queue: content_generation). Targets là snapshot LO đã resolve ở Core (content_generation_targets).",
+  "type": "object",
+  "allOf": [{ "$ref": "envelope.json" }],
+  "properties": {
+    "event_type": { "const": "CONTENT_GENERATION_REQUESTED" },
+    "aggregate_type": { "const": "content_generation_request" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "request_id": { "type": "string", "format": "uuid" },
+        "course_id": { "type": "string", "format": "uuid" },
+        "type": { "const": "quiz" },
+        "target": {
+          "type": "object",
+          "properties": {
+            "kind": { "enum": ["lo", "chapter", "assessment"] },
+            "id": { "type": "string", "format": "uuid" }
+          },
+          "required": ["kind", "id"],
+          "additionalProperties": false
+        },
+        "targets": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "properties": {
+              "position": { "type": "integer", "minimum": 0 },
+              "lo_id": { "type": "string", "format": "uuid" },
+              "lo_code": { "type": "string", "minLength": 1 },
+              "bloom_level": { "type": "integer", "minimum": 1, "maximum": 6 }
+            },
+            "required": ["position", "lo_id", "lo_code", "bloom_level"],
+            "additionalProperties": false
+          },
+          "uniqueItems": false
+        },
+        "count_per_lo": { "type": "integer", "minimum": 1, "maximum": 10 },
+        "style": { "const": "quiz" }
+      },
+      "required": ["request_id", "course_id", "type", "target", "targets", "count_per_lo", "style"],
+      "additionalProperties": false
+    }
+  }
+}

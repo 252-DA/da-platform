@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/document-enrichment-started.json",
+  "title": "DOCUMENT_ENRICHMENT_STARTED",
+  "description": "AI result event → Core (queue: core_writeback).",
+  "type": "object",
+  "allOf": [{ "$ref": "envelope.json" }],
+  "properties": {
+    "event_type": { "const": "DOCUMENT_ENRICHMENT_STARTED" },
+    "aggregate_type": { "const": "document" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "document_id": { "type": "string", "format": "uuid" },
+        "run_id": { "type": "string", "format": "uuid" },
+        "revision": { "type": "integer", "minimum": 1 }
+      },
+      "required": ["document_id", "run_id", "revision"],
+      "additionalProperties": false
+    }
+  }
+}

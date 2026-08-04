@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "request_id": "55555555-5555-4555-8555-555555555555",
+  "course_id": "33333333-3333-4333-8333-333333333333",
+  "results": [
+    {
+      "lo_id": "77777777-7777-4777-8777-777777777777",
+      "lo_code": "L.O.3.1",
+      "bloom_level": 4,
+      "quiz_items": [
+        {
+          "position": 0,
+          "question": "Phân tích yêu cầu chức năng là gì?",
+          "choices": ["Mô tả hệ thống", "Phân tích chức năng"],
+          "correct_index": 1,
+          "explanation": "Phân tích yêu cầu chức năng xác định các chức năng hệ thống.",
+          "difficulty": "medium",
+          "lo_alignment_rationale": "Trực tiếp kiểm tra L.O.3.1.",
+          "source_chunk_ids": ["11111111-1111-4111-8111-111111111111"],
+          "model_id": "gemini/gemini-3-flash-preview"
+        }
+      ]
+    }
+  ]
+}

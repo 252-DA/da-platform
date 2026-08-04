@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/document-ai-cleanup-completed.json",
+  "title": "DOCUMENT_AI_CLEANUP_COMPLETED",
+  "description": "AI result event → Core (queue: core_writeback). Soft-delete AI chunks/mappings + Qdrant/Neo4j đã xong.",
+  "type": "object",
+  "allOf": [{ "$ref": "envelope.json" }],
+  "properties": {
+    "event_type": { "const": "DOCUMENT_AI_CLEANUP_COMPLETED" },
+    "aggregate_type": { "const": "document" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "document_id": { "type": "string", "format": "uuid" },
+        "revision": { "type": "integer", "minimum": 1 },
+        "cleaned_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["document_id", "revision", "cleaned_at"],
+      "additionalProperties": false
+    }
+  }
+}

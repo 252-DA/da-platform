@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/document-processing-failed.json",
+  "title": "DOCUMENT_PROCESSING_FAILED",
+  "description": "AI result event → Core (queue: core_writeback). Chỉ phát ở BullMQ attempt cuối; Core chuyển document sang ERROR.",
+  "type": "object",
+  "allOf": [{ "$ref": "envelope.json" }],
+  "properties": {
+    "event_type": { "const": "DOCUMENT_PROCESSING_FAILED" },
+    "aggregate_type": { "const": "document" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "document_id": { "type": "string", "format": "uuid" },
+        "run_id": { "type": "string", "format": "uuid" },
+        "revision": { "type": "integer", "minimum": 1 },
+        "attempt": { "type": "integer", "minimum": 1 },
+        "error": { "$ref": "definitions.json#/$defs/errorPayload" }
+      },
+      "required": ["document_id", "run_id", "revision", "attempt", "error"],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/document-processing-requested.json",
+  "title": "DOCUMENT_PROCESSING_REQUESTED",
+  "description": "Core command → document worker (queue: document_processing).",
+  "type": "object",
+  "allOf": [{ "$ref": "envelope.json" }],
+  "properties": {
+    "event_type": { "const": "DOCUMENT_PROCESSING_REQUESTED" },
+    "aggregate_type": { "const": "document" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "document_id": { "type": "string", "format": "uuid" },
+        "run_id": { "type": "string", "format": "uuid" },
+        "revision": { "type": "integer", "minimum": 1 },
+        "storage_key": { "type": "string", "minLength": 1 },
+        "file_name": { "type": "string", "minLength": 1 },
+        "mime_type": { "type": "string", "minLength": 1 },
+        "language": { "type": "string", "minLength": 1 },
+        "course_id": { "type": "string", "format": "uuid" },
+        "owner_id": { "type": ["string", "null"], "format": "uuid" },
+        "checksum": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" }
+      },
+      "required": [
+        "document_id",
+        "run_id",
+        "revision",
+        "storage_key",
+        "file_name",
+        "mime_type",
+        "language",
+        "course_id",
+        "owner_id",
+        "checksum"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
