@@ -24,17 +24,19 @@ Nhắm hết **chặng 3** trong buổi đầu (mốc "có HTTPS public"). Chặ
 
 ## Chặng 0 — Đưa code lên PC
 
-Để `clone` trên con Fedora, repo phải nằm trên org `252-DA`. `packages-ai` + `report` đã có remote; **`core-api`, `web`, `worker` chưa có remote → push lên org trước.**
+Clone meta-repo kèm toàn bộ service đã được pin đúng revision:
 
 ```bash
-git clone git@github.com:252-DA/core-api.git
-git clone git@github.com:252-DA/web.git
-git clone git@github.com:252-DA/core-chunking.git   # = packages-ai
-git clone git@github.com:252-DA/worker.git
-# + copy docker-compose.yml và .env sang PC
+git clone --recurse-submodules git@github.com:252-DA/da-platform.git DA
+cd DA
 ```
 
-> Đây là lý do phải "fix git" trước: không push thì không deploy được.
+Nếu đã clone meta-repo trước đó:
+
+```bash
+git pull
+git submodule update --init --recursive
+```
 
 ---
 

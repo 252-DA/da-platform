@@ -13,3 +13,9 @@
 [submodule "report"]
 	path = report
 	url = git@github.com:252-DA/report.git
+[submodule "ai-sdk"]
+	path = ai-sdk
+	url = git@github.com:252-DA/ai-sdk.git
+[submodule "ai-tutor"]
+	path = ai-tutor
+	url = git@github.com:252-DA/ai-tutor.git

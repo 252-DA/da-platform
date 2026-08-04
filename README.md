@@ -8,6 +8,8 @@ Meta-repo của đồ án. Code từng service nằm trong **git submodule**:
 | `web/` | 252-DA/web | `main` | Next.js — UI instructor/learner |
 | `worker/` | 252-DA/worker | `master` | Python — document/enrichment/outbox workers |
 | `packages-ai/` | 252-DA/core-chunking | `dev` | Python — pipeline parse/chunk/embed/index |
+| `ai-sdk/` | 252-DA/ai-sdk | `master` | Python — model runtime và MCP client dùng chung |
+| `ai-tutor/` | 252-DA/ai-tutor | `master` | FastAPI — trợ giảng AI bám theo nội dung khóa học |
 | `report/` | 252-DA/report | `master` | LaTeX — báo cáo LVTN (bản chính: `lvtn_en/`) |
 
 Root repo chỉ giữ **glue**: `docker-compose*.yml`, `deploy/`, `scripts/`, env examples.
