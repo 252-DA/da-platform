@@ -1,0 +1,42 @@
+# Alert rules cho core-api (NestJS).
+# Được nạp qua rule_files trong prometheus.yml.
+# Lưu ý: observability compose chưa có AlertManager — các rule này chỉ được
+# đánh giá (evaluation) và hiển thị trên trang Alerts của Prometheus
+# (http://<prometheus>:9090/alerts) cho tới khi có AlertManager.
+
+groups:
+  - name: core-api
+    rules:
+      - alert: CoreOutboxEventsFailed
+        # Gauge dựa trên COUNT(*) WHERE status='FAILED' — không có first-sample
+        # problem như increase() trên counter, và phản ánh đúng state sau
+        # restart/downtime. Counter core_outbox_events_failed_total chỉ để xem rate.
+        expr: core_outbox_events_failed > 0
+        for: 0m
+        labels:
+          severity: warning
+          service: core-api
+        annotations:
+          summary: "Có outbox events ở trạng thái FAILED (core-api)"
+          description: >-
+            Ít nhất một outbox event đã đạt MAX_RELAY_ATTEMPTS và chuyển sang
+            status 'FAILED'. Kiểm tra bảng outbox_events:
+            SELECT event_id, event_type, retry_count, last_error
+            FROM outbox_events
+            WHERE status = 'FAILED'
+            ORDER BY processed_at DESC;
+
+      - alert: CoreQueueFailedJobs
+        # Gauge dựa trên Queue.getFailedCount() — phản ánh failed jobs còn giữ
+        # trong Redis kể cả khi Core restart (failed jobs được retain).
+        expr: core_queue_failed_jobs > 0
+        for: 0m
+        labels:
+          severity: warning
+          service: core-api
+        annotations:
+          summary: "BullMQ queues có failed jobs (core-api)"
+          description: >-
+            Có job trên queue outbox_relay / content_generation đang ở trạng
+            thái failed (đã hết retry). Xem label queue để biết queue nào, và
+            kiểm tra failed reason trong BullMQ / log của worker tương ứng.

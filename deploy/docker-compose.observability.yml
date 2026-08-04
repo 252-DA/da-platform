@@ -11,6 +11,7 @@ services:
     image: prom/prometheus:v2.55.1
     volumes:
       - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml:z
+      - ./deploy/prometheus-alerts.yml:/etc/prometheus/prometheus-alerts.yml:z
       - promdata:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
