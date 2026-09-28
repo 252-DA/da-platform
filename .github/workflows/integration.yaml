@@ -24,3 +24,6 @@ jobs:
 
       - name: Verify consumer CI pins match committed gitlinks
         run: python3 scripts/check_materialize_pins.py
+
+      - name: Verify contract, prompt and parser agree on the quiz item shape
+        run: python3 scripts/check_content_schema.py
