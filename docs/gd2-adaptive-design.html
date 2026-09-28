@@ -1,0 +1,1172 @@
+<title>Lớp Thích Ứng GĐ2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400;1,6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --ground:      #e9ecf1;
+    --surface:     #ffffff;
+    --surface-alt: #f2f5f7;
+    --ink:         #161c1f;
+    --ink-soft:    #3a464b;
+    --muted:       #5e6c72;
+    --line:        #d0d8dc;
+    --line-soft:   #e2e8ec;
+    --accent:      #15605a;
+    --accent-soft: #d9ebe7;
+
+    --b1:     #b2472c;  /* novice    */
+    --b1-bg:  #f7e5df;
+    --b2:     #96691a;  /* developing*/
+    --b2-bg:  #f7edd9;
+    --b3:     #2c6f83;  /* proficient*/
+    --b3-bg:  #dfeef3;
+    --b4:     #15605a;  /* mastered  */
+    --b4-bg:  #d9ebe7;
+
+    --stop:    #8f2f2f;
+    --stop-bg: #f6e2e2;
+    --new:     #4b4f8a;
+    --new-bg:  #e5e6f3;
+
+    --shadow: 0 1px 2px rgba(22, 28, 31, .05), 0 8px 20px -14px rgba(22, 28, 31, .3);
+
+    --f-display: "Newsreader", Georgia, "Times New Roman", serif;
+    --f-body: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #0e1316;
+      --surface:     #171d21;
+      --surface-alt: #1f262a;
+      --ink:         #e6ecee;
+      --ink-soft:    #c0cace;
+      --muted:       #8b989e;
+      --line:        #2c3539;
+      --line-soft:   #242c30;
+      --accent:      #63c4b4;
+      --accent-soft: #14312e;
+
+      --b1:     #e0836a;
+      --b1-bg:  #33201a;
+      --b2:     #d7ab5c;
+      --b2-bg:  #302717;
+      --b3:     #79bcd0;
+      --b3-bg:  #172c33;
+      --b4:     #63c4b4;
+      --b4-bg:  #14312e;
+
+      --stop:    #e08585;
+      --stop-bg: #331c1c;
+      --new:     #a3a6e0;
+      --new-bg:  #212239;
+
+      --shadow: 0 1px 2px rgba(0, 0, 0, .45), 0 10px 24px -14px rgba(0, 0, 0, .8);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #0e1316;
+    --surface:     #171d21;
+    --surface-alt: #1f262a;
+    --ink:         #e6ecee;
+    --ink-soft:    #c0cace;
+    --muted:       #8b989e;
+    --line:        #2c3539;
+    --line-soft:   #242c30;
+    --accent:      #63c4b4;
+    --accent-soft: #14312e;
+
+    --b1:     #e0836a;
+    --b1-bg:  #33201a;
+    --b2:     #d7ab5c;
+    --b2-bg:  #302717;
+    --b3:     #79bcd0;
+    --b3-bg:  #172c33;
+    --b4:     #63c4b4;
+    --b4-bg:  #14312e;
+
+    --stop:    #e08585;
+    --stop-bg: #331c1c;
+    --new:     #a3a6e0;
+    --new-bg:  #212239;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, .45), 0 10px 24px -14px rgba(0, 0, 0, .8);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 15px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 24px 110px; }
+
+  a { color: var(--accent); }
+  code, kbd { font-family: var(--f-mono); font-size: .88em; }
+  p code, li code, td code {
+    background: var(--surface-alt);
+    border: 1px solid var(--line-soft);
+    border-radius: 3px;
+    padding: .06em .32em;
+  }
+
+  /* ---------- masthead ---------- */
+
+  .masthead {
+    display: flex; flex-direction: column; gap: 18px;
+    padding: 58px 0 30px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 11.5px;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .masthead h1 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: clamp(38px, 6vw, 60px);
+    line-height: 1.02;
+    letter-spacing: -.02em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .lede {
+    font-family: var(--f-display);
+    font-size: 19px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 0;
+  }
+  .lede em { color: var(--ink); }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 8px 22px;
+    font-family: var(--f-mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .meta b { color: var(--ink-soft); font-weight: 500; }
+
+  /* ---------- section frame ---------- */
+
+  section { padding-top: 54px; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px; }
+  .sec-no {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: .08em;
+    padding-top: 4px;
+  }
+  .sec-head h2 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: clamp(25px, 3.4vw, 33px);
+    line-height: 1.15;
+    letter-spacing: -.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .sec-note { color: var(--ink-soft); max-width: 68ch; margin: 0 0 22px; }
+  .sec-note + .sec-note { margin-top: -10px; }
+
+  h3 {
+    font-family: var(--f-body);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -.005em;
+    margin: 30px 0 10px;
+  }
+  h3:first-child { margin-top: 0; }
+
+  /* ---------- tables ---------- */
+
+  .tbl-scroll { overflow-x: auto; margin: 14px 0 6px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    min-width: 560px;
+  }
+  thead th {
+    text-align: left;
+    font-family: var(--f-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 14px 8px 0;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 11px 14px 11px 0;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: top;
+    color: var(--ink-soft);
+  }
+  tbody td:last-child, thead th:last-child { padding-right: 0; }
+  td.nm { color: var(--ink); font-weight: 500; }
+  td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; color: var(--ink); white-space: nowrap; }
+  tbody tr.hl td { background: var(--accent-soft); }
+  tbody tr.off td { color: var(--muted); }
+
+  /* ---------- chips ---------- */
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--f-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .b1 { color: var(--b1); background: var(--b1-bg); }
+  .b2 { color: var(--b2); background: var(--b2-bg); }
+  .b3 { color: var(--b3); background: var(--b3-bg); }
+  .b4 { color: var(--b4); background: var(--b4-bg); }
+  .stop { color: var(--stop); background: var(--stop-bg); }
+  .new  { color: var(--new);  background: var(--new-bg); }
+  .keep { color: var(--accent); background: var(--accent-soft); }
+  .fix  { color: var(--b2); background: var(--b2-bg); }
+
+  /* ---------- revision note ---------- */
+
+  .revnote {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--b2);
+    padding: 16px 20px 18px;
+    margin-top: 26px;
+  }
+  .revnote .cap {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--b2);
+    display: block;
+    margin-bottom: 10px;
+  }
+  .revnote ol { margin: 0; padding-left: 20px; font-size: 13.5px; color: var(--ink-soft); }
+  .revnote li { margin-bottom: 5px; }
+  .revnote li:last-child { margin-bottom: 0; }
+  .revnote strong { color: var(--ink); font-weight: 600; }
+
+  .verb {
+    display: inline-block;
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    padding: 2px 7px;
+    border-radius: 3px;
+    min-width: 46px;
+    text-align: center;
+  }
+  .get  { color: var(--b3); background: var(--b3-bg); }
+  .post { color: var(--b4); background: var(--b4-bg); }
+
+  /* ---------- decision cards ---------- */
+
+  .picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(258px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 18px; }
+  .pick { background: var(--surface); padding: 20px 20px 22px; display: flex; flex-direction: column; gap: 9px; }
+  .pick .who { font-family: var(--f-mono); font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+  .pick .what { font-family: var(--f-display); font-size: 23px; font-weight: 600; line-height: 1.12; letter-spacing: -.01em; }
+  .pick .what span { font-family: var(--f-body); font-size: 12.5px; font-weight: 500; color: var(--muted); display: block; letter-spacing: 0; margin-top: 3px; }
+  .pick p { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+
+  /* ---------- formula panel ---------- */
+
+  .formula {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    padding: 18px 20px;
+    margin: 18px 0;
+    overflow-x: auto;
+  }
+  .formula .fl {
+    font-family: var(--f-mono);
+    font-size: 13px;
+    line-height: 2.05;
+    white-space: pre;
+    color: var(--ink);
+  }
+  .formula i {
+    font-family: var(--f-display);
+    font-style: italic;
+    font-size: 15.5px;
+    color: var(--accent);
+  }
+  .formula .cm { color: var(--muted); font-style: normal; }
+  .formula .cap {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  /* ---------- code block ---------- */
+
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 16px 18px;
+    margin: 14px 0;
+    overflow-x: auto;
+    font-family: var(--f-mono);
+    font-size: 12.5px;
+    line-height: 1.66;
+    color: var(--ink-soft);
+    tab-size: 2;
+  }
+  pre b { color: var(--ink); font-weight: 600; }
+  pre .cm { color: var(--muted); }
+  pre .ad { color: var(--accent); }
+
+  /* ---------- stage rail ---------- */
+
+  .stages { display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 20px 0 6px; }
+  .stage { background: var(--surface); display: grid; grid-template-columns: 62px 1fr; gap: 18px; padding: 16px 20px 17px; }
+  .stage .n {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .07em;
+    color: var(--accent);
+    padding-top: 2px;
+  }
+  .stage h4 { margin: 0 0 4px; font-size: 14.5px; font-weight: 600; }
+  .stage p { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+  .stage p + p { margin-top: 5px; }
+  .stage .where { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); }
+
+  /* ---------- callout ---------- */
+
+  .callout {
+    background: var(--surface-alt);
+    border: 1px solid var(--line-soft);
+    border-radius: 4px;
+    padding: 15px 18px;
+    margin: 20px 0 4px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+  }
+  .callout strong { color: var(--ink); }
+  .callout.warn { border-left: 3px solid var(--stop); }
+
+  /* ---------- open questions ---------- */
+
+  .asks { display: flex; flex-direction: column; gap: 14px; margin-top: 18px; }
+  .ask { display: grid; grid-template-columns: 30px 1fr; gap: 14px; align-items: start; }
+  .ask .q { font-family: var(--f-display); font-size: 26px; font-weight: 600; color: var(--accent); line-height: 1; }
+  .ask h4 { margin: 0 0 3px; font-size: 14.5px; font-weight: 600; }
+  .ask p { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+
+  ul.tight { margin: 8px 0 0; padding-left: 18px; }
+  ul.tight li { margin-bottom: 5px; color: var(--ink-soft); }
+  ul.tight li strong { color: var(--ink); font-weight: 500; }
+
+  .rule { height: 1px; background: var(--line); border: 0; margin: 46px 0 0; }
+
+  @media (max-width: 620px) {
+    .wrap { padding: 0 16px 80px; }
+    .stage { grid-template-columns: 1fr; gap: 6px; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Giai đoạn 2 · thiết kế chi tiết · FR-SL-07/08/09</div>
+    <h1>Lớp Thích Ứng GĐ2</h1>
+    <p class="lede">Mastery theo Learning Outcome, lịch ôn lặp lại ngắt quãng, và gợi ý hành động kế tiếp — ba mảnh mà báo cáo đã hứa ở <em>c2 §b Personalized learning paths</em> nhưng trong <code>core-api</code> hiện có <em>0 dòng</em>.</p>
+    <div class="meta">
+      <span><b>Bản</b> 2 · 21/09/2026</span>
+      <span><b>Phạm vi</b> core-api · prisma · web/learn</span>
+      <span><b>Bảng mới</b> 3, mở rộng 2</span>
+      <span><b>Endpoint</b> 11</span>
+      <span><b>Không đụng</b> gradebook Canvas</span>
+    </div>
+
+    <div class="revnote">
+      <span class="cap">Bản 2 — tám chỗ sửa sau review</span>
+      <ol>
+        <li><strong>Độ chính xác lưu trữ.</strong> <code>Decimal(4,3)</code> làm mastery kẹt ở 1.000 sau đúng 6 câu đúng liên tiếp, và từ đó trả lời sai cũng không kéo xuống được. Đổi sang <code>Decimal(7,6)</code> + kẹp biên — §1.</li>
+        <li><strong>Replay chưa xác định.</strong> <code>quiz_attempts</code> không lưu LO, Bloom, loại câu tại thời điểm làm bài; sửa câu hỏi là phát lại ra số khác. Thêm cột ảnh chụp + khoá hàng + <code>submission_id</code> — §1, §4.</li>
+        <li><strong>SM-2 sai.</strong> EF <em>có</em> được cập nhật khi q &lt; 3; nút “Chưa nhớ” ánh xạ q = 0 chứ không phải 2; và lịch trong phiên tách khỏi lịch theo ngày — §2.</li>
+        <li><strong>Thiếu lịch sử ôn.</strong> <code>flashcard_reviews</code> chỉ giữ trạng thái cuối, không đo được tỉ lệ nhớ hay tuân thủ hạn. Thêm bảng log — §2, §4.</li>
+        <li><strong>Trường hợp biên của ranker.</strong> Cooldown nuốt mất thẻ tới hạn, sàn Bloom, khoảng trống của bảng mức, và phạm vi của luật chặn — §3.</li>
+        <li><strong>Đánh giá hứa quá.</strong> Dự đoán phải dùng <em>P</em>(đúng), không dùng thẳng <code>p_known</code>; và chênh lệch mastery chỉ là quan sát, không phải nhân quả — §7.</li>
+        <li><strong>Đính chính.</strong> LTI <em>đã</em> upsert <code>course_memberships</code> ở <code>lti.service.ts:97</code>. Cảnh báo 403 ở bản 1 là sai — §6.</li>
+        <li><strong>Đính chính.</strong> FSRS chạy được ngay với tham số mặc định. Lý do loại ở bản 1 là sai; lý do thật đã viết lại — §0, §10.</li>
+      </ol>
+    </div>
+  </header>
+
+  <!-- ============ 0 · QUYẾT ĐỊNH ============ -->
+  <section id="picks">
+    <div class="sec-head"><span class="sec-no">§0</span><h2>Ba thuật toán được chọn</h2></div>
+    <p class="sec-note">Tiêu chí chọn không phải “cái nào hiện đại nhất”, mà là <strong>cái nào hội đồng hỏi được và mình trả lời được bằng số từ pilot ~30 học viên</strong>. Dữ liệu ở quy mô đó quá thưa cho bất cứ thứ gì phải học tham số từ đầu.</p>
+
+    <div class="picks">
+      <div class="pick">
+        <div class="who">Mastery</div>
+        <div class="what">BKT<span>Bayesian Knowledge Tracing, tham số cố định</span></div>
+        <p>Bốn tham số mỗi LO, lấy giá trị mặc định từ tài liệu thay vì fit. Cập nhật online sau từng câu, chạy ~10 dòng số học. Giữ thêm một EWMA song song làm mốc so sánh cho chương 6.</p>
+      </div>
+      <div class="pick">
+        <div class="who">Ôn tập</div>
+        <div class="what">SM-2<span>SuperMemo 2, thang chất lượng 0–5</span></div>
+        <p>Hồi sinh bảng <code>flashcard_reviews</code> đang chết. Khoảng 15 dòng số học, giải thích trọn trong một trang luận văn. <strong>FSRS cũng chạy được ngay</strong> — xem lý do thật ở bảng dưới, đây là chỗ còn mở.</p>
+      </div>
+      <div class="pick">
+        <div class="who">Gợi ý</div>
+        <div class="what">Ranker luật<span>sinh ứng viên + chấm điểm có trọng số</span></div>
+        <p>Không LLM, không lọc cộng tác. Mỗi gợi ý kèm <code>reason</code> có số — học viên đọc được lý do, và chương 6 chấm được độ chính xác của lý do đó.</p>
+      </div>
+    </div>
+
+    <h3>Vì sao loại những phương án còn lại</h3>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th style="width:22%">Phương án</th><th style="width:30%">Hấp dẫn ở chỗ</th><th>Lý do loại</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="nm">Elo / IRT</td>
+            <td>Ước lượng đồng thời năng lực học viên và độ khó câu hỏi.</td>
+            <td>Cần hàng trăm lượt <em>mỗi câu hỏi</em> mới hội tụ. Pilot ≥30 lượt cho cả bộ đề là không đủ, con số đưa ra sẽ không bảo vệ được. Vẫn dùng ý tưởng này ở <strong>FR-AD-07 item analysis</strong>, nhưng là thống kê hậu kiểm, không phải mô hình chạy trực tuyến.</td>
+          </tr>
+          <tr>
+            <td class="nm">DKT / SAKT (deep)</td>
+            <td>Chính xác hơn BKT trên benchmark lớn.</td>
+            <td>Cần chục nghìn chuỗi tương tác để huấn luyện, và là hộp đen — mâu thuẫn trực tiếp với lập luận “traceability” mà c2 §a dùng làm điểm bán hàng của cả đề tài.</td>
+          </tr>
+          <tr>
+            <td class="nm">FSRS <span class="chip fix">đính chính</span></td>
+            <td>Lịch ôn tốt hơn SM-2 trên dữ liệu Anki. Mô hình DSR trả về <em>retrievability</em> — một xác suất nhớ thật, cắm thẳng vào ranker ở §3 còn hợp hơn giãn cách của SM-2.</td>
+            <td><strong>Bản 1 viết “phải có lịch sử ôn mới chạy được” — sai.</strong> FSRS-6 đi kèm bộ tham số mặc định tối ưu trên ~727 triệu lượt ôn của ~10 nghìn người, dùng được từ ngày đầu; cá nhân hoá chỉ cần khi đã tích được vài trăm lượt. Lý do thật để GĐ2 vẫn chọn SM-2: 21 tham số của DSR không giải thích gọn trong một trang, và <strong>pilot vài tuần quá ngắn để đo được chênh lệch giữa hai lịch</strong> — tức chọn cái phức tạp hơn cũng không đẻ ra thêm số nào cho chương 6. Không phải rào kỹ thuật, nên giữ cửa mở: gói lịch ôn sau một hàm duy nhất, <code>ts-fsrs</code> là drop-in (Node ≥ 20, core-api đang chạy Node 24).</td>
+          </tr>
+          <tr>
+            <td class="nm">Lọc cộng tác</td>
+            <td>“Học viên giống bạn đã học tiếp cái này.”</td>
+            <td>Một lớp vài chục người là cold-start vĩnh viễn, và gợi ý kiểu đó không giải thích được theo LO — mất luôn lý do tồn tại của đề tài.</td>
+          </tr>
+          <tr>
+            <td class="nm">Để LLM tự chọn</td>
+            <td>Viết nhanh, demo mượt.</td>
+            <td>Không tái lập được, tốn quota mỗi lần mở dashboard, và khi hội đồng hỏi “vì sao gợi ý cái này” thì câu trả lời là một prompt. Ranker luật cho đúng số để trả lời. LLM vẫn dùng — nhưng ở bước <em>diễn đạt</em> lý do thành câu tiếng Việt, không phải bước <em>quyết định</em>.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <strong>Ranh giới giữ nguyên:</strong> mastery <em>không</em> phải điểm, và không bao giờ đẩy lên gradebook Canvas. AGS chỉ nhận điểm quiz như hiện tại. Mastery là tín hiệu nội bộ để xếp hạng gợi ý và vẽ dashboard — giữ đúng lập trường “AI Extension Layer” của c2 §c.
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ============ 1 · MASTERY ============ -->
+  <section id="mastery">
+    <div class="sec-head"><span class="sec-no">§1</span><h2>Mastery theo LO — BKT</h2></div>
+    <p class="sec-note">Mỗi cặp <code>(user, lo)</code> giữ một xác suất <em>đã nắm được</em>. Sau mỗi câu trả lời thuộc LO đó, xác suất được cập nhật theo Bayes rồi cộng thêm phần học được từ chính lần làm bài ấy.</p>
+
+    <div class="formula">
+      <span class="cap">Cập nhật sau một câu trả lời</span>
+      <div class="fl">đúng   <i>P</i>(L|obs) = <i>P</i>(L)·(1−<i>s</i>) / [ <i>P</i>(L)·(1−<i>s</i>) + (1−<i>P</i>(L))·<i>g</i> ]
+sai    <i>P</i>(L|obs) = <i>P</i>(L)·<i>s</i>     / [ <i>P</i>(L)·<i>s</i>     + (1−<i>P</i>(L))·(1−<i>g</i>) ]
+
+học    <i>P</i>(L′)    = <i>P</i>(L|obs) + (1 − <i>P</i>(L|obs))·<i>t</i>          <span class="cm">← ghi vào lo_mastery.p_known</span></div>
+    </div>
+
+    <h3>Tham số — và chỗ duy nhất mình không dùng hằng số</h3>
+    <p class="sec-note">Ba tham số lấy mặc định. Riêng <em>guess</em> thì suy ra từ chính câu hỏi: đoán mò một câu đúng/sai khác hẳn đoán mò một câu bốn lựa chọn, và <code>quiz_items.type</code> + <code>options</code> đã có sẵn thông tin đó. Đây là chi tiết rẻ nhưng trả lời thẳng được câu hỏi “sao mô hình không bị lừa bởi câu dễ đoán”.</p>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th style="width:16%">Tham số</th><th style="width:14%">Giá trị</th><th>Ý nghĩa và nguồn</th></tr></thead>
+        <tbody>
+          <tr><td class="nm">P(L₀) prior</td><td class="num">0.250</td><td>Xác suất đã nắm LO trước khi có bằng chứng nào. Mặc định thận trọng.</td></tr>
+          <tr><td class="nm">t transit</td><td class="num">0.120</td><td>Xác suất học được sau một lần chạm. Thấp có chủ ý: một câu quiz không dạy được nhiều.</td></tr>
+          <tr><td class="nm">s slip</td><td class="num">0.080</td><td>Nắm rồi vẫn sai (bấm nhầm, hết giờ).</td></tr>
+          <tr><td class="nm">g guess</td><td class="num">theo item</td><td><code>MCQ</code> 4 phương án → <span class="num">0.25</span> · 3 phương án → <span class="num">0.33</span> · <code>TRUE_FALSE</code> → <span class="num">0.50</span> · <code>SHORT_ANSWER</code> → <span class="num">0.05</span>. Tính từ <code>len(options)</code>, không hard-code theo môn.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Chạy thử trên một chuỗi thật</h3>
+    <p class="sec-note">Một học viên làm 4 câu thuộc LO2.3. Đây là số chạy ra từ đúng công thức trên, không phải số minh hoạ.</p>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>Câu</th><th>Loại</th><th>Bloom</th><th>Kết quả</th><th>P(L) trước</th><th>Hậu nghiệm</th><th>P(L′) sau</th></tr></thead>
+        <tbody>
+          <tr><td class="nm">Q1</td><td>MCQ 4</td><td>2 · Understand</td><td>đúng</td><td class="num">0.250</td><td class="num">0.551</td><td class="num">0.605</td></tr>
+          <tr><td class="nm">Q2</td><td>MCQ 4</td><td>3 · Apply</td><td>sai</td><td class="num">0.605</td><td class="num">0.140</td><td class="num">0.243</td></tr>
+          <tr><td class="nm">Q3</td><td>MCQ 4</td><td>3 · Apply</td><td>sai</td><td class="num">0.243</td><td class="num">0.033</td><td class="num">0.149</td></tr>
+          <tr class="hl"><td class="nm">Q4</td><td>True/False</td><td>2 · Understand</td><td>đúng</td><td class="num">0.149</td><td class="num">0.244</td><td class="num">0.335</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <strong>Đọc kết quả:</strong> BKT kết thúc ở <span class="num">0.335</span> <span class="chip b1">novice</span>, trong khi đường EWMA song song (α = 0.3) cho <span class="num">0.523</span>. Chênh lệch đến từ hai chỗ BKT tính mà EWMA không: nó phạt nặng hai câu sai vì <em>slip</em> chỉ 0.08, và nó gần như không thưởng câu True/False cuối vì <em>guess</em> = 0.50.
+      <br><br>
+      <strong>Một ví dụ không chứng minh được BKT đúng hơn</strong> — nó chỉ cho thấy hai mô hình <em>bất đồng</em>, và bất đồng ở mức đủ để đổi cả nhãn mức. Cái nào bám thực tế hơn là câu hỏi thực nghiệm, trả lời bằng chỉ số thứ nhất ở §7 chứ không phải bằng đoạn văn này.
+    </div>
+
+    <h3>Cái bẫy độ chính xác — đủ để giết cả mô hình</h3>
+    <p class="sec-note">Bản 1 để <code>Decimal(4,3)</code>. Chạy thử đúng tham số ở trên với chuỗi MCQ 4 phương án <em>toàn đúng</em>:</p>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>Câu đúng thứ</th><th>p thật</th><th>Lưu Decimal(4,3)</th><th></th></tr></thead>
+        <tbody>
+          <tr><td class="nm">4</td><td class="num">0.991379</td><td class="num">0.991</td><td></td></tr>
+          <tr><td class="nm">5</td><td class="num">0.997926</td><td class="num">0.998</td><td></td></tr>
+          <tr class="hl"><td class="nm">6</td><td class="num">0.999503</td><td class="num">1.000</td><td>làm tròn lên đúng 1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sec-note" style="margin-top:14px">Từ khoảnh khắc đó mô hình chết: thay <em>P</em>(L) = 1 vào nhánh “sai” được <span class="num">1·s / (1·s + 0·(1−g))</span> = <span class="num">1.000</span>. Học viên sai bao nhiêu câu cũng vẫn <span class="chip b4">mastered</span> — và vì <code>lo_mastery</code> là hình chiếu, phát lại cũng ra đúng con số hỏng đó. <strong>Sáu câu đúng liên tiếp là chuyện thường ở một LO dễ.</strong></p>
+
+    <div class="formula">
+      <span class="cap">Cách lưu đã chốt</span>
+      <div class="fl">kiểu    <b>Decimal(7,6)</b>            <span class="cm">đủ chỗ cho 0.999503, không làm tròn lên 1</span>
+kẹp     p ← min(0.99, max(0.01, p))  <span class="cm">áp SAU mỗi lần cập nhật, trước khi ghi</span>
+hiển thị làm tròn 2 chữ số ở tầng giao diện, không làm tròn khi lưu</div>
+    </div>
+    <p class="sec-note">Trần 0.99 chứ không phải 0.999, vì kẹp biên chỉ có nghĩa khi mô hình còn quay đầu được. Một câu sai ở mỗi mức trần:</p>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>Trần</th><th>p sau một câu sai</th><th>Kết luận</th></tr></thead>
+        <tbody>
+          <tr class="off"><td class="num">1.000</td><td class="num">1.0000</td><td>kẹt vĩnh viễn</td></tr>
+          <tr class="off"><td class="num">0.999</td><td class="num">0.9918</td><td>kẹp cho có — vẫn không nhúc nhích</td></tr>
+          <tr class="hl"><td class="num">0.990</td><td class="num">0.9239</td><td>tụt thấy được, vẫn giữ <span class="chip b4">mastered</span> — chọn cái này</td></tr>
+          <tr class="off"><td class="num">0.980</td><td class="num">0.8587</td><td>rơi thẳng xuống <span class="chip b3">proficient</span>, phạt quá tay một câu bấm nhầm</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sec-note" style="margin-top:14px">Sàn 0.01 thì đối xứng: không có nó, một chuỗi sai dài đẩy <em>P</em>(L) về 0 và từ đó trả lời đúng cũng không kéo lên nổi.</p>
+
+    <h3>Bốn mức và ngưỡng</h3>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th style="width:20%">Mức</th><th style="width:26%">Điều kiện</th><th>Dùng để làm gì</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip b1">novice</span></td><td class="num">p &lt; 0.40</td><td>Nguồn chính của gợi ý. Hiện màu đỏ trên dashboard giảng viên.</td></tr>
+          <tr><td><span class="chip b2">developing</span></td><td class="num">0.40 ≤ p &lt; 0.70</td><td>Vẫn được gợi ý nhưng xếp sau.</td></tr>
+          <tr><td><span class="chip b3">proficient</span></td><td class="num">0.70 ≤ p &lt; 0.90</td><td>Chỉ còn nhận gợi ý loại duy trì (flashcard tới hạn).</td></tr>
+          <tr><td><span class="chip b4">mastered</span></td><td class="num">p ≥ 0.90 <em>và</em> n ≥ 5</td><td>Ra khỏi hàng đợi gợi ý. Điều kiện <em>n ≥ 5</em> chặn trường hợp ăn may 2 câu rồi được tuyên bố thành thạo.</td></tr>
+          <tr><td><span class="chip b3">proficient</span> <span class="chip fix">bản 1 để trống</span></td><td class="num">p ≥ 0.90 và 3 ≤ n &lt; 5</td><td>Bản 1 không có dòng này — cao điểm nhưng thiếu bằng chứng thì rơi vào khoảng trống, không mức nào nhận. Chốt: ở lại <span class="chip b3">proficient</span> cho tới khi đủ 5 lượt. Điều kiện phải viết theo bậc thang giảm dần, đừng viết hai nhánh rời nhau.</td></tr>
+          <tr class="off"><td><span class="chip new">unknown</span></td><td class="num">n &lt; 3</td><td>Giá trị <code>band</code> thật là <code>'UNKNOWN'</code>, không phải <code>'NOVICE'</code> — bản 1 để mặc định cột là <code>NOVICE</code>, tức mọi học viên chưa làm gì đều bị đếm vào thống kê LO yếu của giảng viên. Sinh gợi ý <code>DIAGNOSE</code> — xem §3.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Mastery là hình chiếu, không phải sự thật gốc</h3>
+    <p class="sec-note">Bảng <code>lo_mastery</code> phải dựng lại được hoàn toàn từ <code>quiz_attempts</code>. Đây là chỗ bản 1 nói được mà làm không được: <strong>bảng attempt hiện tại không đủ dữ liệu để phát lại ra cùng một kết quả.</strong></p>
+
+    <h3>Ba thứ còn thiếu để replay có nghĩa</h3>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th style="width:22%">Vấn đề</th><th style="width:33%">Vì sao vỡ</th><th>Chốt</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="nm">Đầu vào BKT không bất biến</td>
+            <td><code>quiz_attempts</code> chỉ giữ <code>quiz_id</code>, còn <code>lo_id</code>, <code>bloom_level</code>, <code>type</code> và <code>options</code> nằm bên <code>quiz_items</code> — mà bảng đó <em>sửa được</em>: có <code>updated_at</code>, và luồng review cho phép giảng viên sửa câu hỏi sau khi đã publish. Đổi một câu MCQ 4 phương án thành True/False là <em>guess</em> nhảy từ 0.25 lên 0.50, phát lại ra số khác. Đổi <code>lo_id</code> thì cả lượt làm bài chuyển sang LO khác.</td>
+            <td>Chụp lại vào chính dòng attempt: <code>lo_id</code>, <code>bloom_level</code>, <code>item_type</code>, <code>guess_param</code>, <code>item_version</code>. BKT đọc ảnh chụp, không join sang <code>quiz_items</code>.</td>
+          </tr>
+          <tr>
+            <td class="nm">Thứ tự chưa xác định</td>
+            <td><code>attempted_at</code> một mình không đủ: cả lượt nộp ghi bằng <code>createMany</code> nên nhiều dòng trùng dấu thời gian tới mili giây, và thứ tự trả về của Postgres không có bảo đảm nào.</td>
+            <td>Sắp xếp theo <code>(attempted_at, attempt_id)</code>. Khoá <code>uuidv7()</code> đơn điệu theo thời gian nên phá hoà một cách xác định — nhưng phải <em>viết ra</em> trong <code>ORDER BY</code>, không mặc nhiên là có.</td>
+          </tr>
+          <tr>
+            <td class="nm">Ghi đè khi chạy song song</td>
+            <td>Hai request cùng lúc của một học viên — bấm nộp hai lần, hoặc quiz mở ở hai tab. Bọc transaction rồi <code>upsert</code> <em>không</em> ngăn được: cả hai đọc <code>p_known</code> cũ, cả hai ghi, lần ghi sau nuốt lần trước. Transaction chỉ bảo đảm trọn gói, không bảo đảm tuần tự.</td>
+            <td>Khoá hàng <code>lo_mastery</code> bằng <code>SELECT … FOR UPDATE</code> trước khi tính, cộng cột <code>version</code> tăng mỗi lần ghi để bắt xung đột còn sót. Và <code>submission_id</code> duy nhất do client sinh, <code>UNIQUE</code> trên <code>quiz_attempts</code> — nộp trùng bị chặn ở tầng dữ liệu chứ không dựa vào giao diện khoá nút.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="sec-note" style="margin-top:18px">Có đủ ba thứ đó rồi thì những lợi ích của hình chiếu mới đứng được:</p>
+    <ul class="tight">
+      <li><strong>Đổi tham số không cần migration dữ liệu.</strong> Tăng <code>algo_version</code> rồi chạy lại <code>POST /api/mastery/recompute</code>.</li>
+      <li><strong>Bản ghi hỏng thì xoá được.</strong> Xoá mềm một <code>quiz_attempt</code> rồi phát lại là xong, không cần bù trừ.</li>
+      <li><strong>Chương 6 so được hai mô hình trên cùng dữ liệu</strong> — phát lại với <code>bkt-v1</code> và <code>ewma-v1</code>, chấm trên cùng tập lượt làm bài.</li>
+    </ul>
+    <div class="callout">
+      <strong>Liên đới:</strong> <code>item_version</code> đòi <code>quiz_items</code> phải có số phiên bản — đúng mục <strong>FR-AI-07 versioning và rollback nội dung</strong> đang nằm trong sổ khoảng trống. Hai việc này đi chung: làm mastery mà bỏ versioning thì replay chỉ đúng chừng nào chưa ai sửa câu hỏi nào.
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ============ 2 · SRS ============ -->
+  <section id="srs">
+    <div class="sec-head"><span class="sec-no">§2</span><h2>Lịch ôn — SM-2</h2></div>
+    <p class="sec-note">Bảng <code>flashcard_reviews</code> đã có <code>state</code>, <code>next_due_at</code>, <code>review_count</code> — đủ khung, thiếu đúng phần tính toán. Thêm 5 cột là chạy được.</p>
+
+    <div class="formula">
+      <span class="cap">Sau mỗi lần ôn, với chất lượng q ∈ [0..5]</span>
+      <div class="fl"><span class="cm">1. giãn cách — chỉ nhánh này rẽ theo q</span>
+q ≥ 3   interval = 1 nếu reps = 0 · 6 nếu reps = 1 · round(interval · <i>EF</i>′) nếu ngược lại
+        reps ← reps + 1
+q &lt; 3   interval ← 1 · reps ← 0 · lapses ← lapses + 1 · state ← RELEARNING
+
+<span class="cm">2. độ dễ — chạy ở MỌI lần ôn, kể cả q &lt; 3</span>
+<i>EF</i>′ = max( 1.3 , <i>EF</i> + 0.1 − (5−q)·(0.08 + (5−q)·0.02) )
+
+<span class="cm">3. lịch</span>
+next_due_at = ngày hôm nay + interval ngày ± jitter 10%</div>
+    </div>
+
+    <div class="callout warn">
+      <strong>Bản 1 viết sai chỗ này.</strong> Nó khẳng định <em>EF</em> không bị hạ khi quên. Bản gốc SuperMemo 2 có hai bước đọc ngược nhau — bước 5 nói khi q &lt; 3 thì lặp lại từ đầu <em>“without changing the E-Factor”</em>, bước 6 nói cập nhật <em>EF</em> <em>“after each repetition”</em>. Mọi bản hiện thực phổ biến đọc theo bước 6: bước 5 chỉ nói về <strong>chuỗi giãn cách</strong> bị reset, không nói về <em>EF</em>. Mình theo cách đọc đó, và <strong>ghi rõ trong report là đã chọn cách đọc nào</strong> — chỗ mơ hồ có sẵn trong tài liệu gốc thì nêu ra còn mạnh hơn lờ đi.
+    </div>
+
+    <h3>Học viên chỉ thấy bốn nút</h3>
+    <p class="sec-note">Thang 0–5 của SM-2 không đưa thẳng ra giao diện. Bốn nút, ánh xạ cố định — và <strong>ánh xạ này là thật</strong>: bảng chạy thử bên dưới dùng đúng những con số q ở đây, bản 1 ghi nút “Chưa nhớ” là q = 0 rồi lại chạy ví dụ bằng q = 2.</p>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th style="width:16%">Nút</th><th style="width:8%">q</th><th style="width:20%">Ảnh hưởng EF</th><th>Gặp lại khi nào</th></tr></thead>
+        <tbody>
+          <tr><td class="nm">Chưa nhớ</td><td class="num">0</td><td class="num">−0.80</td><td>Cuối hàng đợi <em>trong phiên</em>, không đặt lịch ngày. <code>lapses++</code> — chỉ số này đi thẳng vào gợi ý <code>REVIEW_CARD</code>.</td></tr>
+          <tr><td class="nm">Khó</td><td class="num">3</td><td class="num">−0.14</td><td>Giữ chuỗi, giãn cách ngắn lại dần.</td></tr>
+          <tr><td class="nm">Được</td><td class="num">4</td><td class="num">0.00</td><td>Đường đi bình thường.</td></tr>
+          <tr><td class="nm">Dễ</td><td class="num">5</td><td class="num">+0.10</td><td>Thẻ giãn ra nhanh.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Hai cái lịch, đừng trộn vào nhau</h3>
+    <p class="sec-note">Bản 1 hứa ở giao diện là “gặp lại trong phiên hôm nay” nhưng công thức lại đặt <code>next_due_at</code> = ngày mai. Hai thứ khác nhau, phải tách:</p>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th style="width:24%">Lịch</th><th style="width:26%">Sống ở đâu</th><th>Luật</th></tr></thead>
+        <tbody>
+          <tr><td class="nm">Trong phiên</td><td>Hàng đợi trong bộ nhớ của client, không ghi DB</td><td>Bấm <em>Chưa nhớ</em> → thẻ về cuối hàng đợi, gặp lại sau ít nhất 3 thẻ khác hoặc 10 phút. Lặp cho tới khi bấm được <em>Được</em>, tối đa 3 vòng một phiên rồi thôi — tránh vòng lặp vô tận.</td></tr>
+          <tr><td class="nm">Theo ngày</td><td><code>next_due_at</code> trong DB</td><td>Chỉ ghi khi thẻ <em>rời</em> phiên: đạt q ≥ 3, hoặc hết 3 vòng. Thẻ chưa qua thì <code>next_due_at</code> giữ nguyên giá trị cũ, không đặt lại mỗi lần bấm.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sec-note" style="margin-top:14px">Hệ quả cần nhớ khi code: một thẻ có thể sinh <strong>nhiều dòng log</strong> trong một phiên nhưng chỉ cập nhật <code>next_due_at</code> <strong>một lần</strong>. Đây chính là lý do bảng log ở dưới không thể thiếu.</p>
+
+    <h3>Chạy thử một thẻ qua năm lần ôn</h3>
+    <p class="sec-note">Cùng kịch bản của bản 1, tính lại bằng công thức đã sửa — <em>EF</em> cập nhật mọi lần, và lần thứ ba dùng đúng q = 0 của nút “Chưa nhớ”.</p>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>Lần</th><th>Nút</th><th>q</th><th>EF bản 1</th><th>EF đúng</th><th>reps</th><th>Giãn cách</th><th>Trạng thái</th></tr></thead>
+        <tbody>
+          <tr><td class="nm">1</td><td>Được</td><td class="num">4</td><td class="num">2.50</td><td class="num">2.50</td><td class="num">1</td><td class="num">1 ngày</td><td><span class="chip b3">learning</span></td></tr>
+          <tr><td class="nm">2</td><td>Dễ</td><td class="num">5</td><td class="num">2.60</td><td class="num">2.60</td><td class="num">2</td><td class="num">6 ngày</td><td><span class="chip b3">review</span></td></tr>
+          <tr class="hl"><td class="nm">3</td><td>Chưa nhớ</td><td class="num">0</td><td class="num">2.60</td><td class="num">1.80</td><td class="num">0</td><td class="num">1 ngày</td><td><span class="chip b1">relearning</span></td></tr>
+          <tr><td class="nm">4</td><td>Được</td><td class="num">4</td><td class="num">2.60</td><td class="num">1.80</td><td class="num">1</td><td class="num">1 ngày</td><td><span class="chip b3">learning</span></td></tr>
+          <tr><td class="nm">5</td><td>Được</td><td class="num">4</td><td class="num">2.60</td><td class="num">1.80</td><td class="num">2</td><td class="num">6 ngày</td><td><span class="chip b3">review</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sec-note" style="margin-top:14px">Khác biệt không nằm ở cột giãn cách của năm lần này — nó nằm ở lần thứ sáu trở đi, khi giãn cách bắt đầu nhân với <em>EF</em>: <span class="num">6 × 2.60 = 16</span> ngày so với <span class="num">6 × 1.80 = 11</span> ngày, và khoảng cách đó nhân lên theo cấp số nhân. Thẻ từng bị quên phải quay lại dày hơn — đó đúng là điều SM-2 muốn, và là điều bản 1 đã bỏ mất.</p>
+
+    <h3>Bảng trạng thái không đo được gì — cần log</h3>
+    <p class="sec-note"><code>flashcard_reviews</code> có <code>@@unique([user_id, card_id])</code>: một dòng cho mỗi cặp, ghi đè mỗi lần ôn. Thêm bao nhiêu cột cũng không lấy lại được quá khứ. Mà §7 lại hứa đo <em>tỉ lệ nhớ ở lần ôn thứ hai</em>, <em>tuân thủ hạn</em> và <em>chuỗi ngày học</em> — cả ba đều cần lịch sử.</p>
+    <p class="sec-note">Chốt theo đúng nguyên tắc đã dùng cho mastery ở §1: <strong>log là sự thật gốc, bảng trạng thái là hình chiếu.</strong> Không dùng <code>learning_events</code> cho việc này — bảng đó <code>metadata</code> tự do, không có ràng buộc kiểu, nên sáu tháng sau không ai dám tin cột nào có mặt. Sự kiện phân tích thì vào <code>learning_events</code>, còn đầu vào để dựng lại lịch thì cần bảng riêng có kiểu chặt.</p>
+    <pre>model flashcard_review_logs {
+  log_id        String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  user_id       String   @db.Uuid
+  card_id       String   @db.Uuid
+  reviewed_at   DateTime @default(now()) @db.Timestamptz(6)
+  grade         Int      @db.SmallInt          <span class="cm">// 0 | 3 | 4 | 5</span>
+  <b>scheduled_for</b> DateTime? @db.Timestamptz(6)  <span class="cm">// hạn TRƯỚC lần ôn này → tính độ trễ, tức tuân thủ hạn</span>
+  <b>state_before</b>  String   @db.VarChar(20)
+  <b>state_after</b>   String   @db.VarChar(20)
+  ef_before     Decimal  @db.Decimal(3, 2)
+  ef_after      Decimal  @db.Decimal(3, 2)
+  interval_after Int
+  <b>in_session</b>    Boolean  @default(false)       <span class="cm">// vòng lặp trong phiên, không đổi lịch ngày</span>
+  algo_version  String   @default("sm2-v1") @db.VarChar(20)
+  elapsed_ms    Int?                                <span class="cm">// thời gian nghĩ, cho phần phân tích</span>
+
+  @@index([user_id, card_id, reviewed_at], map: "idx_srs_log_card")
+  @@index([user_id, reviewed_at],          map: "idx_srs_log_streak")   <span class="cm">// chuỗi ngày học</span>
+}</pre>
+    <p class="sec-note"><code>scheduled_for</code> là cột làm nên cả §7: không có nó thì “ôn trong ±1 ngày quanh hạn” không tính được, vì hạn cũ đã bị chính lần ôn này ghi đè mất.</p>
+
+    <div class="callout warn">
+      <strong>Cái bẫy vận hành:</strong> lớp 40 người cùng học một bài trong cùng một buổi sẽ có toàn bộ thẻ đáo hạn đúng cùng một ngày, lặp lại mãi. Jitter ±10% ở bước 3 là để phá chu kỳ đó — rẻ, và nếu thiếu thì tới tuần thứ ba của pilot mới phát hiện, lúc đó không kịp sửa.
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ============ 3 · RECOMMENDATION ============ -->
+  <section id="rec">
+    <div class="sec-head"><span class="sec-no">§3</span><h2>Gợi ý hành động kế tiếp</h2></div>
+    <p class="sec-note">c2 §b tả kịch bản rất cụ thể: <em>“học viên hay sai câu application thì hệ thống gợi ý xem lại card, luyện flashcard, làm bộ dễ hơn rồi mới quay lại quiz chính”</em>. Ba mệnh đề trong câu đó được hiện thực thành ba thứ khác nhau — một hàm chấm điểm, một luật chặn, và một hằng số bậc Bloom.</p>
+
+    <h3>Sinh ứng viên — năm loại, tất cả từ dữ liệu đã có</h3>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th style="width:23%">Loại hành động</th><th style="width:30%">Lấy từ đâu</th><th>Ghi chú</th></tr></thead>
+        <tbody>
+          <tr><td class="nm">REVIEW_CARD</td><td><code>lesson_cards</code> theo <code>lo_id</code>, status <code>PUBLISHED</code></td><td>Ưu tiên card chưa từng mở, dò qua <code>learning_events</code>.</td></tr>
+          <tr><td class="nm">PRACTICE_FLASHCARD</td><td><code>flashcard_reviews</code> có <code>next_due_at ≤ now</code></td><td>Gom theo LO, một gợi ý cho cả cụm thẻ chứ không phải mỗi thẻ một gợi ý.</td></tr>
+          <tr><td class="nm">RETRY_QUIZ</td><td><code>quiz_items</code> cùng LO, lọc theo <code>bloom_level</code></td><td>Chịu luật chặn ở dưới.</td></tr>
+          <tr><td class="nm">WATCH_VIDEO</td><td><code>card_video_attachments</code> → <code>video_segments</code></td><td>Hồi sinh 3 bảng video đang chết. Gợi ý trỏ thẳng tới mốc thời gian của segment.</td></tr>
+          <tr><td class="nm">ASK_TUTOR</td><td>mở tutor kèm ngữ cảnh LO + chunk nguồn</td><td>Sinh <code>chat_messages</code> — vừa là chức năng, vừa là cách đạt chỉ tiêu ≥50 phiên chat của pilot.</td></tr>
+          <tr class="off"><td class="nm">DIAGNOSE</td><td>bộ 3–5 câu trải đều Bloom của LO</td><td>Chỉ sinh khi <code>n &lt; 3</code>. Không đoán mò khi chưa có bằng chứng — hệ thống đi đo trước.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Chấm điểm</h3>
+    <div class="formula">
+      <span class="cap">score(a) cho ứng viên a nhắm tới LO ℓ</span>
+      <div class="fl"><i>score</i> = <i>fresh</i> × ( 0.40·<i>gap</i> + 0.20·<i>w</i> + 0.25·<i>due</i> + 0.15·<i>fit</i> )
+
+<i>gap</i>    = 1 − p_known(ℓ)                       <span class="cm">thiếu hụt</span>
+<i>w</i>      = trọng số LO trong lo_assessments, chuẩn hoá về [0,1]   <span class="cm">LO nặng điểm đi trước</span>
+<i>due</i>    = min(1, số ngày quá hạn / 7)           <span class="cm">0 với hành động không phải flashcard</span>
+<i>fit</i>    = max(0, 1 − |bloom(a) − bloom_đích| / 3)
+<i>fresh</i>  = 1.00 chưa chạm · 0.35 đã hiện trong 24h chưa bấm · 0 đã hoàn thành trong 7 ngày
+                                                    <span class="cm">↑ trừ thẻ tới hạn, xem bảng biên</span>
+
+bloom_đích = max( 1 , (bậc Bloom thấp nhất đang sai) − 1 )   <span class="cm">← bắc thang xuống, có sàn</span></div>
+    </div>
+    <p class="sec-note">Dòng cuối là chỗ chứa toàn bộ phần “sư phạm” của công thức. Học viên hỏng ở Apply (bậc 3) thì nội dung bậc 2 được <em>fit</em> = 1.0, còn chính bộ quiz Apply chỉ được 0.67. Nếu để <code>bloom_đích</code> = bậc đang sai thì hệ thống sẽ ném học viên trở lại đúng bài vừa trượt — đúng cái mà c2 §b bảo đừng làm.</p>
+
+    <div class="callout">
+      <strong>Luật chặn, tách riêng khỏi trọng số:</strong> <code>RETRY_QUIZ</code> ở đúng bậc Bloom đang sai bị ép <em>fresh</em> = 0 cho tới khi học viên hoàn thành ít nhất một hành động bắc thang của LO đó. Đây là ràng buộc cứng chứ không phải điểm trừ — vì “rồi mới quay lại quiz chính” trong report là một thứ tự, và thứ tự thì không nên phụ thuộc vào việc chỉnh trọng số.
+    </div>
+
+    <h3>Chạy thử: một học viên, sau chuỗi Q1–Q4 ở §1</h3>
+    <p class="sec-note">LO2.3 <span class="chip b1">novice</span> <span class="num">p = 0.335</span>, chiếm trọng số cao nhất trong <code>lo_assessments</code> của chương. LO1.2 <span class="chip b3">proficient</span> <span class="num">p = 0.72</span> nhưng có 4 thẻ quá hạn 5 ngày. Bloom đang sai = 3 → bloom_đích = 2.</p>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th style="width:30%">Ứng viên</th><th>gap</th><th>w</th><th>due</th><th>fit</th><th>fresh</th><th>score</th><th>Kết quả</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td class="nm">REVIEW_CARD · LO2.3 · Bloom 2</td><td class="num">0.665</td><td class="num">1.00</td><td class="num">0</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">0.616</td><td>hiện #1</td></tr>
+          <tr class="hl"><td class="nm">RETRY_QUIZ · LO2.3 · bộ Bloom 2</td><td class="num">0.665</td><td class="num">1.00</td><td class="num">0</td><td class="num">1.00</td><td class="num">1.00</td><td class="num">0.616</td><td>hiện #2</td></tr>
+          <tr class="hl"><td class="nm">WATCH_VIDEO · LO2.3 · 4:12–7:48</td><td class="num">0.665</td><td class="num">1.00</td><td class="num">0</td><td class="num">1.00</td><td class="num">0.90</td><td class="num">0.554</td><td>hiện #3</td></tr>
+          <tr class="off"><td class="nm">PRACTICE_FLASHCARD · LO2.3</td><td class="num">0.665</td><td class="num">1.00</td><td class="num">0</td><td class="num">0.50</td><td class="num">1.00</td><td class="num">0.541</td><td>rơi — chạm trần 3/LO</td></tr>
+          <tr class="off"><td class="nm">ASK_TUTOR · LO2.3</td><td class="num">0.665</td><td class="num">1.00</td><td class="num">0</td><td class="num">0.50</td><td class="num">1.00</td><td class="num">0.541</td><td>rơi — chạm trần 3/LO</td></tr>
+          <tr class="hl"><td class="nm">PRACTICE_FLASHCARD · LO1.2</td><td class="num">0.280</td><td class="num">0.50</td><td class="num">0.714</td><td class="num">0.50</td><td class="num">1.00</td><td class="num">0.466</td><td>hiện #4</td></tr>
+          <tr class="off"><td class="nm">RETRY_QUIZ · LO2.3 · bộ Bloom 3</td><td class="num">0.665</td><td class="num">1.00</td><td class="num">0</td><td class="num">0.67</td><td class="num">0</td><td class="num">0.000</td><td><span class="chip stop">bị chặn</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sec-note" style="margin-top:14px">Hai luật lọc sau khi xếp hạng: <strong>tối đa 3 gợi ý mỗi LO</strong> (để một LO yếu không nuốt trọn màn hình) và <strong>bằng điểm thì ưu tiên theo loại</strong> — <code>REVIEW_CARD</code> › <code>RETRY_QUIZ</code> › <code>WATCH_VIDEO</code> › <code>PRACTICE_FLASHCARD</code> › <code>ASK_TUTOR</code>, sau đó tới <code>uuidv7</code>. Cần một quy tắc phá hoà xác định, nếu không cùng một học viên mở hai lần sẽ thấy hai thứ tự khác nhau và không ai tin nữa.</p>
+
+    <h3>Năm trường hợp biên — chốt trước khi code, không chốt lúc debug</h3>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th style="width:26%">Tình huống</th><th style="width:30%">Chuyện gì xảy ra nếu để nguyên bản 1</th><th>Chốt</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="nm">Thẻ tới hạn ngay sau khi vừa ôn xong</td>
+            <td>Luật <em>fresh</em> = 0 trong 7 ngày sau khi hoàn thành sẽ nuốt mất gợi ý ôn thẻ dù hôm sau thẻ đã tới hạn. Cooldown chống lặp vô tình chống luôn chính cái lịch mà §2 dựng ra.</td>
+            <td>Cooldown <strong>không áp</strong> cho <code>PRACTICE_FLASHCARD</code>. Với loại này, <code>next_due_at</code> đã là cơ chế chống lặp rồi: thẻ chưa tới hạn thì không thành ứng viên, tới hạn thì phải được hiện. Cooldown 7 ngày chỉ dành cho <code>REVIEW_CARD</code>, <code>WATCH_VIDEO</code>, <code>RETRY_QUIZ</code>.</td>
+          </tr>
+          <tr>
+            <td class="nm">Hỏng ngay ở Bloom 1</td>
+            <td><code>bloom_đích</code> = 0, không nội dung nào khớp, <em>fit</em> của mọi ứng viên tụt đều — LO yếu nhất lại bị xếp sau LO khác.</td>
+            <td>Sàn <code>max(1, …)</code> ở công thức. Bloom 1 là Remember, dưới nó không còn gì để bắc thang.</td>
+          </tr>
+          <tr>
+            <td class="nm">Không có nội dung ở bậc đích</td>
+            <td>Chuyện thường: một LO chỉ có quiz Apply, không có card Understand. Bản 1 không nói gì, tức sẽ im lặng trả về danh sách rỗng.</td>
+            <td>Nới ba nấc, dừng ở nấc đầu tiên có hàng: bậc đích → đích ± 1 → bất kỳ bậc nào của LO đó. Vẫn rỗng thì rơi xuống <code>ASK_TUTOR</code>, vì tutor không cần nội dung soạn sẵn. Ghi <code>reason.fallback</code> để §7 đếm được LO nào thiếu nội dung — bản thân con số đó là đầu vào cho giảng viên.</td>
+          </tr>
+          <tr>
+            <td class="nm">Điểm cao nhưng mới 3–4 lượt</td>
+            <td>Rơi vào khoảng trống của bảng mức ở §1, không loại nào nhận, ranker không biết xếp vào đâu.</td>
+            <td>Đã vá ở §1: ở lại <span class="chip b3">proficient</span>. Ranker đối xử như proficient — chỉ nhận gợi ý duy trì.</td>
+          </tr>
+          <tr>
+            <td class="nm">Ý nghĩa của luật chặn</td>
+            <td>Bản 1 viết “bị chặn” mà không nói chặn tới đâu. Đọc kiểu nào cũng được, và hai người trong nhóm sẽ code ra hai thứ khác nhau.</td>
+            <td><strong>Chỉ chặn trong danh sách gợi ý, không khoá quyền làm bài.</strong> Học viên tự vào làm quiz Apply lúc nào cũng được — khoá lại là biến hệ thống gợi ý thành hệ thống quản chế, và <code>quiz.submit</code> cũng sẽ phải biết tới luật của ranker, tức buộc hai module vào nhau mà không được gì. Khối <code>blocked</code> trong payload ở §5 hiện mờ kèm điều kiện mở, không phải cấm.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Lý do hiện ra màn hình</h3>
+    <p class="sec-note">Mỗi bản ghi lưu <code>reason</code> dạng cấu trúc, giao diện diễn đạt lại bằng tiếng Việt. Không lưu câu chữ — lưu số, để chương 6 còn kiểm được.</p>
+    <pre>{
+  "kind": "WEAK_LO",
+  "lo_code": "LO2.3",
+  "p_known": 0.335,
+  "band": "NOVICE",
+  "bloom_weak": 3,
+  "bloom_target": 2,
+  "evidence": { "attempts": 4, "correct": 2, "wrong_at_bloom_3": 2 },
+  "terms": { "gap": 0.665, "w": 1.0, "due": 0.0, "fit": 1.0, "fresh": 1.0 }
+}
+
+<span class="cm">→ giao diện: "Bạn sai 2/2 câu mức Apply của LO2.3. Xem lại card này trước khi làm lại bộ quiz."</span></pre>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ============ 4 · SCHEMA ============ -->
+  <section id="schema">
+    <div class="sec-head"><span class="sec-no">§4</span><h2>Schema — 3 bảng mới, 2 bảng mở rộng</h2></div>
+    <p class="sec-note">Repo mới có đúng một migration <code>0_init</code>. Phần dưới đi vào migration thứ hai, không sửa <code>0_init</code>.</p>
+
+    <h3>Mới · <code>lo_mastery</code></h3>
+    <pre>model lo_mastery {
+  user_id         String    @db.Uuid
+  lo_id           String    @db.Uuid
+  course_id       String    @db.Uuid
+  p_known         Decimal   @default(0.250000) @db.Decimal(7, 6)  <span class="cm">// (4,3) làm kẹt ở 1.000 — xem §1</span>
+  ewma_accuracy   Decimal   @default(0.500000) @db.Decimal(7, 6)  <span class="cm">// mốc so sánh cho c6</span>
+  <b>version</b>         Int       @default(0)      <span class="cm">// tăng mỗi lần ghi, bắt ghi đè song song</span>
+  attempts_count  Int       @default(0)
+  correct_count   Int       @default(0)
+  bloom_stats     Json      @default("{}")   <span class="cm">// {"2":{"n":2,"c":2},"3":{"n":2,"c":0}} → FR-AD-06</span>
+  band            String    @default("<b>UNKNOWN</b>") @db.VarChar(20)  <span class="cm">// UNKNOWN|NOVICE|DEVELOPING|PROFICIENT|MASTERED</span>
+  algo_version    String    @default("bkt-v1") @db.VarChar(20)
+  last_attempt_at DateTime? @db.Timestamptz(6)
+  updated_at      DateTime? @default(now()) @db.Timestamptz(6)
+
+  lms_user_mappings lms_user_mappings @relation(fields: [user_id], references: [internal_user_id], onDelete: Restrict, onUpdate: NoAction)
+  learning_outcomes learning_outcomes @relation(fields: [lo_id],   references: [lo_id],            onDelete: Restrict, onUpdate: NoAction)
+  courses           courses           @relation(fields: [course_id], references: [course_id],      onDelete: Restrict, onUpdate: NoAction)
+
+  @@id([user_id, lo_id])
+  @@index([course_id, band],            map: "idx_mastery_course_band")   <span class="cm">// dashboard giảng viên</span>
+  @@index([user_id, course_id, p_known], map: "idx_mastery_user_weak")    <span class="cm">// sinh ứng viên gợi ý</span>
+}</pre>
+    <p class="sec-note"><code>band</code> mặc định <code>UNKNOWN</code> chứ không phải <code>NOVICE</code>: mặc định phải là “chưa biết”, nếu không mọi học viên vừa được tạo dòng đã bị đếm vào thống kê LO yếu của giảng viên trước khi làm câu nào.</p>
+
+    <h3>Mở rộng · <code>quiz_attempts</code> — để replay có nghĩa</h3>
+    <pre><span class="cm">-- ảnh chụp đầu vào BKT tại thời điểm làm bài; sau này sửa câu hỏi cũng không đổi</span>
+ALTER TABLE quiz_attempts
+  ADD COLUMN <b>lo_id</b>         UUID REFERENCES learning_outcomes(lo_id),
+  ADD COLUMN <b>bloom_level</b>   SMALLINT,
+  ADD COLUMN <b>item_type</b>     VARCHAR(30),
+  ADD COLUMN <b>guess_param</b>   NUMERIC(4,3),   <span class="cm">-- suy từ type + len(options) LÚC ĐÓ</span>
+  ADD COLUMN <b>item_version</b>  INTEGER,        <span class="cm">-- đi cùng FR-AI-07</span>
+  ADD COLUMN <b>submission_id</b> UUID;           <span class="cm">-- client sinh, một lượt nộp một giá trị</span>
+
+<span class="cm">-- nộp trùng bị chặn ở tầng dữ liệu, không dựa vào việc giao diện có khoá nút hay không</span>
+CREATE UNIQUE INDEX <b>uq_attempt_submission</b>
+  ON quiz_attempts (submission_id, quiz_id) WHERE submission_id IS NOT NULL;
+
+<span class="cm">-- thứ tự phát lại: ORDER BY (attempted_at, attempt_id), phải có index đúng chiều</span>
+CREATE INDEX <b>idx_attempts_replay</b>
+  ON quiz_attempts (user_id, lo_id, attempted_at, attempt_id);</pre>
+    <p class="sec-note">Dữ liệu cũ sẽ để <code>NULL</code> ở các cột này. Chấp nhận được vì bảng hiện chưa có dữ liệu thật — nhưng hàm recompute phải xử lý <code>NULL</code> rõ ràng (bỏ qua và ghi log, không im lặng suy ngược từ <code>quiz_items</code>), nếu không cái lỗi mà cột này sinh ra để chống sẽ quay lại qua đường cửa sau.</p>
+
+    <p class="sec-note"><code>bloom_stats</code> để JSON chứ không tách bảng: số bậc Bloom cố định ở 6, không ai join vào nó, và tách ra thì mỗi lần cập nhật mastery phải đụng thêm một bảng trong cùng transaction. Nếu sau này FR-AD-06 cần truy vấn chéo lớp theo Bloom thì dựng materialized view, đừng đổi bảng này.</p>
+
+    <h3>Mở rộng · <code>flashcard_reviews</code> — nay là hình chiếu của <code>flashcard_review_logs</code></h3>
+    <p class="sec-note">Bảng này giữ trạng thái hiện tại để truy vấn “thẻ nào tới hạn” cho nhanh. Sự thật gốc nằm ở bảng log dựng ở §2; mọi thứ dưới đây dựng lại được từ đó.</p>
+    <pre><span class="cm">-- 5 cột thêm vào bảng đã có; không đụng khoá, không đụng dữ liệu cũ</span>
+ALTER TABLE flashcard_reviews
+  ADD COLUMN <b>ease_factor</b>   NUMERIC(3,2) NOT NULL DEFAULT 2.50,
+  ADD COLUMN <b>interval_days</b> INTEGER      NOT NULL DEFAULT 0,
+  ADD COLUMN <b>repetitions</b>   INTEGER      NOT NULL DEFAULT 0,
+  ADD COLUMN <b>lapses</b>        INTEGER      NOT NULL DEFAULT 0,
+  ADD COLUMN <b>last_grade</b>    SMALLINT;
+
+<span class="cm">-- state hiện là VARCHAR tự do; ràng buộc lại cho khớp máy trạng thái SM-2</span>
+ALTER TABLE flashcard_reviews
+  ADD CONSTRAINT ck_srs_state CHECK (state IN ('NEW','LEARNING','REVIEW','RELEARNING')),
+  ADD CONSTRAINT ck_srs_grade CHECK (last_grade IS NULL OR last_grade BETWEEN 0 AND 5);
+
+<span class="cm">-- truy vấn nóng nhất của cả hệ: "thẻ nào tới hạn của người này"</span>
+CREATE INDEX <b>idx_srs_due</b> ON flashcard_reviews (user_id, next_due_at)
+  WHERE next_due_at IS NOT NULL;</pre>
+
+    <h3>Mới · <code>recommendations</code></h3>
+    <pre>model recommendations {
+  rec_id             String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  user_id            String    @db.Uuid
+  course_id          String    @db.Uuid
+  lo_id              String?   @db.Uuid
+  batch_id           String    @db.Uuid          <span class="cm">// một lần sinh = một batch, để tính CTR theo lượt hiển thị</span>
+  action_type        String    @db.VarChar(30)   <span class="cm">// REVIEW_CARD | PRACTICE_FLASHCARD | RETRY_QUIZ | WATCH_VIDEO | ASK_TUTOR | DIAGNOSE</span>
+  target_entity_type String    @db.VarChar(30)   <span class="cm">// lesson_card | quiz_item | video_segment | lo</span>
+  target_entity_id   String    @db.Uuid
+  rank               Int
+  score              Decimal   @db.Decimal(4, 3)
+  reason             Json                        <span class="cm">// cấu trúc ở §3</span>
+  policy_version     String    @default("rank-v1") @db.VarChar(20)
+  served_at          DateTime? @default(now()) @db.Timestamptz(6)
+  expires_at         DateTime  @db.Timestamptz(6)
+  clicked_at         DateTime? @db.Timestamptz(6)
+  dismissed_at       DateTime? @db.Timestamptz(6)
+  completed_at       DateTime? @db.Timestamptz(6)
+
+  @@index([user_id, course_id, served_at], map: "idx_rec_user_feed")
+  @@index([batch_id],                      map: "idx_rec_batch")
+  @@unique([batch_id, target_entity_type, target_entity_id], map: "uq_rec_batch_target")
+}</pre>
+    <div class="callout">
+      <strong>Vì sao phải lưu gợi ý thay vì tính rồi vứt:</strong> bốn cột dấu thời gian ở cuối chính là toàn bộ dữ liệu đánh giá của chương 6 — tỉ lệ bấm vào, tỉ lệ làm xong, và chênh lệch mastery trước/sau khi làm theo gợi ý. Tính xong rồi vứt thì tới lúc viết chương 6 không có gì để viết ngoài ảnh chụp màn hình.
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ============ 5 · ENDPOINTS ============ -->
+  <section id="api">
+    <div class="sec-head"><span class="sec-no">§5</span><h2>Endpoint</h2></div>
+    <p class="sec-note">Ba module NestJS mới, đi theo đúng khuôn đang có: <code>@Controller('api/…')</code> + <code>BffJwtGuard</code> + <code>AuthzService.assertCourseAccess</code> ở dòng đầu mỗi service, như <code>quiz.service.ts</code> và <code>lesson.service.ts</code>.</p>
+
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th style="width:7%"></th><th style="width:31%">Đường dẫn</th><th style="width:14%">Vai trò</th><th>Trả về</th></tr></thead>
+        <tbody>
+          <tr><td><span class="verb get">GET</span></td><td class="nm">/api/mastery/me?courseId</td><td>learner</td><td>Mastery mọi LO của môn: <code>p_known</code>, <code>band</code>, <code>bloom_stats</code>, số lượt. Nuôi dashboard cá nhân — FR-SL-05, FR-AD-02.</td></tr>
+          <tr><td><span class="verb get">GET</span></td><td class="nm">/api/mastery/course/:id</td><td>instructor · ta</td><td>Tổng hợp lớp: phân bố mức theo LO, top LO yếu, ma trận LO × Bloom — FR-AD-01, FR-AD-06.</td></tr>
+          <tr><td><span class="verb get">GET</span></td><td class="nm">/api/mastery/course/:id/learner/:uid</td><td>instructor · ta</td><td>Một học viên, để giảng viên xem trước khi nhắc.</td></tr>
+          <tr><td><span class="verb post">POST</span></td><td class="nm">/api/mastery/recompute</td><td>instructor · admin</td><td>Phát lại từ <code>quiz_attempts</code>. Body: <code>{ courseId, userId?, algoVersion? }</code>. Chạy nền, trả <code>jobId</code>.</td></tr>
+          <tr><td><span class="verb get">GET</span></td><td class="nm">/api/srs/due?courseId&amp;limit</td><td>learner</td><td>Thẻ tới hạn, kèm mặt trước/sau lấy từ <code>lesson_cards.content</code>.</td></tr>
+          <tr><td><span class="verb post">POST</span></td><td class="nm">/api/srs/review</td><td>learner</td><td><code>{ cardId, grade }</code> → <code>{ nextDueAt, intervalDays, easeFactor, state }</code>. Idempotent trong 5 giây để chặn double-tap.</td></tr>
+          <tr><td><span class="verb get">GET</span></td><td class="nm">/api/srs/stats?courseId</td><td>learner</td><td>Tới hạn hôm nay, tồn đọng, chuỗi ngày, dự báo 7 ngày tới.</td></tr>
+          <tr><td><span class="verb get">GET</span></td><td class="nm">/api/recommendations/next?courseId&amp;limit</td><td>learner</td><td>Danh sách đã xếp hạng kèm <code>reason</code>. Dùng lại batch còn hạn; sinh mới nếu đã hết hạn hoặc có lượt làm bài mới sau <code>served_at</code>.</td></tr>
+          <tr><td><span class="verb post">POST</span></td><td class="nm">/api/recommendations/:id/click</td><td>learner</td><td>Đóng dấu <code>clicked_at</code> + ghi <code>learning_events</code>. Trả về đường dẫn đích để điều hướng.</td></tr>
+          <tr><td><span class="verb post">POST</span></td><td class="nm">/api/recommendations/:id/dismiss</td><td>learner</td><td><code>{ reason? }</code>. Bỏ qua thì hạ <em>fresh</em> của cả loại hành động đó trong 7 ngày.</td></tr>
+          <tr><td><span class="verb get">GET</span></td><td class="nm">/api/recommendations/effectiveness?courseId</td><td>instructor · admin</td><td>CTR theo loại hành động, tỉ lệ hoàn thành, chênh lệch mastery trước/sau. Đây là bảng số của chương 6.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <pre><span class="cm">GET /api/recommendations/next?courseId=…&amp;limit=5</span>
+{
+  "batchId": "0192f3…",
+  "generatedAt": "2026-09-21T14:02:11Z",
+  "expiresAt":   "2026-09-21T14:32:11Z",
+  "items": [
+    {
+      "recId": "0192f3…",
+      "rank": 1,
+      "actionType": "REVIEW_CARD",
+      "target": { "type": "lesson_card", "id": "0192a1…", "title": "Deadlock và điều kiện Coffman" },
+      "score": 0.616,
+      "reason": { "kind": "WEAK_LO", "loCode": "LO2.3", "pKnown": 0.335, "bloomWeak": 3, <span class="ad">"…"</span> },
+      "href": "/learn/lessons/0192b7…/cards/0192a1…"
+    }
+  ],
+  "blocked": [
+    { "actionType": "RETRY_QUIZ", "loCode": "LO2.3", "rule": "SCAFFOLD_FIRST" }   <span class="cm">// hiện mờ, kèm điều kiện mở khoá</span>
+  ]
+}</pre>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ============ 6 · CẮM VÀO ĐÂU ============ -->
+  <section id="wire">
+    <div class="sec-head"><span class="sec-no">§6</span><h2>Cắm vào code hiện có ở đâu</h2></div>
+    <p class="sec-note">Thứ tự dưới đây là thứ tự chạy thật của một lượt nộp bài — và cũng là thứ tự nên code, vì mỗi bước chỉ cần bước trước nó.</p>
+
+    <div class="stages">
+      <div class="stage">
+        <div class="n">BƯỚC 1</div>
+        <div>
+          <h4>Bọc <code>QuizService.submit</code> vào một transaction, kèm ảnh chụp</h4>
+          <p>Hiện <code>createMany</code> chạy trần, không transaction. Mastery phải cập nhật cùng lượt ghi attempt, nếu không sẽ có lúc điểm đã vào mà mastery chưa.</p>
+          <p>Cùng chỗ này, điền luôn sáu cột mới của §4: <code>lo_id</code>, <code>bloom_level</code>, <code>item_type</code>, <code>guess_param</code> đọc từ <code>quizById</code> đã nạp sẵn ở dòng 35, cộng <code>submission_id</code> lấy từ body. Đây là lần duy nhất những giá trị đó còn đúng — sau này câu hỏi sửa đi thì không dựng lại được nữa.</p>
+          <p class="where">core-api/src/quiz/quiz.service.ts · quanh dòng 84</p>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="n">BƯỚC 2</div>
+        <div>
+          <h4><code>MasteryService.applyAttempts(tx, userId, attempts)</code></h4>
+          <p>Gom các lượt theo <code>lo_id</code>, <strong>khoá hàng trước khi đọc</strong> — <code>SELECT … FOR UPDATE</code> trên <code>lo_mastery</code> của những LO liên quan, sắp xếp theo <code>lo_id</code> để mọi tiến trình khoá cùng một thứ tự và không ôm nhau chết. Rồi chạy BKT theo thứ tự <code>(attempted_at, attempt_id)</code>, ghi lại kèm <code>version + 1</code>.</p>
+          <p>Số dòng chạm vào bằng số LO riêng biệt trong lượt nộp — thường 1–3, nên khoá trong transaction không gây tắc nghẽn.</p>
+          <p class="where">core-api/src/mastery/mastery.service.ts · mới</p>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="n">BƯỚC 3</div>
+        <div>
+          <h4>Phát <code>MASTERY_UPDATED</code> qua outbox</h4>
+          <p>Cùng transaction, theo đúng khuôn <code>LESSON_PUBLISHED</code> đang có. Cần thêm schema JSON trong <code>contracts/integration-events/v1/</code> — schema thứ 18.</p>
+          <p class="where">core-api/src/lesson/lesson.service.ts · tham chiếu cách làm · dòng 118</p>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="n">BƯỚC 4</div>
+        <div>
+          <h4>Vô hiệu hoá batch gợi ý đang mở</h4>
+          <p>Đặt <code>expires_at = now()</code> cho batch chưa hết hạn của học viên đó. Lần mở dashboard kế tiếp sẽ sinh lại — không cần cron, không cần hàng đợi.</p>
+          <p class="where">core-api/src/recommendation/recommendation.service.ts · mới</p>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="n">BƯỚC 5</div>
+        <div>
+          <h4>Dashboard học viên gọi <code>/recommendations/next</code></h4>
+          <p>Trang <code>/learn/dashboard</code> hiện chưa có khối gợi ý. Ghi <code>learning_events</code> loại <code>RECOMMENDATION_SERVED</code> ngay tại đây — bảng đó cũng đang chết, và CTR cần cả tử số lẫn mẫu số.</p>
+          <p class="where">web/src/app/learn/dashboard/page.tsx</p>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="n">BƯỚC 6</div>
+        <div>
+          <h4>Nút ôn tập trên card</h4>
+          <p>Bốn nút chấm điểm gắn vào trang card của learner, gọi <code>POST /api/srs/review</code>. Đây là điểm vào duy nhất tạo ra dữ liệu SM-2 — không có nút thì cả §2 nằm chết y như bảng cũ.</p>
+          <p class="where">web/src/app/learn/lessons/[id]/page.tsx</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Đính chính bản 1.</strong> Bản trước cảnh báo endpoint learner sẽ 403 hàng loạt vì <code>course_memberships</code> chưa có dữ liệu. <strong>Sai.</strong> <code>lti.service.ts:97</code> đã <code>upsert</code> membership ngay trong transaction đồng bộ launch, và <code>mapRoles</code> ở <code>web/src/app/lti/launch/route.ts:74</code> đổ ra đúng bốn giá trị <code>instructor | ta | learner | observer</code> mà <code>assertCourseAccess</code> đang so. Luồng learner chạy được, không cần làm gì thêm.
+      <br><br>
+      Phần còn đúng, nhưng nhỏ hơn nhiều: membership chỉ xuất hiện <em>sau lần launch LTI đầu tiên</em>, nên ai mở thẳng URL <code>/learn/…</code> mà chưa từng vào qua Canvas sẽ bị chặn — và vai <code>observer</code> không nằm trong danh sách learner, tức dự giờ sẽ không thấy gợi ý. Cả hai đều là hành vi đúng, chỉ cần viết vào tài liệu để lúc pilot không ai tưởng là lỗi. NRPS ở FR-LTI-02 vẫn đáng làm, nhưng để đồng bộ <em>cả lớp</em> chứ không phải để cứu luồng này.
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ============ 7 · ĐO ĐẠC ============ -->
+  <section id="eval">
+    <div class="sec-head"><span class="sec-no">§7</span><h2>Đo gì cho chương 6</h2></div>
+    <p class="sec-note">Ba nhóm số, đều tính được từ dữ liệu pilot mà không cần thêm công cụ ngoài. Kèm theo là giới hạn của từng nhóm — viết sẵn vào chương 6 còn hơn để hội đồng chỉ ra.</p>
+
+    <div class="formula">
+      <span class="cap">Dự đoán một lượt làm bài — công thức phải dùng</span>
+      <div class="fl"><i>P</i>(đúng) = p_known·(1 − <i>s</i>) + (1 − p_known)·<i>g</i>     <span class="cm">s = slip, g = guess của chính câu đó</span></div>
+    </div>
+    <p class="sec-note">Bản 1 viết lấp lửng là “dự đoán bằng trạng thái trước lượt đó”, dễ dẫn tới lấy thẳng <code>p_known</code> làm xác suất trả lời đúng. Hai thứ khác nhau: <code>p_known</code> là xác suất <em>đã nắm kiến thức</em>, còn cái so với thực tế phải là xác suất <em>trả lời đúng</em> — có cả đường đoán mò. Lấy nhầm thì AUC của BKT bị dìm một cách giả tạo ở đúng những câu dễ đoán, và so sánh với EWMA mất hết ý nghĩa.</p>
+
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th style="width:21%">Chỉ số</th><th style="width:30%">Cách tính</th><th>Kết luận được phép rút ra</th></tr></thead>
+        <tbody>
+          <tr><td class="nm">BKT có hơn tỉ lệ đúng thô không</td><td>Với mỗi lượt, tính <em>P</em>(đúng) từ trạng thái <em>trước</em> lượt đó rồi so với kết quả thực tế; báo AUC, accuracy và <em>log loss</em>. Chạy hai lần: <code>bkt-v1</code> và <code>ewma-v1</code>, cùng tập lượt.</td><td>So sánh dự đoán trong mẫu này. <strong>Không</strong> kết luận “BKT tốt hơn” chung chung — cỡ mẫu này chỉ đủ để nói mô hình nào khớp dữ liệu pilot hơn, kèm khoảng tin cậy.</td></tr>
+          <tr><td class="nm">Tỉ lệ chấp nhận gợi ý</td><td><code>clicked / served</code> theo loại hành động. Tách theo <code>policy_version</code> nếu chỉnh trọng số giữa chừng.</td><td>Học viên có thấy gợi ý đáng bấm không. Đây là chỉ số sạch nhất trong cả bảng vì không suy diễn gì thêm.</td></tr>
+          <tr><td class="nm">Làm theo gợi ý có lên mastery không</td><td>So <code>p_known</code> của LO trước và sau, giữa nhóm làm theo và nhóm bỏ qua, trên cùng người.</td><td><strong>Chỉ là tương quan quan sát.</strong> Ai chịu bấm vào gợi ý vốn đã là người chăm hơn — tiến bộ có thể đến từ chính sự chăm đó. Không viết “gợi ý giúp cải thiện”; viết “nhóm làm theo có mức tăng cao hơn, chưa tách được yếu tố tự chọn”.</td></tr>
+          <tr><td class="nm">Hậu kiểm độc lập</td><td>Một bài kiểm tra ngắn cuối pilot, <strong>không</strong> nằm trong bộ câu đã dùng để nuôi mastery, phủ 4–5 LO trọng tâm. So điểm bài này với <code>p_known</code> cuối kỳ.</td><td>Đây mới là bằng chứng mastery <em>đo được cái gì đó thật</em>. Thiếu nó thì toàn bộ §1 chỉ tự chứng minh bằng chính dữ liệu đã sinh ra nó.</td></tr>
+          <tr><td class="nm">Lịch ôn có được tuân thủ không</td><td>Độ trễ = <code>reviewed_at − scheduled_for</code> từ bảng log; tỉ lệ nhớ ở lần ôn thứ hai; chuỗi ngày học.</td><td>Cần bảng <code>flashcard_review_logs</code> ở §2 — bảng trạng thái không tính được chỉ số nào trong ba chỉ số này.</td></tr>
+          <tr><td class="nm">Lý do có đúng không</td><td>Giảng viên chấm mù 30 gợi ý: lý do có khớp điểm yếu thật không. Thang 3 mức, hai người chấm, báo cả độ đồng thuận.</td><td>Chất lượng phần giải thích — thứ mà ranker luật có còn LLM thì không.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <strong>Gọi đúng tên loại nghiên cứu:</strong> 30 học viên, vài tuần, một lớp, không nhóm đối chứng — đây là <strong>đánh giá thăm dò</strong> (exploratory), không phải thực nghiệm có kiểm soát. Viết thẳng câu đó vào đầu chương 6 và nêu ba hạn chế: không ngẫu nhiên hoá, tự chọn nhóm, và hiệu ứng mới lạ của công cụ. Mất một đoạn văn, đổi lại hội đồng không còn chỗ để hỏi vặn về tính khái quát.
+    </div>
+
+    <div class="callout">
+      <strong>Bẫy cỡ mẫu:</strong> chỉ số thứ nhất cần đủ lượt làm bài <em>trên mỗi LO</em>, không phải tổng. Pilot trải 20 LO với 30 người sẽ cho ~12 lượt/LO — quá mỏng. Chọn trước <strong>4–5 LO trọng tâm</strong> và thiết kế cả bài pilot lẫn bài hậu kiểm xoay quanh chúng, quyết ngay từ đầu chứ đừng phát hiện lúc viết chương 6.
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ============ 8 · REPORT ============ -->
+  <section id="report">
+    <div class="sec-head"><span class="sec-no">§8</span><h2>Phải sửa gì trong report</h2></div>
+    <p class="sec-note">Thiết kế này đóng 3 trong 6 mục lệch ở mức 0 của sổ khoảng trống. Nhưng nó cũng buộc phải sửa spec — bảng FR hiện không có mã nào mô tả được những gì ở trên.</p>
+
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th style="width:16%">Chỗ</th><th style="width:26%">Sửa gì</th><th>Chi tiết</th></tr></thead>
+        <tbody>
+          <tr><td class="nm">c2 · bảng FR</td><td>Thêm <span class="chip keep">FR-SL-07</span> <span class="chip keep">FR-SL-08</span> <span class="chip keep">FR-SL-09</span> <span class="chip keep">FR-AD-06</span></td><td>29 → 33 mã. FR-SL-05 hiện viết <em>“tổng hợp điểm và trạng thái học theo LO để gợi ý nội dung ôn tập”</em> — gộp ba việc vào một mã. Tách ra: 05 giữ phần theo dõi, 07 mô hình mastery, 09 gợi ý.</td></tr>
+          <tr><td class="nm">c2 · FR-AD-01</td><td>Định nghĩa lại <em>“Learning Outcome yếu”</em></td><td>Hiện là chữ, không phải định nghĩa. Thay bằng: <code>band = NOVICE</code> theo ngưỡng ở §1. Đây là câu hội đồng chắc chắn hỏi.</td></tr>
+          <tr><td class="nm">c3 · use case</td><td>Thêm 3 luồng</td><td>Xem tiến độ theo LO · Ôn thẻ tới hạn · Làm theo gợi ý. Luồng thứ ba phải vẽ được cả nhánh <em>bỏ qua</em>, vì <code>dismissed_at</code> có ảnh hưởng tới lần sinh sau.</td></tr>
+          <tr><td class="nm">c4 · thiết kế</td><td>Thêm mục Adaptive vào kiến trúc</td><td>c4 dòng 133 đã xếp <em>mastery</em> vào nhóm dữ liệu <strong>Learning</strong>, và dòng 364 đã hứa <em>Mastery Level</em> gắn với từng LO — tức c4 đang mô tả một thứ chưa tồn tại. Bổ sung ERD 2 bảng mới + sơ đồ tuần tự của §6.</td></tr>
+          <tr><td class="nm">c6 · đánh giá</td><td>Thay mục recommendation bằng bảng số</td><td>Hiện c6 nhắc tới recommendation đúng một lần và không có số nào. §7 thay chỗ đó.</td></tr>
+          <tr><td class="nm">c6 · hạn chế</td><td>Gọi pilot là đánh giá thăm dò</td><td>Ba hạn chế ở §7: không ngẫu nhiên hoá, tự chọn nhóm, hiệu ứng mới lạ. Và nói rõ chênh lệch mastery sau khi làm theo gợi ý là tương quan, không phải nhân quả.</td></tr>
+          <tr><td class="nm">c7 · hướng phát triển</td><td>Ghi rõ những thứ đã cân nhắc và chưa chọn</td><td>DKT và Elo trực tuyến nêu lý do loại theo §0. <strong>FSRS phải viết khác</strong>: không phải “không dùng được”, mà là chưa chọn cho GĐ2 vì pilot quá ngắn để đo chênh lệch — kèm ghi chú scheduler đã tách hàm nên đổi được. Nói sai lý do ở đây là tự tạo một câu hỏi vặn.</td></tr>
+          <tr><td class="nm">c4 · thuật toán</td><td>Ghi chú chỗ mơ hồ của SM-2</td><td>Bước 5 và bước 6 của bản gốc đọc ngược nhau về <em>EF</em> khi q &lt; 3 (§2). Nêu ra và nói mình chọn cách đọc nào.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ============ 9 · CHIA VIỆC ============ -->
+  <section id="split">
+    <div class="sec-head"><span class="sec-no">§9</span><h2>Chia việc</h2></div>
+    <p class="sec-note">Bám theo cách chia bốn luồng dọc đã chốt trước đó. Phần này cắt ngang hai người, nên thứ tự quan trọng hơn khối lượng.</p>
+
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th style="width:17%">Ai</th><th style="width:30%">Làm gì</th><th>Chặn ai</th></tr></thead>
+        <tbody>
+          <tr><td class="nm">Người 1 · LMS Core</td><td>Migration (gồm cột ảnh chụp cho <code>quiz_attempts</code>), <code>MasteryService</code> với khoá hàng, bọc transaction cho <code>submit</code>, endpoint mastery, hàm recompute.</td><td>Chặn mọi người còn lại. Phải xong trước.</td></tr>
+          <tr><td class="nm">Người 2 · Learner</td><td><code>SrsService</code> SM-2 + bảng log + endpoint, bốn nút ôn tập, hàng đợi trong phiên, khối gợi ý trên dashboard.</td><td>Cần bảng của người 1; phần SM-2 làm song song được ngay.</td></tr>
+          <tr><td class="nm">Người 3 · Adaptive</td><td><code>RecommendationService</code>: sinh ứng viên, chấm điểm, luật chặn, batch và hết hạn, endpoint effectiveness.</td><td>Cần <code>lo_mastery</code>. Viết ranker với dữ liệu giả trước, ráp sau.</td></tr>
+          <tr><td class="nm">Người 4 · Report + đo đạc</td><td>Sửa c2/c3/c4/c6/c7 theo §8, dựng script tính AUC, chọn 4–5 LO trọng tâm cho pilot.</td><td>Không chặn ai, nhưng chọn LO trọng tâm phải xong <em>trước</em> khi pilot chạy.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <strong>Nếu thời gian chỉ đủ một nửa:</strong> làm §1 và §3, bỏ §2. Mastery + gợi ý đã đóng được hai mục lệch report và tự đứng được như một chức năng. SM-2 mà thiếu nút ôn tập thì chỉ thêm một bảng chết nữa. Ngược lại thì không đúng: làm SM-2 mà không có mastery thì gợi ý không có gì để xếp hạng.
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ============ 10 · CÂU HỎI ============ -->
+  <section id="open">
+    <div class="sec-head"><span class="sec-no">§10</span><h2>Bốn chỗ cần chốt trước khi code</h2></div>
+
+    <div class="asks">
+      <div class="ask">
+        <div class="q">1</div>
+        <div>
+          <h4>Mastery có hiện cho học viên thấy con số không?</h4>
+          <p>Hiện số <span class="num">0.335</span> là minh bạch nhưng dễ làm nản. Ba lựa chọn: hiện số thật · chỉ hiện bốn mức bằng màu · hoặc giảng viên thấy số, học viên thấy mức. Cái này đổi thiết kế giao diện và cả mục đạo đức trong c7.</p>
+        </div>
+      </div>
+      <div class="ask">
+        <div class="q">2</div>
+        <div>
+          <h4>Học viên tự chấm thẻ, hay hệ thống suy ra từ quiz?</h4>
+          <p>SM-2 chuẩn cần tự chấm — thêm một bước thao tác. Phương án khác là suy chất lượng từ kết quả quiz cùng LO, không cần nút nào, nhưng lúc đó không còn là SM-2 nữa và mất luôn chỗ trích dẫn. Nghiêng về tự chấm.</p>
+        </div>
+      </div>
+      <div class="ask">
+        <div class="q">3</div>
+        <div>
+          <h4>SM-2 hay FSRS? <span class="chip fix">mở lại</span></h4>
+          <p>Bản 1 loại FSRS bằng một lý do sai nên chưa từng thành một lựa chọn thật. Giờ thì: FSRS chạy ngay với tham số mặc định, lịch tốt hơn, và trả về <em>retrievability</em> — cắm vào ranker ở §3 hợp hơn giãn cách của SM-2. Đổi lại là 21 tham số không giải thích gọn được trong luận văn, và một thư viện ngoài. Vì pilot quá ngắn để đo chênh lệch giữa hai lịch, tao vẫn đề xuất SM-2 cho GĐ2 — nhưng gói scheduler sau một hàm <code>schedule(state, grade)</code> để đổi sang <code>ts-fsrs</code> chỉ tốn một buổi nếu mày muốn.</p>
+        </div>
+      </div>
+      <div class="ask">
+        <div class="q">4</div>
+        <div>
+          <h4>Bốn trọng số 0.40 / 0.20 / 0.25 / 0.15 lấy đâu ra?</h4>
+          <p>Hiện là do mình đặt. Hai đường đi: khai báo thẳng trong report là tham số thiết kế rồi khảo sát độ nhạy ở c6 (rẻ, trung thực), hoặc hỏi 2–3 giảng viên xếp hạng thứ tự ưu tiên rồi hiệu chỉnh (tốn một buổi, nhưng thành một đóng góp nhỏ có thể viết vào luận văn).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>

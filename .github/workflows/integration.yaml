@@ -1,0 +1,24 @@
+name: integration
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+# da-platform (this repo) had no CI workflow before this file — see
+# docs/embedding-service-migration.md §7. This is where cross-repo
+# consistency checks live, starting with the service-sdk pin check.
+permissions:
+  contents: read
+
+jobs:
+  check-service-sdk-pins:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Verify service-sdk pin consistency
+        run: python3 scripts/check_service_sdk_pins.py

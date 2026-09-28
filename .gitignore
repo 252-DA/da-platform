@@ -4,6 +4,7 @@
 !.env.*.example
 *.pem
 keys/
+.cloudflared/
 
 # ===== Tài liệu tham khảo (đồ án nhóm khác — không đẩy lên GitHub) =====
 tham-khao/

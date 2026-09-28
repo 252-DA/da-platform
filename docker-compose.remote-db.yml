@@ -1,0 +1,102 @@
+# ─────────────────────────────────────────────────────────
+# Override: dùng DB stack remote qua Tailscale thay cho 5 container infra local
+# (postgres/redis/qdrant/minio/neo4j) để giảm RAM máy dev.
+#
+# Bật bằng COMPOSE_FILE trong .env:
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.remote-db.yml
+# hoặc gọi tay: docker compose -f docker-compose.yml -f docker-compose.remote-db.yml up -d
+#
+# Biến bắt buộc trong .env: DB_HOST, POSTGRES_USER, POSTGRES_DB,
+# POSTGRES_PASSWORD, REDIS_PASSWORD, MINIO_ROOT_USER, MINIO_ROOT_PASSWORD,
+# NEO4J_PASSWORD, QDRANT_API_KEY. Mật khẩu phải URL-safe (hex là ổn) vì được
+# nhúng thẳng vào DSN/URL.
+#
+# Muốn chạy lại DB local: bỏ COMPOSE_FILE khỏi .env (hoặc --profile local-db
+# nếu chỉ cần container DB mà app vẫn trỏ remote).
+# ─────────────────────────────────────────────────────────
+
+x-remote-env: &remote-env
+  # Qdrant
+  QDRANT__HOST: ${DB_HOST:?set DB_HOST}
+  QDRANT__PORT: "6333"
+  QDRANT__API_KEY: ${QDRANT_API_KEY:?set QDRANT_API_KEY}
+  # MinIO
+  MINIO__ENDPOINT: ${DB_HOST}:9000
+  MINIO__ACCESS_KEY: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER}
+  MINIO__SECRET_KEY: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
+  # PostgreSQL
+  SQL__DSN: postgresql://${POSTGRES_USER:?set POSTGRES_USER}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@${DB_HOST}:5432/${POSTGRES_DB:?set POSTGRES_DB}
+  # Neo4j
+  NEO4J__URI: bolt://${DB_HOST}:7687
+  NEO4J__USERNAME: neo4j
+  NEO4J__PASSWORD: ${NEO4J_PASSWORD:?set NEO4J_PASSWORD}
+  # Redis
+  REDIS__HOST: ${DB_HOST}
+  REDIS__PORT: "6379"
+  REDIS__PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD}
+
+services:
+  # Infra local: chỉ chạy khi gọi rõ --profile local-db.
+  postgres:
+    profiles: ["local-db"]
+  redis:
+    profiles: ["local-db"]
+  qdrant:
+    profiles: ["local-db"]
+  minio:
+    profiles: ["local-db"]
+  neo4j:
+    profiles: ["local-db"]
+
+  # ── Legacy (profile "legacy") ──
+  grpc-server:
+    environment: *remote-env
+    depends_on: !reset {}
+  http-api:
+    environment: *remote-env
+    depends_on: !reset {}
+  mcp-server:
+    environment: *remote-env
+    depends_on: !reset {}
+
+  # ── App ──
+  web:
+    environment:
+      REDIS_URL: redis://default:${REDIS_PASSWORD}@${DB_HOST}:6379
+    depends_on: !override
+      - core-api
+
+  core-api:
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:5432/${POSTGRES_DB}
+      REDIS_URL: redis://default:${REDIS_PASSWORD}@${DB_HOST}:6379
+      MINIO__ENDPOINT: ${DB_HOST}:9000
+      MINIO__ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO__SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+    depends_on: !reset {}
+
+  document-worker:
+    environment: *remote-env
+    depends_on: !override
+      embedding-service:
+        condition: service_healthy
+  enrichment-worker:
+    environment: *remote-env
+    depends_on: !reset {}
+  content-generation-worker:
+    environment: *remote-env
+    depends_on: !override
+      mcp-service:
+        condition: service_healthy
+  outbox-worker:
+    environment: *remote-env
+    depends_on: !reset {}
+
+  mcp-service:
+    environment:
+      SQL__DSN: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:5432/${POSTGRES_DB}
+      QDRANT__HOST: ${DB_HOST}
+      QDRANT__API_KEY: ${QDRANT_API_KEY}
+    depends_on: !override
+      embedding-service:
+        condition: service_healthy

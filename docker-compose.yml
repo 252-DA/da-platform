@@ -42,7 +42,6 @@ x-common-env: &common-env
 x-chunking-v2-volumes: &chunking-v2-volumes
   - ./scripts/dev_reload.py:/app/dev_reload.py:ro
   - ./packages-ai/src:/app/src
-  - ./packages-ai/examples:/app/examples
   - ./packages-ai/pyproject.toml:/app/pyproject.toml:ro
   - ./packages-ai/uv.lock:/app/uv.lock:ro
 
@@ -56,6 +55,9 @@ x-worker-volumes: &worker-volumes
   - ./packages-ai/uv.lock:/app/packages-ai/uv.lock:ro
   - ./ai-sdk/src:/app/ai-sdk/src
   - ./ai-sdk/pyproject.toml:/app/ai-sdk/pyproject.toml:ro
+  - ./service-sdk/src:/app/service-sdk/src
+  - ./service-sdk/pyproject.toml:/app/service-sdk/pyproject.toml:ro
+  - ./service-sdk/uv.lock:/app/service-sdk/uv.lock:ro
 
 x-worker-entrypoint: &worker-entrypoint ["uv", "run", "--frozen", "python", "-m"]
 
@@ -117,8 +119,8 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "${MINIO_API_PORT:-9100}:9000"
+      - "${MINIO_CONSOLE_PORT:-9101}:9001"
     volumes:
       - miniodata:/data
     healthcheck:
@@ -147,9 +149,17 @@ services:
       default: {}
 
   # ─────────────────────────────────────────────────────────
-  # Application — gRPC server
+  # Application — gRPC server (LEGACY)
+  # Bề mặt trùng lặp với core-api: core-api enqueue job qua BullMQ, không gọi
+  # gRPC/HTTP của packages-ai. Giữ dưới profile "legacy" trong lúc migration,
+  # xóa hẳn sau khi E2E remote embedding ổn định — xem
+  # docs/embedding-service-migration.md §9 bước 13.
+  # Image packages-ai chưa cài da_service_sdk (Dockerfile thiếu
+  # --extra remote-embedding) nên nhóm legacy vẫn phải dùng BGE cục bộ qua
+  # EMBEDDER__PROVIDER mặc định của common-env.
   # ─────────────────────────────────────────────────────────
   grpc-server:
+    profiles: ["legacy"]
     build:
       context: ./packages-ai
       dockerfile: Dockerfile
@@ -180,10 +190,24 @@ services:
     networks:
       default: {}
 
+  cloudflared:
+    image: cloudflare/cloudflared:2026.7.3
+    command: ["tunnel", "--no-autoupdate", "--config", "/etc/cloudflared/config.yml", "run"]
+    volumes:
+      - "./deploy/cloudflared.da-platform.yml:/etc/cloudflared/config.yml:ro"
+      - "./.cloudflared/credentials.json:/etc/cloudflared/credentials.json:ro"
+    depends_on:
+      - web
+    restart: unless-stopped
+    networks:
+      default: {}
+
   # ─────────────────────────────────────────────────────────
-  # HTTP API (FastAPI / Swagger) — LMS-facing
+  # HTTP API (FastAPI / Swagger) — LEGACY, trùng với core-api.
+  # Retire cùng grpc-server, xem docs/embedding-service-migration.md §9 bước 13.
   # ─────────────────────────────────────────────────────────
   http-api:
+    profiles: ["legacy"]
     build:
       context: ./packages-ai
       dockerfile: Dockerfile
@@ -211,9 +235,12 @@ services:
       default: {}
 
   # ─────────────────────────────────────────────────────────
-  # MCP learning-context server — model/agent-facing retrieval
+  # MCP learning-context server — LEGACY, thay bằng mcp-service (§9 bước 11).
+  # Không publish port 8001 nữa: mcp-service giữ port đó. Truy cập nội bộ qua
+  # mcp-server:8001 vẫn hoạt động khi bật profile "legacy".
   # ─────────────────────────────────────────────────────────
   mcp-server:
+    profiles: ["legacy"]
     build:
       context: ./packages-ai
       dockerfile: Dockerfile
@@ -225,8 +252,6 @@ services:
       MCP__PORT: "8001"
       MCP__PATH: /mcp
       METRICS__ENABLED: "false"
-    ports:
-      - "8001:8001"
     volumes: *chunking-v2-volumes
     healthcheck:
       test:
@@ -268,7 +293,6 @@ services:
       CORE_API_INTERNAL_URL: http://core-api:4000
       BFF_TO_CORE_PRIVATE_KEY_PATH: /keys/bff-to-core.pem
       BFF_TO_CORE_KEY_ID: bff-2026-05
-      GRPC_HOST: ${GRPC_HOST:-grpc-server:50051}
       LTI_LMS_TYPE: ${LTI_LMS_TYPE:-openedx}
       LTI_PLATFORM_URL: ${LTI_PLATFORM_URL:-http://local.edly.io}
       LTI_ISSUER_URL: ${LTI_ISSUER_URL:-}
@@ -290,7 +314,7 @@ services:
       - web_next_cache:/app/.next
       - "./web/keys:/keys:ro"
     ports:
-      - "3000:3000"
+      - "${WEB_PORT:-3001}:3000"
     depends_on:
       - core-api
       - redis
@@ -320,11 +344,29 @@ services:
       BFF_TO_CORE_PUBLIC_KEY_PATH: /app/keys/bff-to-core.pub.pem
       BFF_TO_CORE_JWT_ISSUER: web-bff
       BFF_TO_CORE_JWT_AUDIENCE: core-api
+      # AGS score writeback — dùng chung LTI identity với web (web verify
+      # id_token và phục vụ JWKS; core-api ký client assertion để đẩy điểm).
+      # Cùng key, cùng client_id, nên phải cùng giá trị với service `web` ở trên.
+      LTI_CLIENT_ID: ${LTI_CLIENT_ID:-ai-nextjs-1}
+      LTI_KEY_ID: ${LTI_KEY_ID:-ai-nextjs-1}
+      LTI_LMS_TYPE: ${LTI_LMS_TYPE:-openedx}
+      LTI_PLATFORM_URL: ${LTI_PLATFORM_URL:-http://local.edly.io}
+      LTI_TOKEN_URL: ${LTI_TOKEN_URL:-}
+      LTI_PRIVATE_KEY_PATH: /lti-keys/lti.pem
+      AGS_ENABLED: ${AGS_ENABLED:-}
+      AGS_POLL_INTERVAL_MS: ${AGS_POLL_INTERVAL_MS:-15000}
+      # Đồng bộ đề cương từ trang Chương trình học của Canvas (REST API).
+      CANVAS_API_URL: ${CANVAS_API_URL:-${CANVAS_PUBLIC_URL:-}}
+      CANVAS_API_TOKEN: ${CANVAS_API_TOKEN:-}
+      CANVAS_AUTO_SYNC_ENABLED: ${CANVAS_AUTO_SYNC_ENABLED:-true}
+      CANVAS_SYNC_INTERVAL_MS: ${CANVAS_SYNC_INTERVAL_MS:-900000}
+      CANVAS_SYNC_LAUNCH_COOLDOWN_MS: ${CANVAS_SYNC_LAUNCH_COOLDOWN_MS:-120000}
       CI: "true"
     volumes:
       - "./core-api:/app"
       - core_api_node_modules:/app/node_modules
       - "./core-api/keys:/app/keys:ro"
+      - "./web/keys:/lti-keys:ro"
     ports:
       - "4000:4000"
       - "50052:50051"
@@ -338,6 +380,57 @@ services:
       default: {}
 
   # ─────────────────────────────────────────────────────────
+  # embedding-service — sole process holding the BGE-M3 model.
+  # No DB/Qdrant/MinIO dependency: see
+  # docs/embedding-service-migration.md §9 step 3-4.
+  # ─────────────────────────────────────────────────────────
+  embedding-service:
+    build:
+      context: .
+      dockerfile: embedding-service/Dockerfile
+    environment:
+      APP__ENV: development
+      APP__LOG_LEVEL: INFO
+      GRPC__HOST: "0.0.0.0"
+      GRPC__PORT: "50051"
+      GRPC__MAX_WORKERS: "4"
+      METRICS__ENABLED: "true"
+      METRICS__PORT: "9095"
+      MODEL__BGE_MODEL: BAAI/bge-m3
+      MODEL__BGE_USE_FP16: "true"
+      MODEL__DIMENSION: "1024"
+      MODEL__ENCODE_BATCH_SIZE: "4"
+      MODEL__MAX_LENGTH: "1024"
+      MODEL__MAX_RPC_BATCH_SIZE: "32"
+      # bge = nạp model vào RAM (~3GB); openai = gọi embeddings API, không nạp model.
+      MODEL__BACKEND: ${EMBEDDING_BACKEND:-bge}
+      API__BASE_URL: ${EMBEDDING_API_BASE_URL:-}
+      API__KEY: ${EMBEDDING_API_KEY:-}
+      API__MODEL: ${EMBEDDING_API_MODEL:-BAAI/bge-m3}
+      API__DIMENSIONS: ${EMBEDDING_API_DIMENSIONS:-}
+      HF_HOME: /root/.cache/huggingface
+    ports:
+      - "50061:50051"
+      - "9095:9095"
+    volumes:
+      - hf_cache:/root/.cache/huggingface
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import grpc; from grpc_health.v1 import health_pb2, health_pb2_grpc; ch = grpc.insecure_channel('localhost:50051'); resp = health_pb2_grpc.HealthStub(ch).Check(health_pb2.HealthCheckRequest(service='da_platform.embedding.v1.EmbeddingService'), timeout=5); exit(0 if resp.status == health_pb2.HealthCheckResponse.SERVING else 1)",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 120s
+    restart: unless-stopped
+    networks:
+      default: {}
+
+  # ─────────────────────────────────────────────────────────
   # Workers
   # ─────────────────────────────────────────────────────────
   document-worker:
@@ -345,13 +438,15 @@ services:
       context: .
       dockerfile: worker/Dockerfile
     entrypoint: *worker-entrypoint
-    command: ["dev_reload", "worker.runners.document_worker", "/app/worker/worker", "/app/packages-ai/src"]
+    command: ["dev_reload", "worker.runners.document_worker", "/app/worker/worker", "/app/packages-ai/src", "/app/service-sdk/src"]
     environment:
       <<: *common-env
       WORKER_TYPE: document
-      WORKER_CONCURRENCY: "3"
+      WORKER_CONCURRENCY: "1"
       HEALTH_PORT: "8081"
       METRICS__PORT: "9091"
+      EMBEDDER__PROVIDER: grpc
+      EMBEDDER__GRPC_TARGET: embedding-service:50051
     ports:
       - "8081:8081"
       - "9091:9091"
@@ -364,6 +459,8 @@ services:
       qdrant:
         condition: service_healthy
       minio:
+        condition: service_healthy
+      embedding-service:
         condition: service_healthy
     restart: unless-stopped
 
@@ -407,10 +504,16 @@ services:
       <<: *common-env
       WORKER_TYPE: content_generation
       WORKER_CONCURRENCY: "2"
+      # Model riêng cho sinh câu hỏi (vd DeepSeek), không đổi LLM của các worker
+      # khác. Để trống thì dùng Gemini như common-env.
+      LLM__PROVIDER: ${QUIZ_LLM_PROVIDER:-gemini}
+      LLM__MODEL: ${QUIZ_LLM_MODEL:-gemini-3-flash-preview}
+      LLM__API_KEY: ${QUIZ_LLM_API_KEY:-${GEMINI_API_KEY:-}}
+      LLM__BASE_URL: ${QUIZ_LLM_BASE_URL:-}
       HEALTH_PORT: "8084"
       METRICS__PORT: "9094"
       LEARNING_CONTEXT_MCP_ENABLED: "true"
-      LEARNING_CONTEXT_MCP_URL: http://mcp-server:8001/mcp
+      LEARNING_CONTEXT_MCP_URL: http://mcp-service:8001/mcp
       LEARNING_CONTEXT_MCP_TIMEOUT_SECONDS: "30"
       LEARNING_CONTEXT_MCP_FALLBACK_TO_LOCAL: "true"
     ports:
@@ -422,7 +525,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      mcp-server:
+      mcp-service:
         condition: service_healthy
     restart: unless-stopped
 
@@ -453,6 +556,78 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # ─────────────────────────────────────────────────────────
+  # mcp-service — split từ packages-ai/delivery/mcp. Không dùng Neo4j (đã
+  # verify hai MCP tool không đụng graph); embedding qua GrpcEmbedder, không
+  # load BGE cục bộ. Xem docs/embedding-service-migration.md §9 bước 11.
+  # ─────────────────────────────────────────────────────────
+  mcp-service:
+    build:
+      context: .
+      dockerfile: mcp-service/Dockerfile
+    environment:
+      APP__ENV: development
+      APP__LOG_LEVEL: INFO
+      APP__JSON_LOGS: "true"
+      SQL__ENABLED: "true"
+      SQL__DSN: postgresql://postgres:postgres@postgres:5432/chunking
+      QDRANT__HOST: qdrant
+      QDRANT__PORT: "6333"
+      QDRANT__COLLECTION_NAME: documents
+      QDRANT__VECTOR_SIZE: "1024"
+      EMBEDDER__PROVIDER: grpc
+      EMBEDDER__GRPC_TARGET: embedding-service:50051
+      MCP__HOST: "0.0.0.0"
+      MCP__PORT: "8001"
+      MCP__PATH: /mcp
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import socket; s=socket.create_connection(('127.0.0.1',8001),2); s.close()",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      embedding-service:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      default: {}
+
+  # ─────────────────────────────────────────────────────────
+  # document-inspector — dev-only, không DB, không embedding. Chỉ chạy khi
+  # gọi rõ profile "tools" (docker compose --profile tools up document-inspector).
+  # ─────────────────────────────────────────────────────────
+  document-inspector:
+    build:
+      context: .
+      dockerfile: document-inspector/Dockerfile
+    environment:
+      APP__ENV: development
+      APP__LOG_LEVEL: INFO
+    ports:
+      - "8002:8002"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health').read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles: ["tools"]
+    restart: unless-stopped
+    networks:
+      default: {}
+
 volumes:
   pgdata18:
   redisdata:
@@ -462,6 +637,7 @@ volumes:
   web_node_modules:
   web_next_cache:
   core_api_node_modules:
+  hf_cache:
 
 networks:
   default: {}

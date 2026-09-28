@@ -1,0 +1,972 @@
+<title>Khoảng Trống GĐ2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+  :root {
+    --ground:      #e9ecf1;
+    --surface:     #ffffff;
+    --surface-alt: #f3f5f8;
+    --ink:         #171b26;
+    --ink-soft:    #3c4356;
+    --muted:       #5f6779;
+    --line:        #d2d7e0;
+    --line-soft:   #e3e7ee;
+    --accent:      #2a4d8f;
+    --accent-soft: #dde4f2;
+
+    --crit:        #a3341f;
+    --crit-bg:     #f7e6e1;
+    --must:        #9a6408;
+    --must-bg:     #f8edda;
+    --should:      #24657f;
+    --should-bg:   #dfeef4;
+    --idea:        #654a86;
+    --idea-bg:     #eae4f3;
+    --done:        #2c6b56;
+    --done-bg:     #dcece6;
+    --no:          #6b7182;
+    --no-bg:       #e8eaee;
+
+    --shadow: 0 1px 2px rgba(23, 27, 38, .06), 0 6px 18px -10px rgba(23, 27, 38, .22);
+
+    --f-display: "Newsreader", Georgia, "Times New Roman", serif;
+    --f-body: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #101219;
+      --surface:     #191d27;
+      --surface-alt: #212633;
+      --ink:         #e7eaf1;
+      --ink-soft:    #c2c8d6;
+      --muted:       #8e97ab;
+      --line:        #2e3543;
+      --line-soft:   #262c38;
+      --accent:      #8fadea;
+      --accent-soft: #212c46;
+
+      --crit:        #e88a72;
+      --crit-bg:     #33201b;
+      --must:        #e0b063;
+      --must-bg:     #322718;
+      --should:      #7cc0da;
+      --should-bg:   #182a33;
+      --idea:        #b498da;
+      --idea-bg:     #262038;
+      --done:        #6fc0a3;
+      --done-bg:     #16302a;
+      --no:          #949bad;
+      --no-bg:       #23272f;
+
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 22px -12px rgba(0, 0, 0, .7);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #101219;
+    --surface:     #191d27;
+    --surface-alt: #212633;
+    --ink:         #e7eaf1;
+    --ink-soft:    #c2c8d6;
+    --muted:       #8e97ab;
+    --line:        #2e3543;
+    --line-soft:   #262c38;
+    --accent:      #8fadea;
+    --accent-soft: #212c46;
+
+    --crit:        #e88a72;
+    --crit-bg:     #33201b;
+    --must:        #e0b063;
+    --must-bg:     #322718;
+    --should:      #7cc0da;
+    --should-bg:   #182a33;
+    --idea:        #b498da;
+    --idea-bg:     #262038;
+    --done:        #6fc0a3;
+    --done-bg:     #16302a;
+    --no:          #949bad;
+    --no-bg:       #23272f;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 22px -12px rgba(0, 0, 0, .7);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px 96px;
+  }
+
+  /* ---------- masthead ---------- */
+
+  .masthead {
+    padding: 56px 0 28px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 11.5px;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  h1 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: clamp(2.1rem, 5vw, 3.1rem);
+    line-height: 1.08;
+    letter-spacing: -.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .standfirst {
+    max-width: 62ch;
+    color: var(--ink-soft);
+    font-size: 16.5px;
+    margin: 0;
+  }
+
+  .standfirst em {
+    font-family: var(--f-display);
+    font-style: italic;
+    color: var(--ink);
+  }
+
+  /* ---------- stat row ---------- */
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 32px 0 8px;
+  }
+
+  .stat {
+    background: var(--surface);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat b {
+    font-family: var(--f-display);
+    font-size: 2.15rem;
+    font-weight: 600;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.02em;
+  }
+
+  .stat span {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .stat.is-crit b { color: var(--crit); }
+  .stat.is-must b { color: var(--must); }
+  .stat.is-should b { color: var(--should); }
+  .stat.is-accent b { color: var(--accent); }
+
+  /* ---------- nav ---------- */
+
+  nav.jump {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 28px 0 8px;
+  }
+
+  nav.jump a {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    letter-spacing: .02em;
+    text-decoration: none;
+    color: var(--ink-soft);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 6px 11px;
+    transition: border-color .15s, color .15s;
+  }
+
+  nav.jump a:hover { border-color: var(--accent); color: var(--accent); }
+  nav.jump a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- sections ---------- */
+
+  section { margin-top: 56px; }
+
+  .sec-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 22px;
+  }
+
+  .sec-head h2 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 1.72rem;
+    letter-spacing: -.012em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .tier {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 4px 9px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  .tier.crit   { background: var(--crit-bg);   color: var(--crit); }
+  .tier.must   { background: var(--must-bg);   color: var(--must); }
+  .tier.should { background: var(--should-bg); color: var(--should); }
+  .tier.idea   { background: var(--idea-bg);   color: var(--idea); }
+  .tier.done   { background: var(--done-bg);   color: var(--done); }
+  .tier.no     { background: var(--no-bg);     color: var(--no); }
+
+  .sec-note {
+    max-width: 68ch;
+    color: var(--ink-soft);
+    margin: 0 0 22px;
+  }
+
+  .sec-note strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- tables ---------- */
+
+  .tbl-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--surface);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    min-width: 640px;
+  }
+
+  thead th {
+    text-align: left;
+    font-family: var(--f-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 11px 16px;
+    background: var(--surface-alt);
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  td.nm { font-weight: 600; color: var(--ink); }
+
+  code, .mono {
+    font-family: var(--f-mono);
+    font-size: .885em;
+    background: var(--surface-alt);
+    border: 1px solid var(--line-soft);
+    border-radius: 3px;
+    padding: 1px 5px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+  .zero {
+    font-family: var(--f-mono);
+    font-weight: 500;
+    color: var(--crit);
+  }
+
+  .fr {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 3px;
+    padding: 2px 7px;
+    white-space: nowrap;
+  }
+
+  /* ---------- item list ---------- */
+
+  .items {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .item {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--stripe, var(--line));
+    border-radius: 4px;
+    padding: 17px 20px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .item.crit   { --stripe: var(--crit); }
+  .item.must   { --stripe: var(--must); }
+  .item.should { --stripe: var(--should); }
+  .item.idea   { --stripe: var(--idea); }
+
+  .item h3 {
+    font-size: 15.5px;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .item p { margin: 0; color: var(--ink-soft); max-width: 76ch; }
+  .item p + p { margin-top: 2px; }
+
+  .why {
+    font-size: 13.5px;
+    color: var(--muted);
+    border-top: 1px dashed var(--line);
+    padding-top: 8px;
+    margin-top: 3px;
+  }
+
+  .why b {
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    margin-right: 7px;
+  }
+
+  /* ---------- chip grid ---------- */
+
+  .chips {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 8px;
+  }
+
+  .chip {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 11px 14px;
+    font-size: 13.5px;
+    display: flex;
+    gap: 9px;
+    align-items: flex-start;
+    line-height: 1.45;
+  }
+
+  .chip .mk {
+    font-family: var(--f-mono);
+    font-size: 13px;
+    line-height: 1.3;
+    flex-shrink: 0;
+  }
+
+  .chip.ok .mk { color: var(--done); }
+  .chip.no { background: var(--no-bg); border-color: transparent; color: var(--muted); }
+  .chip.no .mk { color: var(--no); }
+
+  /* ---------- week grid ---------- */
+
+  .week {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+  }
+
+  .role {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 18px 19px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    box-shadow: var(--shadow);
+  }
+
+  .role h3 {
+    margin: 0;
+    font-family: var(--f-display);
+    font-size: 1.18rem;
+    font-weight: 600;
+  }
+
+  .role h3 small {
+    display: block;
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    margin-bottom: 3px;
+  }
+
+  .role ul {
+    margin: 0;
+    padding-left: 17px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+  }
+
+  .role ul::marker { color: var(--muted); }
+
+  .callout {
+    background: var(--must-bg);
+    border: 1px solid transparent;
+    border-left: 3px solid var(--must);
+    border-radius: 4px;
+    padding: 15px 19px;
+    margin-top: 14px;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+
+  .callout strong { color: var(--ink); }
+
+  footer {
+    margin-top: 64px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--muted);
+    max-width: 68ch;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+
+  @media (max-width: 640px) {
+    .masthead { padding-top: 40px; }
+    .wrap { padding: 0 18px 72px; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">da-platform · đối chiếu report ↔ code · 09/2026</div>
+    <h1>Khoảng trống Giai đoạn 2</h1>
+    <p class="standfirst">
+      Toàn bộ việc cần làm cho GĐ2, xếp theo mức độ bắt buộc. Mỗi mục đều có
+      bằng chứng từ repo hoặc từ file <em>.tex</em> trong report — không có mục nào
+      dựa trên phỏng đoán.
+    </p>
+  </header>
+
+  <div class="stats">
+    <div class="stat is-crit">
+      <b>6</b>
+      <span>chức năng report viết là đã có, code bằng 0</span>
+    </div>
+    <div class="stat is-crit">
+      <b>10</b>
+      <span>bảng Prisma không có file code nào tham chiếu</span>
+    </div>
+    <div class="stat is-must">
+      <b>3/7</b>
+      <span>tiêu chí thành công GĐ2 chưa có dòng code nào</span>
+    </div>
+    <div class="stat is-accent">
+      <b>29 → 41</b>
+      <span>số mã FR hiện có, và sau khi bổ sung</span>
+    </div>
+  </div>
+
+  <nav class="jump">
+    <a href="#m0">Mức 0 · Sai lệch</a>
+    <a href="#schema">Schema chết</a>
+    <a href="#m1">Mức 1 · Bắt buộc</a>
+    <a href="#m2">Mức 2 · FR bổ sung</a>
+    <a href="#m3">Mức 3 · Gợi ý</a>
+    <a href="#dacó">Đã có</a>
+    <a href="#khong">Không làm</a>
+    <a href="#tuan1">Tuần 1</a>
+  </nav>
+
+  <!-- ============ MỨC 0 ============ -->
+  <section id="m0">
+    <div class="sec-head">
+      <span class="tier crit">Mức 0 · phải xử lý ngay</span>
+      <h2>Report tuyên bố có, code bằng 0</h2>
+    </div>
+    <p class="sec-note">
+      Đây là nhóm nguy hiểm nhất vì nó không phải là thiếu tính năng — nó là
+      <strong>sai lệch giữa báo cáo và hệ thống thật</strong>. Chương 5 là chương
+      Hiện thực, viết như những thứ này đã chạy. Mỗi mục dưới đây chỉ có hai lối ra:
+      <strong>build nó</strong>, hoặc <strong>sửa lại report</strong>. Để nguyên là
+      gãy khi bị hỏi vặn lúc bảo vệ.
+    </p>
+
+    <div class="tbl-scroll">
+      <table>
+        <thead>
+          <tr><th>Chức năng</th><th>Report nói gì</th><th>Thực tế trong code</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="nm">Deep Linking 2.0</td>
+            <td><code>c5:672</code> có hẳn mục <em>“Deep Linking (for Instructor Placement)”</em>, mô tả endpoint <code>/lti/deep-link-select</code>. <code>c5:810</code> tổng kết: <em>“Canvas LMS integration through LTI 1.3 OIDC, AGS grade passback, and Deep Linking”</em>.</td>
+            <td><span class="zero">0 tham chiếu.</span> <code>web/src/app/lti/</code> chỉ có <code>launch</code> và <code>login</code>.</td>
+          </tr>
+          <tr>
+            <td class="nm">NRPS — đồng bộ danh sách lớp</td>
+            <td><code>c5:602</code> xin scope <code>names_and_roles</code>; schema có sẵn bảng <code>course_memberships</code>.</td>
+            <td><span class="zero">0 tham chiếu.</span></td>
+          </tr>
+          <tr>
+            <td class="nm">Mastery theo Learning Outcome</td>
+            <td>Nhắc 7 lần rải khắp c2, c3, c4. c2 §d: <em>“mỗi câu đúng/sai cập nhật mastery level tương ứng”</em>.</td>
+            <td><span class="zero">0 tham chiếu.</span> Không có bảng mastery trong schema.</td>
+          </tr>
+          <tr>
+            <td class="nm">Spaced repetition</td>
+            <td><code>c3:161</code>: flashcard <em>“suitable for spaced repetition”</em>.</td>
+            <td><span class="zero">0 tham chiếu.</span> Bảng <code>flashcard_reviews</code> nằm không.</td>
+          </tr>
+          <tr>
+            <td class="nm">Recommendation / gợi ý ôn tập</td>
+            <td>c2 ×5, c3 ×3, và <strong>c6 ×1 — tức chương Đánh giá cũng nhắc tới</strong>. c2 dành nguyên subsection §b cho Adaptive Learning.</td>
+            <td><span class="zero">0 tham chiếu.</span></td>
+          </tr>
+          <tr>
+            <td class="nm">GraphRAG expansion</td>
+            <td><code>c3:1039</code>: quan hệ Concept–Chunk <em>“support GraphRAG expansion”</em>. c7 hứa benchmark GraphRAG so với RAG thuần.</td>
+            <td><span class="zero">0 tham chiếu.</span> Search chưa có bước mở rộng qua graph.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ SCHEMA ============ -->
+  <section id="schema">
+    <div class="sec-head">
+      <span class="tier crit">bằng chứng</span>
+      <h2>Mười bảng schema không ai dùng</h2>
+    </div>
+    <p class="sec-note">
+      Schema đã thiết kế 32 bảng. Mười bảng trong số đó không có <strong>một file code
+      nào</strong> đụng tới. Vấn đề không phải code ẩu — <code>quiz_items</code> có 12 file,
+      <code>concepts</code> 9, <code>lesson_cards</code> 8, phần đã làm thì làm thật.
+      Vấn đề là <strong>thiết kế dữ liệu đi trước hiện thực đúng mười bảng</strong>.
+    </p>
+
+    <div class="tbl-scroll">
+      <table>
+        <thead>
+          <tr><th>Bảng trong Prisma</th><th>File code tham chiếu</th><th>Tính năng chết theo</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>videos</code> <code>video_segments</code> <code>transcript_segments</code> <code>card_video_attachments</code></td>
+            <td class="zero">0</td>
+            <td>Toàn bộ video pipeline — <span class="fr">FR-LR-02</span></td>
+          </tr>
+          <tr>
+            <td><code>flashcard_reviews</code></td>
+            <td class="zero">0</td>
+            <td>Flashcard và trạng thái ôn tập — <span class="fr">FR-SL-02</span></td>
+          </tr>
+          <tr>
+            <td><code>chat_messages</code></td>
+            <td class="zero">0</td>
+            <td>Lịch sử hội thoại tutor — <span class="fr">FR-CHAT-04</span></td>
+          </tr>
+          <tr>
+            <td><code>learning_events</code></td>
+            <td class="zero">0</td>
+            <td>Dashboard và tiến độ theo LO — <span class="fr">FR-AD-01</span> <span class="fr">FR-AD-02</span> <span class="fr">FR-SL-05</span></td>
+          </tr>
+          <tr>
+            <td><code>user_llm_quota</code> <code>scope_llm_quota</code></td>
+            <td class="zero">0</td>
+            <td>Quản lý quota LLM — <span class="fr">FR-AD-04</span></td>
+          </tr>
+          <tr>
+            <td><code>youtube_search_cache</code></td>
+            <td class="zero">0</td>
+            <td>Không có FR nào, không chương nào nhắc tới. Hoặc bổ sung FR, hoặc xoá khỏi schema.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ MỨC 1 ============ -->
+  <section id="m1">
+    <div class="sec-head">
+      <span class="tier must">Mức 1 · bắt buộc</span>
+      <h2>Không có thì không bảo vệ được</h2>
+    </div>
+    <p class="sec-note">
+      Sáu việc dưới đây bám trực tiếp vào 7 tiêu chí thành công mà c7 đã tự đặt ra.
+      Ba trong bảy tiêu chí hiện <strong>chưa có dòng code nào</strong>.
+    </p>
+
+    <div class="items">
+      <div class="item must">
+        <h3>Video → STT → cắt segment → index vào Qdrant <span class="tier must">tiêu chí #5</span></h3>
+        <p>Không có <code>whisper</code>, <code>ffmpeg</code>, <code>transcript</code> ở bất kỳ đâu; không có file <code>.go</code> nào dù report giao M2 làm “Media (Go)”.</p>
+        <p class="why"><b>Điều chỉnh</b>Bỏ Go, viết bằng Python cùng hệ với worker hiện có để tái dùng <code>service-sdk</code> và <code>contracts</code>. Chốt sớm biến <code>STT_PROVIDER</code> để switch local ↔ API, đúng như mitigation trong bảng risk của c7.</p>
+      </div>
+
+      <div class="item must">
+        <h3>Chatbot có citation + SSE trong Canvas iframe <span class="tier must">tiêu chí #4</span></h3>
+        <p><code>ai-tutor/</code> có code, nhưng: không nằm trong <code>docker-compose.yml</code>, không có UI ở <code>web/</code>, không có <code>text/event-stream</code> ở đâu, chưa trả citation.</p>
+        <p class="why"><b>Rủi ro ẩn</b>Nếu third-party cookie hoặc CSP của Canvas chặn SSE thì toàn bộ kiến trúc chat phải đổi. Phải thử ngay tuần 1, không để tới tuần pilot.</p>
+      </div>
+
+      <div class="item must">
+        <h3>Bộ đo Recall@5 trên ≥50 query ground-truth <span class="tier must">tiêu chí #2</span></h3>
+        <p>Không có harness đánh giá nào trong repo: <code>recall@</code>, <code>ndcg</code>, <code>ground truth</code> đều không tìm thấy.</p>
+        <p class="why"><b>Lead time dài</b>Ground-truth cần tài liệu thật và giảng viên thật. Phải bắt đầu gom từ tuần 1, không đợi code xong. Bảng risk của c7 xếp “báo cáo bị bác vì thiếu số liệu thực nghiệm” ở mức High.</p>
+      </div>
+
+      <div class="item must">
+        <h3>Đo đạc phục vụ pilot <span class="tier must">tiêu chí #6</span></h3>
+        <p>Chỉ tiêu là ≥10 sinh viên, ≥30 lượt làm quiz, ≥50 phiên chat. Hiện không có gì để đếm và không có đường export dữ liệu đã ẩn danh.</p>
+        <p class="why"><b>Phụ thuộc</b>Hồi sinh hai bảng <code>learning_events</code> và <code>chat_messages</code>. Song song, việc tìm giảng viên cho pilot là ràng buộc bên ngoài, không phải task code — cần người chịu trách nhiệm ngay từ thứ Hai.</p>
+      </div>
+
+      <div class="item must">
+        <h3>Duyệt hàng loạt trong màn hình review <span class="tier crit">chặn pilot</span></h3>
+        <p><code>review.service.ts</code> chỉ có <code>approveCard(cardId)</code> và <code>approveQuizItem(quizId)</code> — không có endpoint bulk. Trong <code>manage/review/page.tsx</code>, mỗi nút Approve là một <code>&lt;form method="post"&gt;</code> riêng, tức reload cả trang sau mỗi lần bấm.</p>
+        <p class="why"><b>Vì sao gấp</b>Một tài liệu 25 trang sinh ra vài chục card và quiz. Giảng viên phải bấm vài chục lần, mỗi lần chờ reload — họ sẽ bỏ giữa chừng. Không crash, không bug, nhưng đủ để giết pilot. Mà HITL review lại đúng là điểm bán hàng của đề tài. Cần bulk approve/reject, phím tắt, lọc theo LO.</p>
+      </div>
+
+      <div class="item must">
+        <h3>Dựng <code>report/gd2/</code> và thay hết số giả <span class="tier must">tiêu chí #7</span></h3>
+        <p>Hiện chỉ có <code>report/gd1/</code> và bản luận văn <code>lvtn/</code>, <code>lvtn_en/</code>. Bảng kết quả trong <code>gd1/chapters/c7_ket_luan.tex</code> vẫn để <code>\ldots</code> ở toàn bộ các ô số liệu.</p>
+        <p class="why"><b>Cách làm</b>Copy khung từ <code>gd1/</code>. Giao một người giữ vai gác cổng: mọi <code>\ldots</code> phải bị thay bằng số đo thật trước Sprint 8.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MỨC 2 ============ -->
+  <section id="m2">
+    <div class="sec-head">
+      <span class="tier should">Mức 2 · bổ sung spec</span>
+      <h2>Mười hai mã FR nên thêm vào c2</h2>
+    </div>
+    <p class="sec-note">
+      Bảng FR hiện có 29 mã. Nhưng chính c2 lại dành <strong>nguyên một subsection §b
+      “Personalized learning paths”</strong> tả rất kỹ: <em>“nếu học viên hay sai câu
+      ‘application’, hệ thống gợi ý xem lại card, luyện flashcard, làm bộ dễ hơn rồi
+      mới quay lại quiz chính”</em> — mà xuống bảng FR thì chỉ còn <strong>nửa câu</strong>
+      ở FR-SL-05. Đây là chỗ thiếu ngay từ spec, không phải thiếu ở code.
+    </p>
+
+    <div class="tbl-scroll">
+      <table>
+        <thead>
+          <tr><th>Mã</th><th>Chức năng</th><th>Vì sao cần</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="fr">FR-LTI-01</span></td>
+            <td class="nm">Deep Linking 2.0</td>
+            <td>Giảng viên chọn một lesson hoặc quiz gắn thẳng vào Canvas module. <strong>Report đã lỡ viết là có.</strong></td>
+          </tr>
+          <tr>
+            <td><span class="fr">FR-LTI-02</span></td>
+            <td class="nm">NRPS — đồng bộ roster</td>
+            <td>Đổ danh sách lớp vào <code>course_memberships</code>. Scope đã xin trong c5.</td>
+          </tr>
+          <tr>
+            <td><span class="fr">FR-SL-07</span></td>
+            <td class="nm">Mastery model theo LO</td>
+            <td>Chốt thuật toán cụ thể: % có trọng số, Elo, hay BKT. Hiện <em>“weak LO”</em> ở FR-AD-01 <strong>không định nghĩa được tính bằng cách nào</strong>.</td>
+          </tr>
+          <tr>
+            <td><span class="fr">FR-SL-08</span></td>
+            <td class="nm">Lịch ôn spaced repetition</td>
+            <td>SM-2 hoặc Leitner, hồi sinh bảng <code>flashcard_reviews</code>. Micro-learning mà bỏ phần “lặp lại” là mất một nửa định nghĩa.</td>
+          </tr>
+          <tr>
+            <td><span class="fr">FR-SL-09</span></td>
+            <td class="nm">Gợi ý nội dung ôn tập</td>
+            <td>Next-best-action từ LO yếu nhất. Đây chính là subsection §b đang bị bỏ rơi.</td>
+          </tr>
+          <tr>
+            <td><span class="fr">FR-LR-08</span></td>
+            <td class="nm">GraphRAG expansion</td>
+            <td>Mở rộng top-K qua concept graph trên Neo4j. Không có FR này thì Neo4j nằm không, mà c7 lại hứa benchmark GraphRAG.</td>
+          </tr>
+          <tr>
+            <td><span class="fr">FR-AI-07</span></td>
+            <td class="nm">Versioning và rollback nội dung</td>
+            <td>c2 §c liệt kê <code>content version</code> là metadata bắt buộc; FR-AI-04 hiện chỉ có “edit history”.</td>
+          </tr>
+          <tr>
+            <td><span class="fr">FR-AI-08</span></td>
+            <td class="nm">Chống trùng card và quiz</td>
+            <td>c2 §c tự nêu rủi ro nội dung bị <em>“duplicated”</em> nhưng không FR nào xử lý.</td>
+          </tr>
+          <tr>
+            <td><span class="fr">FR-AD-06</span></td>
+            <td class="nm">Phân tích theo Bloom level</td>
+            <td>c2 §d nói phân tích kết quả theo Bloom, FR-AD-01 không nhắc. Sinh câu hỏi có gắn Bloom mà không phân tích theo Bloom là hụt một nửa.</td>
+          </tr>
+          <tr>
+            <td><span class="fr">FR-AD-07</span></td>
+            <td class="nm">Item analysis</td>
+            <td>Độ khó và độ phân biệt thực nghiệm sau ≥N lượt làm. Đây là bằng chứng mạnh nhất cho câu hỏi “quiz sinh ra có dùng được không”, và pilot ≥30 lượt vừa đủ dữ liệu.</td>
+          </tr>
+          <tr>
+            <td><span class="fr">FR-SEC-01</span></td>
+            <td class="nm">Lọc PII trước khi embed hoặc gửi LLM</td>
+            <td>Bảng risk ở c7 ghi đây là mitigation bắt buộc, nhưng <strong>không có FR nào</strong>.</td>
+          </tr>
+          <tr>
+            <td><span class="fr">FR-EX-01</span></td>
+            <td class="nm">Xuất quiz ra QTI</td>
+            <td>Đẩy thẳng vào Canvas Quizzes. Chữ “QTI” xuất hiện <span class="zero">0 lần</span> trong toàn report — mà giảng viên thật sẽ hỏi câu này đầu tiên. Xếp optional.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <strong>Thứ tự làm:</strong> hai mã <code>FR-LTI-*</code> là bắt buộc vì report đã tuyên bố.
+      Bốn mã <code>FR-SL-07/08/09</code> và <code>FR-LR-08</code> là điểm bán hàng của đề tài —
+      chốt nhóm này trước, vì nó kéo theo phải sửa cả c3 (use case) và c4 (thiết kế).
+      Còn lại xếp sau. Accessibility/WCAG và caching giảm chi phí LLM ghi nhận nhưng chưa cần mã riêng.
+    </div>
+  </section>
+
+  <!-- ============ MỨC 3 ============ -->
+  <section id="m3">
+    <div class="sec-head">
+      <span class="tier idea">Mức 3 · gợi ý</span>
+      <h2>Thêm nếu còn thời gian</h2>
+    </div>
+    <p class="sec-note">
+      Tất cả đều nằm trong ranh giới <strong>“AI Extension Layer for LMS”</strong> mà c2 §c đã chốt —
+      Canvas giữ khoá học, người dùng, vai trò, gradebook, thông báo. Không mục nào ở đây
+      lấn sang phần việc của Canvas.
+    </p>
+
+    <div class="items">
+      <div class="item idea">
+        <h3>Test Blueprint — ma trận đề <span class="tier idea">đáng làm nhất</span></h3>
+        <p>Giảng viên khai trước: 40% Remember, 30% Understand, 20% Apply, 10% Analyze, phân bổ số câu theo từng LO. Hệ thống sinh đúng ma trận thay vì sinh tuỳ hứng.</p>
+        <p class="why"><b>Vì sao số 1</b>Đây là nghiệp vụ khảo thí thật ở đại học Việt Nam, và là thứ Quizlet hay ChatGPT không làm được. Hệ thống đã có sẵn Bloom và LO mapping — chỉ thiếu lớp ràng buộc phía trên. Chi phí thấp, giá trị học thuật cao nhất trong danh sách.</p>
+      </div>
+
+      <div class="item idea">
+        <h3>Học viên báo nội dung sai</h3>
+        <p>Nút “câu này sai hoặc khó hiểu” đẩy thẳng vào hàng đợi review của giảng viên. HITL vòng hai.</p>
+        <p class="why"><b>Lợi kép</b>Vừa là chức năng, vừa là nguồn dữ liệu thật cho chương 6 — tỉ lệ nội dung bị báo sai là metric chất lượng đáng tin hơn tự chấm tay.</p>
+      </div>
+
+      <div class="item idea">
+        <h3>Profile sinh nội dung theo môn</h3>
+        <p>Giảng viên chỉnh: ngôn ngữ vi/en, mức chi tiết, thuật ngữ ưu tiên, số câu mỗi LO. Hiện prompt đang cứng.</p>
+        <p class="why"><b>Bám vấn đề nghiên cứu</b>Trả lời trực tiếp mục <em>“Lack of pedagogical control”</em> mà c2 §c tự nêu ra làm vấn đề nghiên cứu — nhưng FR hiện không giải quyết.</p>
+      </div>
+
+      <div class="item idea">
+        <h3>Lộ nguồn ra giao diện</h3>
+        <p>Mỗi quiz hiện rõ sinh từ chunk nào, LO nào, Bloom gì; bấm vào nhảy tới đoạn gốc. Dữ liệu đã có sẵn trong <code>quiz_items</code>, chỉ là chưa hiển thị.</p>
+        <p class="why"><b>Giá trị demo</b>Đây là chống hallucination <em>nhìn thấy được</em> — ăn điểm hơn mọi lời giải thích bằng lời.</p>
+      </div>
+
+      <div class="item idea">
+        <h3>Giải thích lại theo cách khác</h3>
+        <p>Học viên sai câu, bấm nút, tutor giải thích lại ở mức đơn giản hơn kèm trích nguồn.</p>
+        <p class="why"><b>Rẻ</b>Dùng lại RAG có sẵn, và sinh <code>chat_messages</code> giúp đạt chỉ tiêu ≥50 phiên chat của pilot.</p>
+      </div>
+
+      <div class="item idea">
+        <h3>A/B hai prompt</h3>
+        <p>Chạy hai prompt trên cùng tập chunk, chấm mù.</p>
+        <p class="why"><b>Cho chương 6</b>Một bảng so sánh có số thật thay vì nhận định định tính.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Nếu chỉ chọn được ba:</strong> duyệt hàng loạt (cứu pilot),
+      Test Blueprint (điểm học thuật), học viên báo nội dung sai (dữ liệu cho c6).
+      Cả ba đều tái dùng hạ tầng sẵn có, không kéo theo service mới.
+    </div>
+  </section>
+
+  <!-- ============ ĐÃ CÓ ============ -->
+  <section id="dacó">
+    <div class="sec-head">
+      <span class="tier done">nền đã có</span>
+      <h2>Đừng làm lại những thứ này</h2>
+    </div>
+    <p class="sec-note">
+      Phần đã làm thì làm chắc. Danh sách này để tuần 1 không ai đi audit lại từ đầu.
+    </p>
+
+    <div class="chips">
+      <div class="chip ok"><span class="mk">✓</span><span>LTI 1.3 OIDC launch và AGS grade passback</span></div>
+      <div class="chip ok"><span class="mk">✓</span><span>Pipeline parse → chunk → embed → index chạy end-to-end</span></div>
+      <div class="chip ok"><span class="mk">✓</span><span>Bốn chiến lược chunk: heading, sentence, token, semantic</span></div>
+      <div class="chip ok"><span class="mk">✓</span><span>Bốn store: Postgres, Qdrant, Neo4j, MinIO</span></div>
+      <div class="chip ok"><span class="mk">✓</span><span>Outbox pattern với 17 schema integration event</span></div>
+      <div class="chip ok"><span class="mk">✓</span><span>Sinh micro-content và quiz gắn Learning Outcome</span></div>
+      <div class="chip ok"><span class="mk">✓</span><span>Review HITL — có, nhưng còn duyệt từng cái một</span></div>
+      <div class="chip ok"><span class="mk">✓</span><span>Giao diện instructor và learner ở <code>web/</code></span></div>
+      <div class="chip ok"><span class="mk">✓</span><span>embedding-service tách riêng, BGE-M3 qua gRPC</span></div>
+      <div class="chip ok"><span class="mk">✓</span><span>mcp-service với hai tool retrieval</span></div>
+      <div class="chip ok"><span class="mk">✓</span><span>Observability: Prometheus, Grafana, Loki, Alloy</span></div>
+      <div class="chip ok"><span class="mk">✓</span><span>CI integration workflow</span></div>
+    </div>
+  </section>
+
+  <!-- ============ KHÔNG LÀM ============ -->
+  <section id="khong">
+    <div class="sec-head">
+      <span class="tier no">ngoài phạm vi</span>
+      <h2>Không làm</h2>
+    </div>
+    <p class="sec-note">
+      Tất cả đều hoặc là việc của Canvas, hoặc tốn nhiều tuần mà không thêm điểm nào khi bảo vệ.
+      Thêm chức năng LMS thuần là tự chuốc câu hỏi <strong>“sao không dùng Canvas?”</strong>
+    </p>
+
+    <div class="chips">
+      <div class="chip no"><span class="mk">×</span><span>Diễn đàn và thảo luận</span></div>
+      <div class="chip no"><span class="mk">×</span><span>Điểm danh, lịch học</span></div>
+      <div class="chip no"><span class="mk">×</span><span>Thông báo, quản lý người dùng</span></div>
+      <div class="chip no"><span class="mk">×</span><span>Chứng chỉ, gamification, leaderboard</span></div>
+      <div class="chip no"><span class="mk">×</span><span>App mobile riêng — responsive là đủ</span></div>
+      <div class="chip no"><span class="mk">×</span><span>Đa LMS: Moodle, Open edX</span></div>
+      <div class="chip no"><span class="mk">×</span><span>AI Proctoring — c2 §e đã cố ý loại vì privacy và bias, giữ nguyên quyết định đó</span></div>
+    </div>
+  </section>
+
+  <!-- ============ TUẦN 1 ============ -->
+  <section id="tuan1">
+    <div class="sec-head">
+      <span class="tier should">khởi động</span>
+      <h2>Tuần 1 — bốn người</h2>
+    </div>
+    <p class="sec-note">
+      Mục tiêu tuần 1 không phải code nhiều, mà là <strong>biến danh sách này thành backlog
+      có mã FR</strong> và khởi động hai việc có lead time dài. Chưa lên roadmap 15 tuần —
+      lên bây giờ là lên mù.
+    </p>
+
+    <div class="week">
+      <div class="role">
+        <h3><small>M1</small>AI và video ingestion</h3>
+        <ul>
+          <li><strong>Spike:</strong> chạy Whisper trên một video bài giảng thật 10–15 phút. Đo thời gian, VRAM, chất lượng transcript tiếng Việt. Thử cả local lẫn API.</li>
+          <li>Chưa dựng service. Chỉ cần script chứng minh khả thi, output là <strong>con số</strong> để chốt <code>STT_PROVIDER</code>.</li>
+          <li>Audit FR-LR-01→07 và FR-SL-01.</li>
+        </ul>
+      </div>
+
+      <div class="role">
+        <h3><small>M2</small>Core và chat backend</h3>
+        <ul>
+          <li><strong>Spike:</strong> đưa <code>ai-tutor</code> vào <code>docker-compose.yml</code>, gọi qua <code>mcp-service</code>, trả về một câu trả lời kèm <code>chunk_id</code>. Chưa cần SSE, chưa cần UI.</li>
+          <li>Ghi thử một dòng vào <code>chat_messages</code> và <code>learning_events</code> để chứng minh hai bảng chết này sống được.</li>
+          <li>Audit FR-AI-01→06, FR-CHAT-01→05, FR-AD-03→05.</li>
+        </ul>
+      </div>
+
+      <div class="role">
+        <h3><small>M3</small>Frontend và pilot UX</h3>
+        <ul>
+          <li><strong>Spike quan trọng nhất tuần này:</strong> một trang stream <code>text/event-stream</code> mỗi giây, nhúng vào Canvas sandbox qua LTI launch. Chỉ cần chữ “hello” chạy được.</li>
+          <li>Biết ở tuần 1 thì còn kịp đổi kiến trúc; biết ở tuần 8 thì hỏng.</li>
+          <li>Audit màn hình hiện có so với FR-AD-01/02 và FR-SL-04. Ghi nhận <code>web/</code> đang có 0 test.</li>
+        </ul>
+      </div>
+
+      <div class="role">
+        <h3><small>M4</small>Data, eval và DevOps</h3>
+        <ul>
+          <li><strong>Thứ Hai:</strong> liên hệ giảng viên, xin 3–5 tài liệu thật và đề cương môn.</li>
+          <li><strong>Spike:</strong> harness đo Recall@5 với 10 query đầu tiên. Chưa cần đủ 50.</li>
+          <li>Dựng <code>report/gd2/</code> copy khung từ <code>gd1/</code>.</li>
+          <li>Xác nhận cả bốn người chạy <code>docker compose up -d</code> sạch.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Hai việc lead time dài, làm ngay thứ Hai:</strong> xin tài liệu thật, và
+      tìm giảng viên cho pilot. Report xếp “pilot không đủ 10 sinh viên” ở mức rủi ro High
+      và yêu cầu outreach từ tuần 1. Việc này phụ thuộc người ngoài, không phải task code —
+      để trễ là mất trắng.
+      <br><br>
+      <strong>Thứ Sáu, 90 phút:</strong> ghép bốn bảng audit thành một backlog FR duy nhất,
+      xếp ưu tiên theo 7 tiêu chí thành công. Xong buổi này mới lên roadmap 15 tuần.
+    </div>
+  </section>
+
+  <footer>
+    Mọi con số trong trang này lấy từ đối chiếu trực tiếp giữa <code>report/lvtn_en/chapters/*.tex</code>
+    và mã nguồn trong repo <code>da-platform</code> tại thời điểm 09/2026. Đường dẫn file và số dòng
+    ghi kèm từng mục để kiểm chứng lại.
+  </footer>
+
+</div>

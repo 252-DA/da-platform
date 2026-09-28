@@ -1,0 +1,57 @@
+name: document-inspector
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/252-da/document-inspector
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: document-inspector
+
+      - uses: 252-DA/core-chunking/.github/actions/materialize@a82c16963c8cebb79d543e31e1a328d18ad78e0e
+        with:
+          path: packages-ai
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.11.32"
+
+      - name: Install deps
+        working-directory: document-inspector
+        run: uv sync --locked --python 3.10
+
+      - name: Run unit tests
+        working-directory: document-inspector
+        run: uv run pytest tests/unit -q
+
+  build-image:
+    if: github.event_name != 'pull_request'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: document-inspector
+
+      - uses: 252-DA/core-chunking/.github/actions/materialize@a82c16963c8cebb79d543e31e1a328d18ad78e0e
+        with:
+          path: packages-ai
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: document-inspector/Dockerfile
+          push: false
+          tags: ${{ env.IMAGE }}:sha-${{ github.sha }}

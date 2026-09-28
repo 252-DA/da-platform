@@ -1,0 +1,25 @@
+# Standalone pilot: docker compose -f docker-compose.video.yml up --build
+# No Kafka/Redis/database required. Main LMS stack can continue running.
+services:
+  video-mcp:
+    build:
+      context: ./video-mcp
+    environment:
+      VIDEO_ADDR: 0.0.0.0:8002
+      VIDEO_MODE: ${VIDEO_MODE:-live}
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
+      VIDEO_API_TOKEN: ${VIDEO_API_TOKEN:-}
+    ports:
+      - "127.0.0.1:8002:8002"
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    mem_limit: 512m
+    cpus: 2
+    pids_limit: 64
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8002/healthz')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3

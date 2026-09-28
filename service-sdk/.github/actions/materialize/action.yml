@@ -1,0 +1,22 @@
+name: Materialize Service SDK
+description: Copy this pinned package revision into a consumer workflow workspace
+
+inputs:
+  path:
+    description: Destination path relative to the workflow workspace
+    required: false
+    default: service-sdk
+
+runs:
+  using: composite
+  steps:
+    - name: Copy package source
+      shell: bash
+      env:
+        SERVICE_SDK_DESTINATION: ${{ inputs.path }}
+      run: |
+        set -euo pipefail
+        repository_root="$(cd "$GITHUB_ACTION_PATH/../../.." && pwd)"
+        mkdir -p "$SERVICE_SDK_DESTINATION"
+        cp -a "$repository_root/." "$SERVICE_SDK_DESTINATION/"
+        test -f "$SERVICE_SDK_DESTINATION/pyproject.toml"

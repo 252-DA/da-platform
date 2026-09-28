@@ -1,0 +1,64 @@
+name: embedding-service
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+# Image kéo theo torch/FlagEmbedding, có thể vượt quota GHCR private free
+# (tiền lệ: xem worker.yaml trong repo worker). CI chỉ BUILD để validate
+# Dockerfile, chưa push.
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/252-da/embedding-service
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: embedding-service
+
+      # TODO: thay REPLACE_WITH_PINNED_SHA bằng commit SHA thật của
+      # 252-DA/service-sdk sau khi repo đó được tạo và tag v0.1.0. Đây là
+      # "consumer CI pin" — độc lập với gitlink service-sdk trong da-platform,
+      # xem docs/embedding-service-migration.md §5.1.
+      - uses: 252-DA/service-sdk/.github/actions/materialize@REPLACE_WITH_PINNED_SHA
+        with:
+          path: service-sdk
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.11.32"
+
+      - name: Install deps
+        working-directory: embedding-service
+        run: uv sync --locked --python 3.10
+
+      - name: Run unit tests
+        working-directory: embedding-service
+        run: uv run pytest tests/unit -q -m "not slow"
+
+  build-image:
+    if: github.event_name != 'pull_request'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: embedding-service
+
+      - uses: 252-DA/service-sdk/.github/actions/materialize@REPLACE_WITH_PINNED_SHA
+        with:
+          path: service-sdk
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: embedding-service/Dockerfile
+          push: false
+          tags: ${{ env.IMAGE }}:sha-${{ github.sha }}

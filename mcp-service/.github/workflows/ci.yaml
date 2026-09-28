@@ -1,0 +1,69 @@
+name: mcp-service
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/252-da/mcp-service
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: mcp-service
+
+      - uses: 252-DA/core-chunking/.github/actions/materialize@a82c16963c8cebb79d543e31e1a328d18ad78e0e
+        with:
+          path: packages-ai
+
+      # TODO: thay REPLACE_WITH_PINNED_SHA bằng commit SHA thật của
+      # 252-DA/service-sdk sau khi repo đó được tạo và tag v0.1.0. Xem
+      # docs/embedding-service-migration.md §5.1 — đây là consumer CI pin,
+      # độc lập với gitlink service-sdk trong da-platform.
+      - uses: 252-DA/service-sdk/.github/actions/materialize@REPLACE_WITH_PINNED_SHA
+        with:
+          path: service-sdk
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.11.32"
+
+      - name: Install deps
+        working-directory: mcp-service
+        run: uv sync --locked --python 3.10
+
+      - name: Run unit tests
+        working-directory: mcp-service
+        run: uv run pytest tests/unit -q
+
+  build-image:
+    if: github.event_name != 'pull_request'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: mcp-service
+
+      - uses: 252-DA/core-chunking/.github/actions/materialize@a82c16963c8cebb79d543e31e1a328d18ad78e0e
+        with:
+          path: packages-ai
+
+      - uses: 252-DA/service-sdk/.github/actions/materialize@REPLACE_WITH_PINNED_SHA
+        with:
+          path: service-sdk
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: mcp-service/Dockerfile
+          push: false
+          tags: ${{ env.IMAGE }}:sha-${{ github.sha }}

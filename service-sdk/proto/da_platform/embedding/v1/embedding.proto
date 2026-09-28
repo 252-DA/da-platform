@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package da_platform.embedding.v1;
+
+// ---------------------------------------------------------------------------
+// EmbeddingService — batch text embedding, phục vụ document-worker và
+// mcp-service. Health/readiness dùng chuẩn grpc.health.v1.Health (package
+// grpcio-health-checking phía server, không định nghĩa lại ở đây).
+// ---------------------------------------------------------------------------
+
+service EmbeddingService {
+  // Embed tối đa 32 chuỗi trong một request. Vectors trả về đúng thứ tự với
+  // input. Batch rỗng hoặc >32 phần tử -> INVALID_ARGUMENT.
+  rpc Embed(EmbedRequest) returns (EmbedResponse);
+
+  // Thông tin model hiện tại — client dùng để validate dimension trước khi
+  // upsert Qdrant, và để biết giới hạn batch/token length của model.
+  rpc GetModelInfo(GetModelInfoRequest) returns (GetModelInfoResponse);
+}
+
+message EmbedRequest {
+  string request_id = 1;      // Client-generated, dùng để trace qua log/metrics
+  repeated string texts = 2;  // 1..32 phần tử
+}
+
+message Vector {
+  repeated float values = 1;
+}
+
+message EmbedResponse {
+  string request_id = 1;
+  repeated Vector vectors = 2;  // len(vectors) == len(request.texts), cùng thứ tự
+  string model_name = 3;
+  int32 dimension = 4;
+}
+
+message GetModelInfoRequest {}
+
+message GetModelInfoResponse {
+  string model_name = 1;
+  int32 dimension = 2;
+  int32 max_batch_size = 3;      // Giới hạn RPC batch — hiện tại 32
+  int32 max_token_length = 4;    // Giới hạn token của model — hiện tại 1024
+}

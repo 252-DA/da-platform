@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "embedding-service"
+version = "0.1.0"
+description = "Standalone gRPC service serving BGE-M3 text embeddings"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+dependencies = [
+    "da-service-sdk>=0.1.0,<0.2.0",
+    "grpcio>=1.80.0",
+    "grpcio-health-checking>=1.80.0",
+    "grpcio-reflection>=1.80.0",
+    "protobuf>=4.25.0",
+    "FlagEmbedding>=1.2.0",
+    "pydantic-settings>=2.13.1",
+    "structlog>=24.1.0",
+    "prometheus-client>=0.24.1",
+    # torch is transitive via FlagEmbedding — listed directly so
+    # tool.uv.sources.torch below actually takes effect (uv only applies a
+    # source override to a package that appears directly in the requirement
+    # graph of the project being resolved, not to transitive deps of the
+    # same name).
+    "torch",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.0",
+]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+da-service-sdk = { path = "../service-sdk", editable = true }
+# CPU-only wheels — no GPU passthrough in Docker Desktop, the default PyPI
+# wheel bundles ~2GB of unused CUDA runtime (nvidia-cublas/-cudnn/-cusparse,
+# triton...). Requires "torch" to be a direct dependency above, see comment
+# there.
+torch = [{ index = "pytorch-cpu" }]
+
+[project.scripts]
+embedding-service = "embedding_service.delivery.server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "-v --cov=embedding_service --cov-report=term-missing"
+markers = [
+    "slow: real-BGE smoke test, not run in regular CI (see docs/embedding-service-migration.md §17)",
+]
