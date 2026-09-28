@@ -65,6 +65,18 @@ document-inspector    FastAPI dev-only để inspect parse/chunk         (phase 
 
 ## 5. Cơ chế phân phối `service-sdk`
 
+> **Cập nhật 2026-09-28 — `service-sdk` KHÔNG tách thành repo riêng.**
+> Nó sống in-tree trong `da-platform` như một thư mục thường, không phải
+> submodule. Phần "hai pin độc lập" bên dưới vì vậy **không còn áp dụng cho
+> `service-sdk`** — consumer cùng repo chỉ cần path dep, không có gitlink nào
+> để lệch. §5.1–§5.3 được giữ lại và viết lại cho các dependency **thật sự**
+> là submodule: `core-chunking` (nằm ở `packages-ai/`) và `ai-sdk`.
+>
+> Lý do giữ in-tree: mọi Dockerfile build bằng `context: .` ở root rồi
+> `COPY service-sdk`, và các consumer khai `{ path = "../service-sdk" }`, nên
+> chúng bắt buộc nằm chung một cây thư mục. Tách ra chỉ thêm một pin phải
+> canh mà không đổi được gì.
+
 Hybrid: package có version SemVer, phân phối bằng source pin theo commit. Chưa dựng private PyPI.
 
 **Bốn trách nhiệm tách biệt, không được coi là một pin duy nhất:**
@@ -72,49 +84,62 @@ Hybrid: package có version SemVer, phân phối bằng source pin theo commit. 
 | Trách nhiệm | Cơ chế | Nơi sống |
 |---|---|---|
 | Version contract | SemVer (`da-service-sdk>=0.1.0,<0.2.0`) trong `project.dependencies` | pyproject.toml của mỗi consumer |
-| Dev/Compose pin | gitlink submodule `service-sdk` | `.gitmodules` + tree của `da-platform` |
-| CI pin | SHA 40 ký tự trong `uses: 252-DA/service-sdk/.github/actions/materialize@<sha>` | workflow YAML của **từng** consumer repo |
+| Dev/Compose pin | gitlink submodule — **chỉ với dep là submodule** (`core-chunking`, `ai-sdk`). `service-sdk` in-tree nên không có | `.gitmodules` + tree của `da-platform` |
+| CI pin | SHA 40 ký tự trong `uses: 252-DA/<repo>/.github/actions/materialize@<sha>` | workflow YAML của **từng** consumer repo |
 | Runtime install | `uv sync --no-editable` → package thật trong `.venv`, không giữ source | Dockerfile builder stage |
 
 ### 5.1 Hai pin độc lập — không tự đồng bộ
 
-Đã verify: `worker.yaml` hiện tại **không** dùng git submodule của `da-platform` để lấy `packages-ai`/`ai-sdk` trong CI. Nó dùng composite action pin theo SHA ngay trong YAML của chính `worker`:
+Đã verify: `worker.yaml` **không** dùng git submodule của `da-platform` để lấy `packages-ai`/`ai-sdk` trong CI. Nó dùng composite action pin theo SHA ngay trong YAML của chính `worker`:
 
 ```yaml
-- uses: 252-DA/core-chunking/.github/actions/materialize@a82c16963c8cebb79d543e31e1a328d18ad78e0e
+- uses: 252-DA/core-chunking/.github/actions/materialize@<sha>
 ```
 
 `worker` là repo riêng, workflow của nó chạy trên chính repo `worker`, **không đọc được** `.gitmodules` của `da-platform`. Vậy có hai pin sống ở hai nơi khác nhau, phải cập nhật riêng từng bước:
 
-1. **Dev/Compose pin**: gitlink `service-sdk` trong repo `da-platform` — ảnh hưởng docker-compose dev local.
-2. **Consumer CI pin**: SHA trong `uses: .../materialize@<sha>` của từng repo (`packages-ai`, `worker`, `embedding-service`, `mcp-service`) — ảnh hưởng CI của chính repo đó.
+1. **Dev/Compose pin**: gitlink `packages-ai` / `ai-sdk` trong repo `da-platform` — ảnh hưởng docker-compose dev local.
+2. **Consumer CI pin**: SHA trong `uses: .../materialize@<sha>` của repo consumer — ảnh hưởng CI của chính repo đó.
 
 Bump một pin không tự bump pin còn lại. Quên bước 2 khiến CI build ra artefact khác với những gì dev thấy ở local, không có gì báo lỗi trừ khi có check chủ động (§5.3).
+
+**Đã xảy ra thật:** 2026-09-28, PR #11 của `core-chunking` được merge (`d325fc4`) và gitlink trong `da-platform` được bump theo, nhưng `worker.yaml` vẫn pin `a82c1696`. CI của `worker` test trên một bản `packages-ai` khác với Compose và với dev local, im lặng — vì check §5.3 lúc đó chỉ canh `service-sdk`.
+
+**Phạm vi:** chỉ consumer **là repo riêng** mới lệch được. GitHub chỉ chạy `.github/workflows/` ở root của một repo, nên workflow nằm trong thư mục in-tree (`mcp-service/.github/`, `document-inspector/.github/`, `embedding-service/.github/`, `service-sdk/.github/`) **không bao giờ thực thi**. Pin cũ ở đó vô hại cho tới khi service đó được tách ra thật.
 
 ### 5.2 Checklist khi SDK thay đổi
 
 1. Sửa proto/client, chạy codegen và test trong `service-sdk`.
 2. Bump version SDK, commit, tạo tag Git (`v0.1.x` cho thay đổi tương thích; breaking contract → `da_platform.embedding.v2` + bump major).
-3. Cập nhật riêng gitlink `service-sdk` trong `da-platform`.
-4. Cập nhật riêng SHA materialize trong workflow của `packages-ai`, `worker`, `embedding-service`, `mcp-service`.
-5. Cập nhật version constraint và `uv.lock` của từng consumer.
-6. Chạy integration check tại `da-platform` (§5.3), sau đó mới build Compose/E2E.
+3. Cập nhật version constraint và `uv.lock` của từng consumer.
+4. Chạy `python3 scripts/check_materialize_pins.py` tại `da-platform`, sau đó mới build Compose/E2E.
 
-### 5.3 `scripts/check_service_sdk_pins`
+`service-sdk` cùng repo nên **không** có bước bump gitlink hay bump SHA materialize. Hai bước đó chỉ cần khi đổi `core-chunking` hoặc `ai-sdk`:
 
-Thêm vào integration CI của `da-platform` (chưa tồn tại — xem §7). So sánh gitlink SDK đã **commit** với mọi SHA materialize trong các submodule consumer, fail nếu lệch.
+- bump gitlink submodule trong `da-platform`, **và**
+- bump SHA `materialize@` trong workflow của mọi consumer là repo riêng (hiện tại chỉ `worker`).
 
-Chi tiết cài đặt quan trọng: đọc gitlink bằng `git ls-tree HEAD -- service-sdk` (hoặc `git submodule status --cached`), **không** dùng `git submodule status` trơn — lệnh đó đọc commit đang checkout thật trong working dir, có thể vượt trước những gì đã commit (dev bump local rồi quên commit). Check muốn xác nhận "cái gì đã được chốt", phải đọc từ tree đã commit.
+Hai việc đó phải làm cùng một lượt, nếu không sẽ tái hiện đúng sự cố ghi ở §5.1.
+
+### 5.3 `scripts/check_materialize_pins.py`
+
+Chạy trong integration CI của `da-platform` (§7). So sánh gitlink đã **commit** với mọi SHA `materialize@` tìm thấy trong workflow của consumer, fail nếu lệch.
+
+Cả hai vế đều **tự khám phá**, không hardcode: dependency đọc từ `.gitmodules` (tên repo → path — hai thứ này khác nhau, `core-chunking` nằm ở `packages-ai/`), consumer là mọi thư mục top-level có workflow riêng. Thêm submodule hay thêm service đều không phải sửa script.
+
+Chi tiết cài đặt quan trọng: đọc gitlink bằng `git ls-tree HEAD -- <path>`, **không** dùng `git submodule status` trơn — lệnh đó đọc commit đang checkout thật trong working dir, có thể vượt trước những gì đã commit (dev bump local rồi quên commit). Check muốn xác nhận "cái gì đã được chốt", phải đọc từ tree đã commit.
 
 Logic:
 ```text
-pinned_sha = git ls-tree HEAD -- service-sdk   # từ da-platform
-for consumer in [packages-ai, worker, embedding-service, mcp-service]:
-    ci_sha = grep 'service-sdk/.github/actions/materialize@' consumer/.github/workflows/*.yaml
-    assert ci_sha == pinned_sha, hoặc consumer nằm trong danh sách ngoại lệ khai báo rõ ràng
+repos = parse(.gitmodules)                       # tên repo -> path
+for consumer in mọi thư mục top-level có .github/workflows/:
+    for (repo, ci_sha) in grep 'materialize@<40 hex>' trong workflow của consumer:
+        pinned = git ls-tree HEAD -- repos[repo]
+        nếu consumer không phải submodule  -> NOTE  (workflow inert, không chạy)
+        nếu ci_sha != pinned               -> FAIL, trừ khi có ngoại lệ khai báo
 ```
 
-Consumer có thể cố ý dùng bản cũ (đang giữa quá trình nâng cấp dần), nhưng trường hợp đó phải khai báo ngoại lệ tường minh trong script, không được để lệch âm thầm.
+Consumer có thể cố ý dùng bản cũ (đang giữa quá trình nâng cấp dần), nhưng trường hợp đó phải khai báo ngoại lệ tường minh trong `scripts/check_materialize_pins.exceptions.json`, key `"<consumer>/<repo>"` — không được để lệch âm thầm.
 
 ### 5.4 Khai báo dependency (uv)
 
@@ -200,10 +225,13 @@ Tách một commit chuẩn hóa, áp dụng đồng loạt cho cả workflow/Doc
 - Docker production giữ `--no-dev --no-editable` là bước riêng, sau `--locked`.
 - Regenerate/verify toàn bộ lockfile hiện có bằng đúng version uv này.
 
-## 7. Hai lỗ hổng hạ tầng CI phát hiện được — phải lấp trước khi checklist §5.2 chạy được
+## 7. Hai lỗ hổng hạ tầng CI — ĐÃ LẤP (2026-09-28)
 
-1. **`packages-ai` (core-chunking) hiện không có workflow CI nào.** `packages-ai/.github` chỉ chứa `actions/materialize`. Test suite ở `packages-ai/tests/unit/{adapters,application,delivery,domain,shared}` hiện **không được chạy ở đâu cả** — `worker.yaml` chỉ chạy `pytest tests/unit` trong thư mục `worker`, không đụng `packages-ai/tests`. Đây là nơi bắt buộc phải chạy test cho `GrpcEmbedder` adapter mới (fake gRPC server, dimension mismatch, close channel — xem §11). Phải tạo `packages-ai/.github/workflows/ci.yaml`.
-2. **`da-platform` (repo root) hiện không có `.github` nào cả.** Không có nơi để gắn `scripts/check_service_sdk_pins`. Phải tạo `da-platform/.github/workflows/integration.yaml`.
+Giữ lại phần mô tả để biết vì sao hai file đó tồn tại.
+
+1. ~~**`packages-ai` (core-chunking) không có workflow CI nào.**~~ → đã tạo `packages-ai/.github/workflows/ci.yaml`.
+   Trước đó `packages-ai/.github` chỉ chứa `actions/materialize`, nên test suite ở `packages-ai/tests/unit/{adapters,application,delivery,domain,shared}` không được chạy ở đâu cả — `worker.yaml` chỉ chạy `pytest tests/unit` trong thư mục `worker`, không đụng `packages-ai/tests`. Đây là nơi chạy test cho `GrpcEmbedder` adapter (fake gRPC server, dimension mismatch, close channel — xem §11).
+2. ~~**`da-platform` (repo root) không có `.github` nào cả.**~~ → đã tạo `.github/workflows/integration.yaml`, chạy `scripts/check_materialize_pins.py` trên `master` và `dev`.
 
 ## 8. Giai đoạn migration — dependency worker theo hai checkpoint
 
