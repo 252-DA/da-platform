@@ -57,7 +57,7 @@ Cột "Nguồn": **chạy** = đã chạy thử bằng `.venv`; **code** = kết
 |---|---|---|---|---|
 | D1 | `packages-ai/.../container.py:309` | `MapChunksToLosUseCase` chỉ được khai báo; grep toàn repo không thấy delivery, worker hay core-api nào gọi nó hoặc ghi `chunk_lo_mappings` | code (xác minh: `SELECT count(*) FROM chunk_lo_mappings;`) | đường (1): `list_chunks_for_lo` trả rỗng → `Err("No grounded source chunks…")`. Đường (2): `INSERT … SELECT FROM lesson_row` ra 0 dòng → card/quiz đã sinh bị mất im lặng, **sau khi** bản nháp cũ đã bị soft-delete |
 | D2 | `heuristic_lo_mapper.py:19-40` | Map chỉ theo số chương trong heading; regex chỉ nhận "Chương N" hoặc heading bắt đầu bằng số | code | mọi LO cùng chương nhận **toàn bộ** chunk của chương; heading "Bài 4", "Chapter 4", "Lecture 4" không được map; mức 0.9 cần ≥ 2 trong 4 từ đầu của LO xuất hiện trong heading, gần như không đạt |
-| D3 | `contracts/integration-events/v1/content-generation-requested.json` so với `content-generation.service.ts:74-79` | Contract v1 định nghĩa `target`, `targets[]` (mỗi LO kèm `bloom_level`), `count_per_lo`, `additionalProperties: false`; core-api thực tế gửi `scope` tự do; worker đọc `scope` (`_parse_job`) | code | payload thật **không hợp lệ theo contract**. `test_contract_fixtures.py` chỉ validate fixture nên không phát hiện. core-api cho `type='card'` nhưng worker chỉ nhận `quiz` → mọi request card đều FAILED |
+| D3 | `contracts/integration-events/v1/content-generation-requested.json` so với `content-generation.service.ts:74-79` | Contract v1 định nghĩa `target`, `targets[]` (mỗi LO kèm `bloom_level`), `count_per_lo`, `additionalProperties: false`; core-api thực tế gửi `scope` tự do; worker đọc `scope` (`_parse_job`) | code | payload thật **không hợp lệ theo contract**. `test_contract_fixtures.py` chỉ validate fixture nên không phát hiện. core-api cho `type='card'` nhưng worker chỉ nhận `quiz` → mọi request card đều FAILED | **Phần lệch contract: ĐÃ XỬ LÝ 2026-09-28** — contract v1 sửa lại mô tả đúng `scope` (§6.3); envelope rút `required` về 5 field `OutboxService` thực gửi; fixture viết lại theo message thật và đã kiểm chạy lọt qua `_parse_job`/`_quiz_request`. Dạng `target/targets[]` chuyển thành bản đề xuất cho v2. **Phần `type='card'`: CHƯA xử lý** — core-api vẫn nhận `'card'` (`content-generation.service.ts:35`), worker vẫn ném lỗi với mọi type khác `'quiz'`, nên request card vẫn FAILED. Contract hiện ghi `enum: [card, quiz]` để mô tả đúng core-api, không phải để hợp thức hoá lỗi này.
 | D4 | `generate_curriculum_quiz.py:164` → `postgres_curriculum_repository.py:537-548` | `bloom_level` của LO trong DB là INT; `str()` biến thành `"3"`; `_bloom_level("3")` không khớp bảng tên → mặc định 2 | **chạy** | **mọi câu sinh theo LO đều lưu `bloom_level = 2`**; prompt chỉ thấy `"Bloom level required: 3"` |
 
 **C: Chọn nội dung**
@@ -276,7 +276,17 @@ Ví dụ `generation_meta`:
 
 ### 6.3 Contract
 
-**Áp dụng đúng contract v1 đã có** (`targets[]`, `count_per_lo`, `style`):
+> **Đảo thứ tự, 2026-09-28.** Contract v1 đã được sửa để **mô tả đúng payload
+> hiện hành** (`scope`), vì một contract đang sai là rủi ro hiện tại: ai đọc nó
+> để viết consumer mới sẽ code theo payload không bao giờ tới. Dạng
+> `target/targets[]/count_per_lo/style` dưới đây giữ nguyên là **bản đề xuất
+> chưa triển khai**, và khi làm sẽ là `contracts/integration-events/v2/` kèm
+> migration + test tương thích — không sửa đè lên v1. Lý do không làm ngay:
+> bảng `content_generation_targets` mà nó cần chưa tồn tại trong prisma, và
+> contract v1 cũ không có chỗ cho `source_document_ids` (worker đang dùng thật),
+> nên "sửa code cho khớp contract" là bất khả chứ không phải khó.
+
+**Bản đề xuất — chưa triển khai** (`targets[]`, `count_per_lo`, `style`):
 - **core-api** chịu trách nhiệm giải target thành danh sách LO, vì nó sở hữu bảng `chapters`, `learning_outcomes`, `lo_assessments`. Chapter → các LO của chapter; assessment → các LO trong `lo_assessments`.
 - **Worker** nhận v1 và giữ parser `scope` cũ trong một phiên bản để chuyển tiếp.
 - **Thêm test** validate payload do **hàm builder thật** của core-api tạo ra theo JSON schema, không chỉ validate fixture.

@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://da-platform.dev/contracts/integration-events/v1/envelope.json",
   "title": "IntegrationEventEnvelopeV1",
-  "description": "Common envelope cho mọi integration event giữa Core và AI workers. Snake_case, bất biến. Checksum tính trên canonical JSON UTF-8 (sort key đệ quy, không whitespace thừa).",
+  "description": "Common envelope cho mọi integration event giữa Core và AI workers. Snake_case, bất biến. Checksum tính trên canonical JSON UTF-8 (sort key đệ quy, không whitespace thừa). CẬP NHẬT 2026-09-28: required rút về đúng 5 field OutboxService.pollAndRelay() thực sự đưa vào queue. schema_version, occurred_at, producer, correlation_id, causation_id giữ dạng optional — hiện không producer nào gửi và không consumer nào đọc (đã kiểm: 0 chỗ đọc trong worker/ và packages-ai/). Siết lại thành required là việc của v2, kèm thay đổi ở OutboxService.",
   "type": "object",
   "properties": {
     "event_id": {
@@ -30,11 +30,6 @@
   "required": [
     "event_id",
     "event_type",
-    "schema_version",
-    "occurred_at",
-    "producer",
-    "correlation_id",
-    "causation_id",
     "aggregate_type",
     "aggregate_id",
     "payload"
