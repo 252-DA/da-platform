@@ -27,3 +27,9 @@ dist/
 .idea/
 .vscode/
 .agents/
+
+# ===== Test artifacts =====
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
