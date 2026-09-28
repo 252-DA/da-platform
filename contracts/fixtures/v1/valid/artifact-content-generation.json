@@ -9,7 +9,6 @@
       "bloom_level": 4,
       "quiz_items": [
         {
-          "position": 0,
           "question": "Phân tích yêu cầu chức năng là gì?",
           "choices": ["Mô tả hệ thống", "Phân tích chức năng", "Thiết kế cơ sở dữ liệu", "Kiểm thử phần mềm"],
           "correct_index": 1,
