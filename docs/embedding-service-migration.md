@@ -290,6 +290,13 @@ Giữ lại phần mô tả để biết vì sao hai file đó tồn tại.
 
 - Embedding v1 dùng unary batch gRPC, generated code được commit.
 - Giữ inspector dưới dạng dev tool; xóa API nghiệp vụ Python trùng với core-api.
-- `ai-sdk`, `core-api/proto`, `contracts/` (async JSON) không chuyển vào `service-sdk` đợt này.
+- `ai-sdk` và `contracts/` không chuyển vào `service-sdk` đợt này.
+- **Cập nhật 2026-09-28:** `core-api/proto/core_api.proto` đã chuyển sang
+  `contracts/proto/core_api.proto`. Nó là contract giữa `core-api` (server) và
+  `web` (client) — hai repo khác nhau — nên không thuộc repo nào trong hai; trước
+  đó `web` mount thẳng `./core-api/proto` và Dockerfile `COPY core-api/proto`,
+  tức một repo đọc file của repo khác mà không pin gì cả. Cả hai giờ cùng đọc
+  `contracts/proto/`. Đường dẫn runtime không đổi (`process.cwd()/proto/`), chỉ
+  đổi nguồn của mount và COPY.
 - Giao tiếp nội bộ Compose/K3s chưa dùng TLS; bảo mật transport là phase riêng sau khi service boundary ổn định.
-- `embedding-service`, `mcp-service`, `document-inspector` sẽ là repo Git độc lập (§3) — hiện scaffold sẵn dưới dạng thư mục thường trong `da-platform`, tách thành repo/submodule thật khi tới bước 17. Thứ tự **chạy được** (không phải thứ tự scaffold) vẫn đi từ `service-sdk` → `embedding-service` → `packages-ai` (`GrpcEmbedder`) → `mcp-service`, theo đúng §9.
+- ~~`embedding-service`, `mcp-service`, `document-inspector` sẽ là repo Git độc lập (§3)~~ → **quyết định lại 2026-09-28: giữ in-tree trong `da-platform`**, cùng lý do với `service-sdk` ở §5. Workflow `.github/` sẵn có trong các thư mục đó hiện **không chạy** (GitHub chỉ đọc `.github/workflows/` ở root repo) — giữ lại để dùng nếu sau này tách thật. Thứ tự **chạy được** (không phải thứ tự scaffold) vẫn đi từ `service-sdk` → `embedding-service` → `packages-ai` (`GrpcEmbedder`) → `mcp-service`, theo đúng §9.

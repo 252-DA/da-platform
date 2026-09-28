@@ -309,7 +309,10 @@ services:
       LTI_COOKIE_SECURE: ${LTI_COOKIE_SECURE:-}
     volumes:
       - "./web:/app"
-      - "./core-api/proto:/app/proto:ro"
+      # Trước đây mount thẳng ./core-api/proto: web (repo riêng) với tay vào
+      # repo core-api, không pin, không version. Giờ cả hai service cùng đọc
+      # một nguồn duy nhất trong da-platform.
+      - "./contracts/proto:/app/proto:ro"
       - web_node_modules:/app/node_modules
       - web_next_cache:/app/.next
       - "./web/keys:/keys:ro"
@@ -364,6 +367,10 @@ services:
       CI: "true"
     volumes:
       - "./core-api:/app"
+      # core_api.proto không còn nằm trong repo core-api — nó là contract
+      # giữa core-api và web nên sống ở contracts/proto/. Mount vào
+      # /app/proto vì grpc-server.service.ts đọc process.cwd()/proto/.
+      - "./contracts/proto:/app/proto:ro"
       - core_api_node_modules:/app/node_modules
       - "./core-api/keys:/app/keys:ro"
       - "./web/keys:/lti-keys:ro"
