@@ -32,10 +32,15 @@ x-common-env: &common-env
   EMBEDDER__BGE_USE_FP16: "true"
   # Tracing (disabled by default)
   TRACING__ENABLED: "false"
-  # LLM (GenerateCurriculumQuiz + enrichment)
-  LLM__PROVIDER: gemini
-  LLM__MODEL: gemini-3-flash-preview
-  LLM__API_KEY: ${GEMINI_API_KEY:-}
+  # LLM — model được chọn bằng TÊN PROFILE trong catalog của ai-sdk
+  # (ai-sdk/src/ai_runtime/catalog.py, xem docs/model-routing-design.md).
+  # Compose chỉ khai báo những núm có thể xoay; để trống thì dùng TASK_DEFAULTS
+  # trong catalog. Đổi model = đặt một biến dưới đây trong .env rồi restart.
+  LLM_PROFILE: ${LLM_PROFILE:-}
+  LLM_PROFILE__ENRICHMENT: ${LLM_PROFILE__ENRICHMENT:-}
+  # Key đi theo provider, không theo task: catalog chỉ giữ TÊN biến env.
+  GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+  DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
   # Metrics
   METRICS__ENABLED: "true"
 
@@ -511,12 +516,13 @@ services:
       <<: *common-env
       WORKER_TYPE: content_generation
       WORKER_CONCURRENCY: "2"
-      # Model riêng cho sinh câu hỏi (vd DeepSeek), không đổi LLM của các worker
-      # khác. Để trống thì dùng Gemini như common-env.
-      LLM__PROVIDER: ${QUIZ_LLM_PROVIDER:-gemini}
-      LLM__MODEL: ${QUIZ_LLM_MODEL:-gemini-3-flash-preview}
-      LLM__API_KEY: ${QUIZ_LLM_API_KEY:-${GEMINI_API_KEY:-}}
-      LLM__BASE_URL: ${QUIZ_LLM_BASE_URL:-}
+      # Ba vai trò trong sinh quiz, ba profile độc lập — cùng một process vẫn
+      # gọi được hai model khác nhau. Để trống thì lấy TASK_DEFAULTS của catalog
+      # (viết câu: deepseek-chat, chấm: gemini-flash — judge phải khác model
+      # vừa viết câu, xem docs/quiz-generation-redesign.md §7.8).
+      LLM_PROFILE__QUIZ_GENERATION: ${LLM_PROFILE__QUIZ_GENERATION:-}
+      LLM_PROFILE__QUIZ_VERIFICATION: ${LLM_PROFILE__QUIZ_VERIFICATION:-}
+      LLM_PROFILE__QUIZ_REGENERATION: ${LLM_PROFILE__QUIZ_REGENERATION:-}
       HEALTH_PORT: "8084"
       METRICS__PORT: "9094"
       LEARNING_CONTEXT_MCP_ENABLED: "true"
