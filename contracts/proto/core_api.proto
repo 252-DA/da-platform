@@ -27,6 +27,10 @@ service CoreApiService {
   rpc CreateUploadSession(JsonRequest) returns (JsonResponse);
   rpc ConfirmUpload(JsonRequest) returns (JsonResponse);
   rpc ListDocuments(JsonRequest) returns (JsonResponse);
+  rpc GetDocument(JsonRequest) returns (JsonResponse);
+  rpc GetDocumentChunks(JsonRequest) returns (JsonResponse);
+  // URL đọc file, hạn ngắn; server của web fetch rồi stream lại cho trình duyệt.
+  rpc GetDocumentFileUrl(JsonRequest) returns (JsonResponse);
   rpc DeleteDocument(JsonRequest) returns (JsonResponse);
   rpc SyncDocumentsFromCanvas(JsonRequest) returns (JsonResponse);
   rpc UpdateDocumentPlacement(JsonRequest) returns (JsonResponse);
