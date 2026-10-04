@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://da-platform.dev/contracts/artifacts/v1/content-generation.json",
   "title": "ContentGenerationArtifactV1",
-  "description": "Artifact content-generation. All-or-nothing: phải chứa đúng tất cả LO trong content_generation_targets; mỗi LO có 1..count_per_lo items.",
+  "description": "Artifact content-generation. All-or-nothing: phải chứa đúng tất cả LO trong content_generation_targets; mỗi LO có 1..count_per_lo items. Một kết quả mang quiz_items (type='quiz') hoặc lesson_cards (type='card').",
   "type": "object",
   "properties": {
     "schema_version": { "type": "integer", "const": 1 },
@@ -25,9 +25,19 @@
             "items": {
               "$ref": "#/definitions/quizItem"
             }
+          },
+          "lesson_cards": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 6,
+            "description": "Thứ tự trong mảng là thứ tự học trong lesson (lesson_cards.position).",
+            "items": {
+              "$ref": "#/definitions/lessonCard"
+            }
           }
         },
-        "required": ["lo_id", "lo_code", "bloom_level", "quiz_items"],
+        "required": ["lo_id", "lo_code", "bloom_level"],
+        "anyOf": [{ "required": ["quiz_items"] }, { "required": ["lesson_cards"] }],
         "additionalProperties": false
       }
     }
@@ -60,6 +70,52 @@
         "explanation",
         "difficulty",
         "lo_alignment_rationale",
+        "source_chunk_ids",
+        "model_id"
+      ],
+      "additionalProperties": false
+    },
+    "lessonCard": {
+      "type": "object",
+      "description": "Một micro-content card: một ý, bám nguồn, kèm một cặp câu tự kiểm tra (mặt lật của flashcard).",
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 150 },
+        "key_insight": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400,
+          "description": "1–2 câu người học phải nhớ nếu chỉ đọc một câu."
+        },
+        "bullets": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "items": { "type": "string", "minLength": 1, "maxLength": 300 }
+        },
+        "example": {
+          "type": ["string", "null"],
+          "maxLength": 600,
+          "description": "Ví dụ lấy từ nguồn; null nếu nguồn không có."
+        },
+        "misconception": {
+          "type": ["string", "null"],
+          "maxLength": 400,
+          "description": "Lỗi hiểu nhầm, chỉ khi nguồn nêu hoặc hàm ý rõ; null nếu không."
+        },
+        "check_question": { "type": "string", "minLength": 1, "maxLength": 400 },
+        "check_answer": { "type": "string", "minLength": 1, "maxLength": 400 },
+        "source_chunk_ids": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        },
+        "model_id": { "type": "string", "minLength": 1 }
+      },
+      "required": [
+        "title",
+        "key_insight",
+        "bullets",
+        "check_question",
+        "check_answer",
         "source_chunk_ids",
         "model_id"
       ],

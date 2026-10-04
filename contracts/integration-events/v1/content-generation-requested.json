@@ -16,7 +16,7 @@
         "course_id": { "type": "string", "format": "uuid" },
         "type": {
           "enum": ["card", "quiz"],
-          "description": "core-api nhận cả hai (content-generation.service.ts:35). Worker hiện chỉ xử lý 'quiz' và ném lỗi với 'card' — §6.3 đề xuất core-api từ chối 'card' cho tới khi worker hỗ trợ."
+          "description": "core-api nhận cả hai (content-generation.service.ts:35). Worker xử lý 'quiz' (GenerateCurriculumQuizUseCase) và 'card' (GenerateLessonCardsUseCase); cả hai đọc target từ scope theo cùng một cách."
         },
         "scope": {
           "type": "object",
@@ -43,7 +43,7 @@
               "type": "integer",
               "minimum": 1,
               "maximum": 20,
-              "description": "MAX_QUESTIONS_PER_REQUEST=20. Worker mặc định 5 nếu thiếu."
+              "description": "Quiz: MAX_QUESTIONS_PER_REQUEST=20, worker mặc định 5 nếu thiếu. Card: worker nhận 1–6 (MAX_CARD_COUNT), mặc định 4, ngoài khoảng đó request thành FAILED."
             },
             "bloom_level": {
               "enum": ["remember", "understand", "apply", "analyze", "evaluate", "create"],
