@@ -42,9 +42,13 @@ Lỡ clone thường rồi thì: `git submodule update --init --recursive`
 
 ## Chạy hệ thống
 
+Secret dùng chung lấy từ Infisical, không gửi `.env` cho nhau. Làm theo
+[docs/dev-setup.md](docs/dev-setup.md), tóm tắt:
+
 ```bash
-cp .env.canvas.example .env   # điền secrets
-docker compose up -d --build
+cp .env.team.example .env                        # chỉ điền key model của bạn
+node scripts/gen_dev_keys.mjs
+scripts/dc up -d --build --scale cloudflared=0   # scripts/dc = docker compose + secret từ Infisical
 ```
 
 Setup LTI với Canvas: xem `docs/canvas_lti_setup.md`.

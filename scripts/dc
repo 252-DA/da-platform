@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# docker compose with shared secrets pulled from Infisical (env "dev").
+# Per-machine config stays in .env; Infisical values override it.
+# Every compose command needs the secrets: the ${VAR:?} checks in
+# docker-compose.remote-db.yml fail even for `ps` or `logs` without them.
+#
+# Usage: scripts/dc up -d | scripts/dc logs -f core-api | scripts/dc ps
+set -euo pipefail
+cd "$(dirname "$0")/.."
+exec infisical run --env=dev -- docker compose "$@"
