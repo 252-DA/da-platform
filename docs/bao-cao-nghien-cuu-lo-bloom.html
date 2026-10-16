@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Tổng quan 10 bài nghiên cứu về Learning Outcome, Bloom và mapping nội dung; đối chiếu DA Platform và đề xuất kiểm chứng.">
+<title>Báo cáo nghiên cứu LO và Bloom — DA Platform</title>
+<style>
+:root { color-scheme: light; --ink:#1c2938; --muted:#586678; --accent:#14665d; --line:#d9e1e7; --paper:#fff; }
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; scroll-padding-top:24px; }
+body { margin:0; background:#f2f5f6; color:var(--ink); font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-size:17px; line-height:1.8; }
+a { color:var(--accent); text-underline-offset:3px; overflow-wrap:anywhere; }
+a:hover { color:#093c36; }
+a:focus-visible,button:focus-visible { outline:3px solid #d39221; outline-offset:4px; }
+.skip { position:absolute; left:16px; top:-80px; background:white; padding:8px 16px; z-index:10; }
+.skip:focus { top:12px; }
+.toolbar { max-width:1280px; margin:26px auto 0; padding:0 24px; display:flex; align-items:center; justify-content:space-between; gap:16px; font-size:14px; color:var(--muted); }
+.toolbar strong { color:var(--ink); letter-spacing:.03em; }
+.actions { display:flex; gap:18px; align-items:center; }
+button { font:inherit; background:var(--paper); color:var(--accent); border:1px solid #b7cdc9; padding:8px 16px; border-radius:8px; cursor:pointer; }
+.layout { max-width:1280px; padding:26px 24px 64px; margin:auto; display:grid; grid-template-columns:230px minmax(0,1fr); gap:32px; }
+nav { position:sticky; top:24px; align-self:start; font-size:14px; line-height:1.65; }
+nav p { font-weight:700; margin:0 0 12px; }
+nav ol { list-style:none; margin:0; padding:0; border-left:2px solid var(--line); }
+nav li { margin:0; }
+nav a { display:block; text-decoration:none; padding:8px 0 8px 14px; color:var(--muted); }
+nav a:hover { color:var(--accent); background:#e7efec; }
+main { min-width:0; background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:44px 48px; box-shadow:0 4px 24px #22334406; }
+h1,h2,h3 { color:#173c3a; line-height:1.35; letter-spacing:-.015em; }
+h1 { font-size:34px; margin:0 0 24px; }
+h2 { font-size:26px; margin:52px 0 20px; padding-top:20px; border-top:1px solid var(--line); }
+h3 { font-size:21px; margin:34px 0 16px; }
+p { margin:16px 0; }
+li { margin:8px 0; }
+code { background:#eff3f4; padding:2px 5px; border-radius:4px; font-size:.88em; overflow-wrap:anywhere; }
+.table-scroll { max-width:100%; overflow-x:auto; margin:22px 0; border:1px solid var(--line); border-radius:8px; }
+table { width:100%; border-collapse:collapse; font-size:14px; line-height:1.65; }
+th,td { text-align:left; vertical-align:top; padding:12px 13px; border-bottom:1px solid var(--line); min-width:110px; overflow-wrap:anywhere; }
+th { background:#edf4f2; color:#244b45; font-weight:650; }
+tr:last-child td { border-bottom:0; }
+tr:nth-child(even) td { background:#fafcfc; }
+footer { color:var(--muted); font-size:13px; border-top:1px solid var(--line); margin-top:44px; padding-top:18px; }
+@media(max-width:1050px) { .layout { grid-template-columns:180px minmax(0,1fr); gap:20px; } main { padding:30px; } }
+@media(max-width:760px) { body { font-size:16px; } .layout { display:block; padding:18px 14px 40px; } nav { position:static; margin:0 0 22px; } nav ol { display:grid; grid-template-columns:1fr 1fr; } main { padding:26px 20px; } h1 { font-size:28px; } h2 { font-size:23px; } .toolbar { padding:0 14px; flex-wrap:wrap; } .actions { gap:12px; } }
+@media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+@media print { @page { size:A4; margin:17mm; } body { background:white; font-size:11pt; line-height:1.55; } .toolbar,nav,.skip { display:none; } .layout { display:block; max-width:none; padding:0; } main { padding:0; border:0; border-radius:0; box-shadow:none; } h1 { font-size:23pt; } h2 { font-size:17pt; margin-top:26px; } h3 { font-size:13pt; } h1,h2,h3 { break-after:avoid; } .table-scroll { overflow:visible; border-radius:0; } table { font-size:8.7pt; } th,td { padding:7px; min-width:0; } thead { display:table-header-group; } tr { break-inside:avoid; } a { color:inherit; } footer { font-size:9pt; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#report">Đến nội dung báo cáo</a>
+<div class="toolbar"><strong>DA PLATFORM · TÀI LIỆU NGHIÊN CỨU</strong><div class="actions"><a href="bao-cao-nghien-cuu-lo-bloom.md">Bản Markdown</a><button type="button" onclick="window.print()">In / lưu PDF</button></div></div>
+<div class="layout"><nav aria-label="Mục lục báo cáo"><p>Mục lục</p><ol><li><a href="#section-2">Tóm tắt</a></li>
+<li><a href="#section-3">1. Phạm vi và cách chọn tài liệu</a></li>
+<li><a href="#section-4">2. Cần phân biệt những gì?</a></li>
+<li><a href="#section-7">3. Hiện trạng DA Platform</a></li>
+<li><a href="#section-10">4. Những nghiên cứu có thể áp dụng</a></li>
+<li><a href="#section-19">5. Lựa chọn phương án cho DA Platform</a></li>
+<li><a href="#section-25">6. Kế hoạch đánh giá trước khi chọn model</a></li>
+<li><a href="#section-29">7. Thứ tự triển khai đề xuất</a></li>
+<li><a href="#section-30">8. Danh mục bài báo và thứ tự đọc</a></li></ol></nav><main id="report"><h1 id="section-1">Báo cáo nghiên cứu: Căn chỉnh Learning Outcome, nội dung học và Bloom</h1>
+<p><strong>Dự án:</strong> DA Platform — LMS tạo Micro-Content và Quiz bằng Generative AI<br />
+<strong>Ngày tra cứu và đối chiếu code:</strong> 14/10/2026<br />
+<strong>Mục đích:</strong> xác định các hướng nghiên cứu có thể giải quyết việc gắn tài liệu với LO và kiểm chứng mức Bloom của câu hỏi.</p>
+<h2 id="section-2">Tóm tắt</h2>
+<p>DA Platform đã có dữ liệu LO, quan hệ chương–LO, embedding để khớp tài liệu với chương và pipeline sinh câu hỏi theo Bloom. Phần còn thiếu là đánh giá nội dung ở cấp từng LO và kiểm chứng thao tác nhận thức của câu sau khi sinh.</p>
+<p>Báo cáo chọn <strong>10 bài nghiên cứu</strong>, gồm hai bài nền tảng về thiết kế dạy học, sáu bài về LO/Bloom/nội dung giáo dục và hai bài về truy xuất văn bản. Nghiên cứu hiện có cung cấp phương pháp, dữ liệu và một số mã nguồn để thử nghiệm. Các kết quả chưa đủ để khẳng định một mô hình sẽ giải quyết trọn vẹn bài toán trên tài liệu tiếng Việt của hệ thống.</p>
+<p><strong>Hướng đề xuất cho dự án:</strong> làm rõ các tiêu chí trong LO; tìm và xác minh bằng chứng từ tài liệu cho từng tiêu chí; đánh giá LO và Bloom của từng câu; lưu kết quả để giảng viên xác nhận. Đây là đề xuất triển khai của báo cáo, chưa phải một quy trình đã được kiểm chứng trên DA Platform.</p>
+<h2 id="section-3">1. Phạm vi và cách chọn tài liệu</h2>
+<p>Việc tra cứu tập trung vào bốn câu hỏi:</p>
+<ol>
+<li>Có thể tự động phân loại LO theo Bloom đến mức nào?</li>
+<li>Có thể tự động gắn nội dung học với LO bằng phương pháp nào?</li>
+<li>Câu do AI sinh có thực sự đạt Bloom được yêu cầu không?</li>
+<li>Cần đánh giá bằng chứng nào trước khi đưa các phương pháp này vào hệ thống?</li>
+</ol>
+<p>Các truy vấn gồm tên bài báo và các nhóm từ khóa như <em>learning outcomes Bloom classification</em>, <em>multi-label learning objectives</em>, <em>cross-dataset Bloom question classification</em>, <em>resource–topic alignment</em>, <em>educational question generation</em> và <em>passage reranking</em>.</p>
+<p>Ưu tiên bản bài báo, trang nhà xuất bản, ACL Anthology, arXiv và trang của tác giả. Đây là <strong>tổng quan có chọn lọc phục vụ thiết kế hệ thống</strong>, không phải tổng quan hệ thống theo PRISMA; không tuyên bố đã tìm hết nghiên cứu liên quan. Một số bài chỉ tiếp cận được tóm tắt hoặc trích đoạn; mức tiếp cận được ghi ở danh mục cuối.</p>
+<p>Các con số dưới đây là kết quả tác giả báo cáo. Không chạy lại các mô hình trong bài báo và không dùng kết quả đó như số đo của DA Platform.</p>
+<h2 id="section-4">2. Cần phân biệt những gì?</h2>
+<h3 id="section-5">2.1. Căn chỉnh mục tiêu, hoạt động học và đánh giá</h3>
+<p>Biggs đặt vấn đề thiết kế mục tiêu, hoạt động học và đánh giá sao cho cùng hướng đến năng lực người học phải thể hiện. Cách tiếp cận này thường được gọi là <em>constructive alignment</em>. Đây là cơ sở lý luận để kiểm tra cả nội dung học lẫn nhiệm vụ đánh giá, thay vì chỉ gắn một mã LO lên câu hỏi. <a href="https://link.springer.com/article/10.1007/BF00138871">Biggs, 1996 — bài nền tảng P1</a>.</p>
+<p>Trong dự án, nên tách ba quyết định:</p>
+<div class="table-scroll" tabindex="0" aria-label="Bảng có thể cuộn ngang"><table>
+<thead>
+<tr>
+<th>Quyết định</th>
+<th>Câu hỏi cần trả lời</th>
+<th>Ví dụ trong môn Cơ sở dữ liệu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LO → yêu cầu năng lực</td>
+<td>Người học cần làm được gì?</td>
+<td>Viết truy vấn SQL đáp ứng yêu cầu nghiệp vụ</td>
+</tr>
+<tr>
+<td>Nội dung → LO</td>
+<td>Đoạn này cung cấp kiến thức, quy trình hay ví dụ cần cho năng lực đó không?</td>
+<td>Ví dụ về <code>JOIN</code> hỗ trợ viết truy vấn nhiều bảng</td>
+</tr>
+<tr>
+<td>Câu hỏi → LO/Bloom</td>
+<td>Làm đúng câu này chứng minh được thao tác nào?</td>
+<td>Viết truy vấn khác với nhắc lại định nghĩa <code>JOIN</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Ví dụ do báo cáo xây dựng: câu “SELECT dùng để làm gì?” và nhiệm vụ “Viết truy vấn tìm khách hàng chưa có đơn hàng” cùng liên quan SQL. Mức phù hợp với LO và yêu cầu nhận thức phải được xem xét riêng trên nhiệm vụ, dữ kiện và cách chấm.</p>
+<h3 id="section-6">2.2. Bloom có hai chiều</h3>
+<p>Bloom sửa đổi có chiều <strong>quá trình nhận thức</strong> và chiều <strong>kiến thức</strong>. Sáu mức nhận thức được tóm tắt dưới đây; kiến thức gồm sự kiện, khái niệm, quy trình và siêu nhận thức. Như vậy, một số 1–6 chưa thể hiện toàn bộ khung phân loại. <a href="https://doi.org/10.1207/s15430421tip4104_2">Krathwohl, 2002 — P2</a>.</p>
+<div class="table-scroll" tabindex="0" aria-label="Bảng có thể cuộn ngang"><table>
+<thead>
+<tr>
+<th>Mức</th>
+<th>Thao tác cần được thể hiện</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 — Nhớ</td>
+<td>Nhận ra hoặc nhắc lại kiến thức</td>
+</tr>
+<tr>
+<td>2 — Hiểu</td>
+<td>Diễn giải, phân loại, tóm tắt hoặc giải thích ý nghĩa</td>
+</tr>
+<tr>
+<td>3 — Vận dụng</td>
+<td>Thực hiện hoặc sử dụng một quy trình</td>
+</tr>
+<tr>
+<td>4 — Phân tích</td>
+<td>Xác định thành phần, quan hệ hoặc cấu trúc</td>
+</tr>
+<tr>
+<td>5 — Đánh giá</td>
+<td>Đưa ra nhận định theo tiêu chí</td>
+</tr>
+<tr>
+<td>6 — Sáng tạo</td>
+<td>Tạo phương án, kế hoạch hoặc sản phẩm</td>
+</tr>
+</tbody>
+</table></div>
+<p>Bảng là cơ sở xây rubric; không phải bảng thay thế trực tiếp động từ bằng nhãn. Với hệ thống hiện tại, cần đối chiếu cả câu hỏi, đáp án/rubric và bối cảnh môn học khi xác nhận một mức Bloom.</p>
+<h2 id="section-7">3. Hiện trạng DA Platform</h2>
+<h3 id="section-8">3.1. Những gì đã xác nhận từ code</h3>
+<div class="table-scroll" tabindex="0" aria-label="Bảng có thể cuộn ngang"><table>
+<thead>
+<tr>
+<th>Thành phần</th>
+<th>Hiện trạng</th>
+<th>Hạn chế còn lại</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trích xuất Bloom của LO</td>
+<td><code>_infer_bloom()</code> chọn động từ khớp ở vị trí sớm nhất; nhãn mang provenance <code>inferred</code>.</td>
+<td>Không biểu diễn được đầy đủ một LO có nhiều hành vi; phụ thuộc bảng động từ.</td>
+</tr>
+<tr>
+<td>Khớp tài liệu với chương</td>
+<td><code>EmbeddingChapterMatcher</code> so nội dung với hồ sơ chương, có ngưỡng điểm và khoảng cách với chương đứng thứ hai.</td>
+<td>Kết quả xác định chương; chưa xác định mức hỗ trợ từng LO.</td>
+</tr>
+<tr>
+<td>Mapping chunk với LO</td>
+<td><code>HeuristicLoMapper</code> nhận chương và duyệt mọi LO được đề cương gắn với chương đó.</td>
+<td>Nội dung thân chunk chưa được dùng để quyết định từng cạnh chunk–LO.</td>
+</tr>
+<tr>
+<td>Confidence của mapping</td>
+<td>Chương đơn thuần cho điểm 0,5; có từ trong heading khớp LO thì tăng lên 0,7.</td>
+<td>Đây là điểm do luật đặt, chưa phải xác suất đúng được hiệu chỉnh bằng dữ liệu gán nhãn.</td>
+</tr>
+<tr>
+<td>Sinh và lưu câu</td>
+<td>Mức yêu cầu của request được ưu tiên, sau đó đến Bloom của LO; thiếu cả hai thì dùng <code>understand</code> và ghi log.</td>
+<td>Nhãn lưu phản ánh mục tiêu lúc sinh, chưa phải kết quả phân loại câu.</td>
+</tr>
+<tr>
+<td>Kiểm tra câu</td>
+<td>Verifier xét đáp án, lời giải và khả năng phương án khác cũng đúng theo nguồn.</td>
+<td>Chưa nhận LO trong bước kiểm tra; chưa trả Bloom được đánh giá.</td>
+</tr>
+<tr>
+<td>Dữ liệu</td>
+<td>Có <code>bloom_provenance</code>, <code>chunk_lo_mappings.source/provenance</code> và ma trận LO × Bloom.</td>
+<td>Chưa có các trường riêng cho Bloom yêu cầu, AI đánh giá và giảng viên xác nhận của câu.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Các vị trí đối chiếu:</p>
+<ul>
+<li><a href="../packages-ai/src/document_chunk/adapters/curriculum/dcmh_extractor.py">Suy luận Bloom từ LO</a>: <code>_BLOOM_VERBS</code>, <code>_infer_bloom</code>, <code>_extract_los</code>.</li>
+<li><a href="../packages-ai/src/document_chunk/adapters/curriculum/embedding_chapter_matcher.py">Khớp chương bằng embedding</a>: <code>EmbeddingChapterMatcher.match</code>.</li>
+<li><a href="../packages-ai/src/document_chunk/adapters/curriculum/heuristic_lo_mapper.py">Mapping chunk–LO</a>: <code>HeuristicLoMapper.map</code>.</li>
+<li><a href="../worker/worker/container.py">Nối mapper và chapter matcher trong worker</a>: <code>_build_map_chunks_to_los</code>.</li>
+<li><a href="../worker/worker/use_cases/generate_curriculum_quiz.py">Chọn và lưu Bloom khi sinh câu</a>: <code>execute</code>.</li>
+<li><a href="../worker/worker/prompts/curriculum_quiz.py">Prompt sinh/kiểm tra</a>: <code>generation</code>, <code>verification</code>.</li>
+<li><a href="../core-api/prisma/schema.prisma">Schema hiện tại</a>: <code>learning_outcomes</code>, <code>chunk_lo_mappings</code>, <code>quiz_items</code>.</li>
+</ul>
+<h3 id="section-9">3.2. Hai kiểm tra tái hiện</h3>
+<p><strong>Trường hợp A — LO ghép nhiều hành vi.</strong> Gọi trực tiếp <code>_infer_bloom()</code> với “Trình bày và phân tích các phương pháp xử lý dữ liệu” cho kết quả <code>remember</code>. Đây là hành vi đúng theo luật hiện tại, nhưng không phản ánh yêu cầu phân tích xuất hiện sau đó.</p>
+<p><strong>Trường hợp B — các LO cùng chương.</strong> Tạo một chương có hai LO: “Viết truy vấn SQL” và “Chuẩn hóa lược đồ quan hệ”. Chunk có heading “SELECT và WHERE”, thân chứa <code>SELECT name FROM students WHERE age &gt; 18;</code>. Mapper tạo cạnh đến cả hai LO, mỗi cạnh confidence 0,5.</p>
+<p>Hai trường hợp dùng dữ liệu tự dựng để kiểm tra hành vi của code. Chúng chưa cho biết tỷ lệ mapping sai trong dữ liệu môn học thực tế.</p>
+<p><strong>Kiểm tra hồi quy:</strong> 11 test thuộc <code>TestBloomLevel</code> và 19 test mapper/document placement đều pass. Lỗi cũ quy đổi khiến mọi câu lưu Bloom 2 đã được sửa. Các test này chưa đo độ chính xác sư phạm của câu sinh thật. Chưa kiểm tra cấu hình hoặc dữ liệu production trong đợt rà soát này.</p>
+<h2 id="section-10">4. Những nghiên cứu có thể áp dụng</h2>
+<h3 id="section-11">4.1. Phân loại LO bằng prompt và BERT — Almatrafi &amp; Johri, 2025 [P3]</h3>
+<p><strong>Bài toán:</strong> gán một hoặc nhiều mức Bloom cho LO. Tác giả đánh giá GPT-4 trên 1.000 LO lấy từ tập kiểm tra của bộ dữ liệu 21.380 LO; so sánh các prompt với BERT fine-tune.</p>
+<p><strong>Kết quả:</strong> prompt kết hợp ngữ cảnh và hướng dẫn theo mức tốt nhất trong nhóm GPT-4. F1 từng mức của prompt P2+P3 đạt 0,591–0,793; BERT đạt 0,873–0,936. Đây là F1 theo từng nhãn, không phải một điểm accuracy sáu lớp. <a href="https://eventosepge.fgv.br/files/leveraging-generative-ai-for-course-learning-o-2025-computers-and-education.pdf">Bài báo và bảng 4–6</a>.</p>
+<p><strong>Giới hạn và ứng dụng:</strong> kết quả trên tập kiểm tra cùng nguồn chưa chứng minh khả năng chuyển sang LO tiếng Việt. Với dự án, LLM là phương án thử trước khi có dữ liệu huấn luyện; BERT là đối chứng cần xem xét nếu đã tích lũy nhãn đủ tốt.</p>
+<h3 id="section-12">4.2. LO phức hợp và phân loại nhiều nhãn — Kolagar và cộng sự, 2025 [P4]</h3>
+<p><strong>Bài toán:</strong> mapping LO trong mô tả môn học với Bloom, cho phép nhiều nhãn. Bộ dữ liệu gồm 35 phần LO, tách thành 159 đoạn; năm chuyên gia gán nhãn, Krippendorff’s α = 0,76.</p>
+<p><strong>Kết quả:</strong> weighted F1 của regex là 0,52; semantic similarity là 0,50; các cách dùng GPT-4 đạt 0,60–0,69. <a href="https://aclanthology.org/anthology-files/pdf/bea/2025.bea-1.32.pdf">Bài báo, mục 4 và bảng 2</a>.</p>
+<p><strong>Giới hạn và ứng dụng:</strong> mẫu nhỏ, xử lý bằng tiếng Anh, một phần dịch từ tiếng Đức. Điểm quan trọng với DA Platform là mô hình hóa LO phức hợp: nên xem xét từng hành vi trước khi quyết định một nhãn mục tiêu cho giao diện. Chỉ thay bảng động từ bằng cosine similarity với tên mức Bloom chưa có bằng chứng là đủ.</p>
+<h3 id="section-13">4.3. Khả năng chuyển sang bộ câu hỏi khác — Faraji và cộng sự, 2026 [P5]</h3>
+<p><strong>Bài toán:</strong> phân loại Bloom của câu hỏi trên năm bộ dữ liệu, tổng 4.179 câu; so sánh SVM, BERT và LLM. Bài tự ghi nhận được chấp nhận tại AIED 2026.</p>
+<p><strong>Kết quả:</strong> BERT đạt weighted F1 0,76–0,91 khi kiểm tra cùng nguồn, nhưng 0,31–0,76 khi chuyển nguồn. GPT-5 với ví dụ tuyển chọn và động từ theo miền đạt 0,76–0,84. <a href="https://arxiv.org/html/2606.13684v1">Bài báo, bảng 2–3</a>.</p>
+<p><strong>Giới hạn và ứng dụng:</strong> ví dụ few-shot được lấy theo bộ dữ liệu đích; kết quả không đồng nghĩa tổng quát hóa hoàn toàn không cần thích nghi. Có <a href="https://gitlab.com/zrasoulkhani/bloom-classification-aied2026">liên kết mã, prompt và dữ liệu</a>. Dự án nên đánh giá cả chuyển môn, thay vì chỉ chia ngẫu nhiên một ngân hàng câu.</p>
+<h3 id="section-14">4.4. Sinh câu đúng Bloom và đánh giá bằng chuyên gia — Scaria và cộng sự, 2024 [P6]</h3>
+<p><strong>Bài toán:</strong> năm LLM, năm cấu hình prompt, 17 chủ đề Data Science; tổng 2.550 câu. Hai chuyên gia và một LLM đánh giá chất lượng.</p>
+<p><strong>Kết quả:</strong> 78% câu được đánh giá chất lượng cao; trong nhóm này, 65,56% khớp Bloom yêu cầu theo cả hai chuyên gia. Đánh giá tự động chưa ngang đánh giá người. <a href="https://arxiv.org/html/2408.04394v1">Bài báo, mục 3</a>.</p>
+<p><strong>Giới hạn và ứng dụng:</strong> câu được sinh từ kiến thức của model, không nhận đoạn tài liệu môn học như pipeline RAG của dự án. Không thể chuyển trực tiếp tỷ lệ trên sang DA Platform. Có <a href="https://github.com/nicyscaria/AEQG_Blooms_Evaluation_LLMs">prompt và dữ liệu đánh giá công khai</a> để tham khảo cách tách chất lượng câu khỏi mức khớp Bloom.</p>
+<h3 id="section-15">4.5. Mapping tài nguyên với chủ đề môn học — Gancevska &amp; Ramanauskaitė, 2026 [P7]</h3>
+<p><strong>Bài toán:</strong> gắn tên và mô tả tài nguyên Moodle với chủ đề trong đề cương, đối chiếu đánh giá chuyên gia trên bốn môn.</p>
+<p><strong>Kết quả:</strong> theo tóm tắt, phương pháp dùng LLM có MAE/MSE thấp nhất và phù hợp chuyên gia nhất; cấu hình SBERT được thử cho kết quả yếu nhất. <a href="https://www.mdpi.com/2076-3417/16/4/2039">Bài báo trên Applied Sciences</a>.</p>
+<p><strong>Giới hạn và ứng dụng:</strong> đây là resource–topic mapping từ metadata, chưa phải phân tích thân chunk hay chứng minh đạt LO. Đợt tra cứu tiếp cận tóm tắt và phần phương pháp được lập chỉ mục, chưa đối chiếu đầy đủ bảng kết quả. Với dự án, cần giữ keyword và LLM làm đối chứng khi đánh giá mapper embedding.</p>
+<h3 id="section-16">4.6. Hỗ trợ giảng viên viết LO — Gültekin và cộng sự, 2026 [P8]</h3>
+<p><strong>Bài toán:</strong> hệ thống dùng LLM hỗ trợ viết và đánh giá CLO, thử với 22 giảng viên.</p>
+<p><strong>Kết quả:</strong> tóm tắt báo cáo điểm SUS trung bình 79,64. Tác giả đồng thời ghi nhận độ đồng thuận chuyên gia thấp ở một số tiêu chí trừu tượng về căn chỉnh Bloom, nên diễn giải các chênh lệch tương ứng như kết quả thăm dò. <a href="https://avesis.kocaeli.edu.tr/yayin/a985831b-7cc6-4106-98b8-698b13183619/an-llm-assisted-decision-support-system-for-semantic-analysis-of-blooms-taxonomy-aligned-learning-outcomes">Tóm tắt tại cơ sở của tác giả</a>.</p>
+<p><strong>Giới hạn và ứng dụng:</strong> SUS đo trải nghiệm sử dụng, không đo accuracy của bộ phân loại. Báo cáo chỉ tiếp cận tóm tắt/trích đoạn. Bài phù hợp để tham khảo quy trình AI đề xuất và giảng viên hiệu chỉnh LO, chưa đủ để chọn model cho DA Platform.</p>
+<h3 id="section-17">4.7. Embedding để tìm ứng viên — Reimers &amp; Gurevych, 2019 [P9]</h3>
+<p>Sentence-BERT tạo vector câu có thể so sánh bằng cosine similarity, giúp tìm văn bản tương đồng mà không phải chạy mô hình trên mọi cặp câu. <a href="https://aclanthology.org/D19-1410/">Bài báo tại EMNLP-IJCNLP</a>.</p>
+<p>Đây là nghiên cứu về biểu diễn và tương đồng văn bản, không đánh giá mức hỗ trợ LO. Áp dụng vào dự án là <strong>suy luận thiết kế</strong>: dùng embedding để tìm các chunk ứng viên theo mô tả LO, rồi đánh giá thêm bằng chứng. Mô hình dùng cho tiếng Việt và văn bản song ngữ vẫn cần chọn bằng bộ kiểm tra riêng.</p>
+<h3 id="section-18">4.8. Đánh giá lại từng cặp truy vấn–đoạn văn — Nogueira &amp; Cho, 2019 [P10]</h3>
+<p>Bài đề xuất BERT cho passage reranking: xét truy vấn cùng đoạn văn để sắp lại các ứng viên truy xuất. Các thí nghiệm là truy xuất thông tin trên MS MARCO và TREC-CAR. <a href="https://arxiv.org/abs/1901.04085">Preprint, phiên bản đọc v5 cập nhật năm 2020</a>.</p>
+<p>Áp dụng reranker cho cặp LO–chunk là <strong>đề xuất của báo cáo</strong>; bài gốc chưa kiểm chứng nhiệm vụ này. Một đoạn được xếp hạng cao có thể liên quan chủ đề nhưng thiếu quy trình hoặc dữ kiện cần để đo LO. Vì vậy, điểm reranker cần đi cùng kiểm tra bằng chứng và tập nhãn đối chứng.</p>
+<h2 id="section-19">5. Lựa chọn phương án cho DA Platform</h2>
+<h3 id="section-20">5.1. Những kết luận có thể rút ra</h3>
+<p>Các nghiên cứu trên giải quyết những nhiệm vụ và bộ dữ liệu khác nhau. Báo cáo không xếp hạng model bằng cách đặt F1 của P3 cạnh F1 của P5: P3 phân loại LO với nhiều nhãn, còn P5 phân loại câu hỏi trên dữ liệu khác.</p>
+<div class="table-scroll" tabindex="0" aria-label="Bảng có thể cuộn ngang"><table>
+<thead>
+<tr>
+<th>Phương án</th>
+<th>Vai trò phù hợp trong dự án</th>
+<th>Điều cần xác minh</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Luật động từ/heading</td>
+<td>Mốc đối chiếu rẻ, dễ giải thích</td>
+<td>Lỗi với LO ghép và nội dung có cùng chủ đề</td>
+</tr>
+<tr>
+<td>LLM theo rubric và ví dụ đã duyệt</td>
+<td>Đề xuất Bloom, phân tích tiêu chí và kiểm tra bằng chứng</td>
+<td>Độ khớp giảng viên, chi phí, tỷ lệ chưa kết luận được</td>
+</tr>
+<tr>
+<td>BERT hoặc classifier huấn luyện riêng</td>
+<td>Phương án khi đã có dữ liệu gán nhãn ổn định</td>
+<td>Chuyển môn, nhãn hiếm, thay đổi phiên bản nội dung</td>
+</tr>
+<tr>
+<td>Embedding</td>
+<td>Tìm ứng viên LO–chunk nhanh</td>
+<td>Bỏ sót bằng chứng; nhầm nội dung cùng chủ đề</td>
+</tr>
+<tr>
+<td>Reranker</td>
+<td>Sắp lại ứng viên theo từng cặp</td>
+<td>Điểm liên quan có phản ánh mức hỗ trợ LO không</td>
+</tr>
+<tr>
+<td>Giảng viên xác nhận</td>
+<td>Tạo nhãn tham chiếu và quyết định dùng câu</td>
+<td>Rubric và cách xử lý bất đồng phải thống nhất</td>
+</tr>
+</tbody>
+</table></div>
+<p>Một phương pháp có thể tốt ở cùng nguồn dữ liệu nhưng giảm khi chuyển môn hoặc người gán nhãn. Vì vậy, lựa chọn ban đầu nên dựa trên khả năng thử nghiệm và đo đạc của dự án; quyết định cuối dựa trên tập đánh giá tiếng Việt.</p>
+<h3 id="section-21">5.2. Làm rõ LO trước khi mapping</h3>
+<p>Giữ nguyên văn LO chính thức và tạo các <strong>tiêu chí nội bộ</strong> để vận hành, cho giảng viên xác nhận. Không tự sửa nội dung chuẩn đầu ra của đề cương.</p>
+<p>Ví dụ do báo cáo đề xuất:</p>
+<div class="table-scroll" tabindex="0" aria-label="Bảng có thể cuộn ngang"><table>
+<thead>
+<tr>
+<th>LO chính thức</th>
+<th>Tiêu chí nội bộ</th>
+<th>Nhiệm vụ có thể dùng để kiểm tra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trình bày và phân tích các phương pháp xử lý dữ liệu</td>
+<td>Trình bày đặc điểm của từng phương pháp</td>
+<td>Diễn giải đặc điểm theo yêu cầu chấm đã thống nhất</td>
+</tr>
+<tr>
+<td>Cùng LO trên</td>
+<td>Phân tích sự phù hợp trong tình huống cụ thể</td>
+<td>So sánh yêu cầu và phương án xử lý, chỉ ra quan hệ có căn cứ</td>
+</tr>
+</tbody>
+</table></div>
+<p>Mỗi tiêu chí nên có mô tả hành vi, loại kiến thức, mức Bloom đề xuất, bằng chứng cần có và rubric. Một nhãn Bloom mục tiêu trên giao diện có thể tiếp tục được giữ, nhưng cần ghi rõ đó là quyết định cấu hình đã xác nhận; các tiêu chí cung cấp phần chi tiết.</p>
+<h3 id="section-22">5.3. Mapping nội dung với từng tiêu chí</h3>
+<p>Đề xuất thử nghiệm theo trình tự:</p>
+<ol>
+<li>Dùng quan hệ chương–LO để tìm ứng viên ban đầu; giữ đường tìm kiếm theo nội dung cho tài liệu tham khảo.</li>
+<li>Tìm thêm chunk bằng mô tả tiêu chí và nội dung thân chunk. Chọn số ứng viên theo ngân sách và đo recall, không đặt một ngưỡng cosine chung cho mọi model.</li>
+<li>So sánh reranker và LLM kiểm tra từng cặp trên cùng bộ nhãn.</li>
+<li>Phân biệt: hỗ trợ trực tiếp, kiến thức nền, không hỗ trợ và chưa đủ thông tin. Cho phép một LO cần nhiều chunk kết hợp.</li>
+<li>Lưu đoạn bằng chứng, nguồn, phiên bản LO, phương pháp và trạng thái xác nhận.</li>
+</ol>
+<p>Các bước này là thiết kế thử nghiệm của báo cáo. Chương vẫn là tín hiệu hữu ích; việc mọi LO cùng chương nhận cùng chunk cần được kiểm chứng ở cấp nội dung.</p>
+<h3 id="section-23">5.4. Kiểm chứng câu sau khi sinh</h3>
+<p>Thêm một bước riêng bên cạnh verifier đáp án hiện có. Đầu vào gồm câu hỏi, các phương án hoặc rubric, dữ kiện mà sinh viên thấy, LO/tiêu chí và bối cảnh đã học. Bước này nên trả:</p>
+<ul>
+<li>Mức bám LO: tiêu chí nào được đo, tiêu chí nào còn thiếu.</li>
+<li>Bloom được đề xuất, kèm lý do ngắn dựa vào thao tác cần để trả lời.</li>
+<li>Bằng chứng và những dữ kiện còn thiếu.</li>
+<li>Trạng thái: có thể kết luận, cần giảng viên xem lại hoặc chưa đủ thông tin.</li>
+</ul>
+<p>Trong thí nghiệm, có thể ẩn Bloom yêu cầu khỏi bộ phân loại để kiểm tra nguy cơ nó chỉ lặp lại nhãn cấu hình. Đây là lựa chọn kiểm soát cần đo, không được xem là đã loại bỏ thiên lệch của model.</p>
+<p>Lưu tách các giá trị sau theo <strong>phiên bản câu</strong>:</p>
+<div class="table-scroll" tabindex="0" aria-label="Bảng có thể cuộn ngang"><table>
+<thead>
+<tr>
+<th>Giá trị</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bloom_requested</code></td>
+<td>Mục tiêu lúc yêu cầu sinh</td>
+</tr>
+<tr>
+<td><code>bloom_assessed</code></td>
+<td>Kết quả AI đề xuất sau khi xem nhiệm vụ</td>
+</tr>
+<tr>
+<td><code>bloom_confirmed</code></td>
+<td>Kết quả giảng viên xác nhận</td>
+</tr>
+<tr>
+<td><code>lo_alignment</code></td>
+<td>Tiêu chí được đo và bằng chứng tương ứng</td>
+</tr>
+<tr>
+<td><code>evaluation_status</code></td>
+<td>Đã kiểm tra, cần xem lại hoặc chưa kết luận được</td>
+</tr>
+</tbody>
+</table></div>
+<p>Nếu yêu cầu Vận dụng nhưng câu được xác nhận chỉ ở mức Nhớ, không tính câu đó là đã đáp ứng ô Vận dụng trong ma trận. Có thể sửa câu, sinh thay thế, hoặc giữ làm bài luyện tập mức Nhớ sau khi giảng viên quyết định. Khi câu được sửa, kết quả kiểm tra bản cũ không tiếp tục đại diện cho bản mới.</p>
+<h3 id="section-24">5.5. Công cụ và chuẩn có thể tham khảo</h3>
+<p>Những nguồn dưới đây là <strong>tài liệu kỹ thuật</strong>, không nằm trong số 10 bài nghiên cứu:</p>
+<ul>
+<li><a href="https://sbert.net/examples/sentence_transformer/applications/retrieve_rerank/README.html">Sentence Transformers — Retrieve &amp; Re-Rank</a>: quy trình tìm ứng viên rồi rerank, phù hợp để xây đối chứng kỹ thuật.</li>
+<li><a href="https://docs.cassproject.org/v1.6/authoring/competency-properties/">CaSS — Resource Alignment</a>: biểu diễn quan hệ <code>teaches</code>, <code>assesses</code>, <code>requires</code>, <code>desires</code>; có thể tham khảo để tránh gom mọi quan hệ vào một cạnh “liên quan”.</li>
+<li><a href="https://developerdocs.instructure.com/services/canvas/resources/outcomes">Canvas Outcomes API</a>: quản lý outcome, rubric, ngưỡng mastery và các alignment; phù hợp nhu cầu tích hợp Canvas của dự án.</li>
+<li><a href="https://www.1edtech.org/standards/case/about">1EdTech CASE</a>: chuẩn trao đổi framework, outcome, quan hệ và rubric giữa các hệ thống.</li>
+</ul>
+<p>Các công cụ/chuẩn này cung cấp hạ tầng quản lý và trao đổi. Muốn tự động đánh giá Bloom trong DA Platform vẫn cần bộ phân loại và quy trình kiểm chứng.</p>
+<h2 id="section-25">6. Kế hoạch đánh giá trước khi chọn model</h2>
+<h3 id="section-26">6.1. Tạo ba tập nhãn riêng</h3>
+<p>Đề xuất bộ thăm dò ban đầu từ ít nhất hai môn: 30–50 LO, 200–300 cặp tiêu chí–chunk và 120–150 câu hỏi. Đây là quy mô khởi đầu để phát hiện lỗi và ước lượng công sức; chưa phải cỡ mẫu chứng minh hiệu quả cho mọi môn và sáu mức Bloom.</p>
+<div class="table-scroll" tabindex="0" aria-label="Bảng có thể cuộn ngang"><table>
+<thead>
+<tr>
+<th>Tập</th>
+<th>Dữ liệu người chấm cần thấy</th>
+<th>Nhãn tham chiếu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LO → Bloom</td>
+<td>LO nguyên văn, bối cảnh môn và tiêu chí</td>
+<td>Một/nhiều mức, hoặc chưa đủ rõ</td>
+</tr>
+<tr>
+<td>Chunk → LO</td>
+<td>Tiêu chí, chunk, nguồn và các đoạn liên quan</td>
+<td>Loại hỗ trợ và đoạn bằng chứng</td>
+</tr>
+<tr>
+<td>Câu → LO/Bloom</td>
+<td>Câu, phương án/rubric, nguồn, bối cảnh đã học</td>
+<td>LO được đo, Bloom và lỗi cụ thể</td>
+</tr>
+</tbody>
+</table></div>
+<p>Hai người có chuyên môn gán nhãn độc lập trước khi thảo luận bất đồng. Có lựa chọn “chưa đủ thông tin”; không ép mọi trường hợp vào một mức. Ghi độ đồng thuận trước khi thống nhất nhãn.</p>
+<p>Đặc biệt đưa vào tập thử các cặp dễ gây nhầm: hai LO cùng chương, chunk chỉ chứa định nghĩa trong khi LO yêu cầu vận dụng, tài liệu tham khảo khác số chương, câu gần trùng và LO ghép nhiều hành vi.</p>
+<h3 id="section-27">6.2. So sánh các cấu hình trên cùng dữ liệu</h3>
+<div class="table-scroll" tabindex="0" aria-label="Bảng có thể cuộn ngang"><table>
+<thead>
+<tr>
+<th>Nhiệm vụ</th>
+<th>Các cấu hình cần so sánh</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phân loại LO</td>
+<td>Luật hiện tại; LLM zero-shot; LLM có rubric và ví dụ; classifier huấn luyện riêng nếu có đủ nhãn</td>
+</tr>
+<tr>
+<td>Mapping nội dung</td>
+<td>Mapper hiện tại; keyword; embedding; embedding + reranker; ứng viên + LLM kiểm chứng</td>
+</tr>
+<tr>
+<td>Phân loại câu</td>
+<td>Nhãn yêu cầu hiện tại; LLM độc lập; LLM có ví dụ theo môn; đối chứng huấn luyện riêng nếu khả thi</td>
+</tr>
+</tbody>
+</table></div>
+<p>Tách dữ liệu dùng chỉnh prompt/ngưỡng khỏi dữ liệu kiểm tra cuối. Giữ các bản diễn đạt lại của cùng LO/câu và các phiên bản gần trùng trong cùng nhóm, tránh để chúng xuất hiện ở cả hai tập. Bổ sung một lượt kiểm tra trên môn chưa dùng để hiệu chỉnh.</p>
+<h3 id="section-28">6.3. Chỉ số cần báo cáo</h3>
+<ul>
+<li><strong>Bloom:</strong> macro-F1 và kết quả từng mức; với câu một nhãn thêm ma trận nhầm lẫn, với LO nhiều nhãn báo precision/recall từng nhãn.</li>
+<li><strong>Mapping:</strong> precision và recall của cạnh hỗ trợ trực tiếp; recall@k của bước tìm ứng viên; số LO thiếu bằng chứng.</li>
+<li><strong>Người chấm:</strong> tỷ lệ đồng thuận, kappa hoặc alpha phù hợp cách gán nhãn; giữ các nhóm bất đồng để phân tích.</li>
+<li><strong>Vận hành:</strong> tỷ lệ chưa kết luận được, chi phí, độ trễ và thời gian giảng viên xử lý.</li>
+<li><strong>Đầu ra sinh câu:</strong> số câu được người chấm xác nhận đúng LO và đúng Bloom trên tổng số câu yêu cầu; đồng thời báo số câu bị loại và số câu thiếu.</li>
+</ul>
+<p>Không đổi tên weighted F1 thành accuracy, không so trực tiếp các điểm từ bài báo khác tập dữ liệu. Việc loại nhiều câu có thể làm tỷ lệ đạt của số câu còn lại tăng; cần báo cả số câu thực đáp ứng yêu cầu để đánh giá đúng hiệu quả.</p>
+<h2 id="section-29">7. Thứ tự triển khai đề xuất</h2>
+<div class="table-scroll" tabindex="0" aria-label="Bảng có thể cuộn ngang"><table>
+<thead>
+<tr>
+<th>Ưu tiên</th>
+<th>Công việc</th>
+<th>Kết quả có thể kiểm tra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Thống nhất rubric và tạo tập nhãn; lưu hồ sơ đánh giá theo phiên bản</td>
+<td>Có đối chứng độc lập cho các thử nghiệm</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Thêm phân loại Bloom/LO của câu và giảng viên xác nhận</td>
+<td>Tách được mức yêu cầu với mức câu thực đo</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Làm rõ tiêu chí của LO ghép; bổ sung mapping theo thân chunk</td>
+<td>Phân biệt được các LO cùng chương</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Hiệu chỉnh tìm ứng viên, reranker và giới hạn gọi LLM</td>
+<td>Chất lượng và chi phí được đo trên cùng tập</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Đánh giá chuyển môn; cân nhắc classifier huấn luyện riêng</td>
+<td>Biết phạm vi sử dụng và nhóm cần người xem lại</td>
+</tr>
+</tbody>
+</table></div>
+<p>Thứ tự ưu tiên là nhận định của báo cáo dựa trên code đã đọc. Chưa đề xuất thay toàn bộ pipeline: hạ tầng provenance, quan hệ chương–LO, source chunk và ma trận đề hiện có đủ để làm điểm bắt đầu.</p>
+<p>Hai tài liệu trong repo có thể dùng để nối việc triển khai: <a href="quiz-generation-redesign.md">Thiết kế lại sinh quiz</a> và <a href="bao-cao-kiem-soat-chat-luong-ai.md">Báo cáo kiểm soát chất lượng câu hỏi AI</a>. Các mô tả hiện trạng trong tài liệu cũ cần được đối chiếu với code ngày 14/10/2026 ở mục 3.</p>
+<h2 id="section-30">8. Danh mục bài báo và thứ tự đọc</h2>
+<p>Nếu chỉ có thời gian đọc ba bài, nên bắt đầu với <strong>P4</strong> để hiểu LO phức hợp, <strong>P5</strong> để hiểu khả năng chuyển dữ liệu của bộ phân loại câu, rồi <strong>P6</strong> để hiểu cách đánh giá câu do AI sinh. P3 là đối chứng hữu ích khi cân nhắc fine-tune; P7 liên quan mapper nội dung.</p>
+<div class="table-scroll" tabindex="0" aria-label="Bảng có thể cuộn ngang"><table>
+<thead>
+<tr>
+<th>Mã</th>
+<th>Tài liệu gốc</th>
+<th>Nơi công bố / trạng thái</th>
+<th>Mức tiếp cận trong báo cáo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1</td>
+<td>Biggs, J. (1996). <a href="https://link.springer.com/article/10.1007/BF00138871">Enhancing teaching through constructive alignment</a>. DOI: 10.1007/BF00138871.</td>
+<td>Higher Education, 32, 347–364</td>
+<td>Tóm tắt nhà xuất bản và bản bài được lập chỉ mục</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>Krathwohl, D. R. (2002). <a href="https://doi.org/10.1207/s15430421tip4104_2">A Revision of Bloom’s Taxonomy: An Overview</a>.</td>
+<td>Theory Into Practice, 41(4), 212–218</td>
+<td><a href="https://ocw.metu.edu.tr/pluginfile.php/9009/mod_resource/content/1/s15430421tip4104_2.pdf">Toàn văn bản lưu tại METU</a></td>
+</tr>
+<tr>
+<td>P3</td>
+<td>Almatrafi, O., &amp; Johri, A. (2025). <a href="https://www.sciencedirect.com/science/article/pii/S2666920X2500044X">Leveraging generative AI for course learning outcome categorization using Bloom’s taxonomy</a>. DOI: 10.1016/j.caeai.2025.100404.</td>
+<td>Computers and Education: Artificial Intelligence, 8, 100404</td>
+<td>Toàn văn bản bài lưu tại FGV; bảng 4–6</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>Kolagar, Z., Zalkow, F., &amp; Zarcone, A. (2025). <a href="https://aclanthology.org/2025.bea-1.32/">Investigating Methods for Mapping Learning Objectives to Bloom’s Revised Taxonomy in Course Descriptions for Higher Education</a>. DOI: 10.18653/v1/2025.bea-1.32.</td>
+<td>BEA 2025, 415–445</td>
+<td>Toàn văn PDF; phương pháp, kết quả và giới hạn</td>
+</tr>
+<tr>
+<td>P5</td>
+<td>Faraji, A., Molavi, M., Rasoulkhani, Z., Tavakoli, M., &amp; Kismihók, G. (2026). <a href="https://arxiv.org/abs/2606.13684">Cross-Dataset Bloom Question Classification: Supervised Models and Prompted LLMs</a>.</td>
+<td>arXiv:2606.13684; bài ghi “Accepted at AIED 2026”</td>
+<td>Toàn văn HTML v1; bảng 2–3</td>
+</tr>
+<tr>
+<td>P6</td>
+<td>Scaria, N., Chenna, S. D., &amp; Subramani, D. (2024). <a href="https://arxiv.org/abs/2408.04394">Automated Educational Question Generation at Different Bloom’s Skill Levels using Large Language Models: Strategies and Evaluation</a>. DOI bản xuất bản: 10.1007/978-3-031-64299-9_12.</td>
+<td>AIED 2024, 165–179; bản đọc là preprint</td>
+<td>Toàn văn HTML v1 và repository của tác giả</td>
+</tr>
+<tr>
+<td>P7</td>
+<td>Gancevska, B., &amp; Ramanauskaitė, S. (2026). <a href="https://www.mdpi.com/2076-3417/16/4/2039">Mapping Moodle Resources to Course Topics Using Text Similarity Methods and Expert Evaluation</a>. DOI: 10.3390/app16042039.</td>
+<td>Applied Sciences, 16(4), 2039</td>
+<td>Tóm tắt và phần phương pháp được lập chỉ mục</td>
+</tr>
+<tr>
+<td>P8</td>
+<td>Gültekin, A., Diri, S., &amp; Özcan, M. (2026). <a href="https://www.sciencedirect.com/science/article/pii/S030645732600302X">An LLM-assisted decision-support system for semantic analysis of Bloom’s Taxonomy-aligned learning outcomes</a>. DOI: 10.1016/j.ipm.2026.104911.</td>
+<td>Information Processing &amp; Management</td>
+<td>Tóm tắt tại cơ sở tác giả và trích đoạn nhà xuất bản</td>
+</tr>
+<tr>
+<td>P9</td>
+<td>Reimers, N., &amp; Gurevych, I. (2019). <a href="https://aclanthology.org/D19-1410/">Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks</a>. DOI: 10.18653/v1/D19-1410.</td>
+<td>EMNLP-IJCNLP 2019, 3982–3992</td>
+<td>Tóm tắt chính thức tại ACL Anthology</td>
+</tr>
+<tr>
+<td>P10</td>
+<td>Nogueira, R., &amp; Cho, K. (2019). <a href="https://arxiv.org/abs/1901.04085">Passage Re-ranking with BERT</a>.</td>
+<td>arXiv:1901.04085; v5 cập nhật 2020</td>
+<td>Tóm tắt bản v5</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Tài nguyên để bắt đầu thử nghiệm:</strong> repository P6 có thư mục prompt và các bảng đánh giá chuyên gia; bài P5 công bố liên kết mã/prompt/dataset nhưng nội dung chi tiết của repository chưa được kiểm tra trong đợt này. Chưa chạy lại thí nghiệm của hai repository.</p>
+<p><strong>Đọc báo cáo theo mục đích:</strong> mục 2 để hiểu khái niệm; mục 3 để xem hệ thống đang thiếu gì; mục 4 để đọc nghiên cứu; mục 5–7 để chuẩn bị thiết kế và đánh giá.</p>
+<footer>Báo cáo tổng quan có chọn lọc · Tra cứu ngày 14/10/2026 · 5014 từ theo khoảng trắng · Liên kết nguồn ở từng mục.</footer></main></div>
+</body>
+</html>

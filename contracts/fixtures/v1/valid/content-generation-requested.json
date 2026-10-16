@@ -13,7 +13,8 @@
       "chapter_id": "66666666-6666-4666-8666-666666666666",
       "source_document_ids": ["99999999-9999-4999-8999-999999999999"],
       "count": 5,
-      "bloom_level": "analyze"
+      "bloom_level": "analyze",
+      "question_type": "MCQ_SINGLE"
     }
   }
 }

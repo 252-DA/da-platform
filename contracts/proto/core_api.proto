@@ -58,7 +58,23 @@ service CoreApiService {
   rpc SubmitQuizSet(JsonRequest) returns (JsonResponse);
   rpc GetQuizSetResults(JsonRequest) returns (JsonResponse);
   rpc ListQuizAttempts(JsonRequest) returns (JsonResponse);
+  rpc ListEssaysForReview(JsonRequest) returns (JsonResponse);
+  rpc GradeEssayAnswer(JsonRequest) returns (JsonResponse);
+  rpc RetryEssayGrading(JsonRequest) returns (JsonResponse);
 
   rpc CreateContentGenerationRequest(JsonRequest) returns (JsonResponse);
   rpc ListContentGenerationRequests(JsonRequest) returns (JsonResponse);
+
+  // Chọn model AI cho từng task (chỉ admin). Danh sách profile hợp lệ:
+  // llm_model_catalog.json cạnh file này.
+  rpc ListModelBindings(JsonRequest) returns (JsonResponse);
+  rpc SetModelBinding(JsonRequest) returns (JsonResponse);
+
+  // Chấm bài luận nộp file qua LTI Asset Processor (docs/essay-asset-processor.md).
+  // ReceiveAssetNotices chỉ nhận danh tính hệ thống "lti-notice" của web.
+  rpc CreateEssayProcessor(JsonRequest) returns (JsonResponse);
+  rpc UpdateEssayProcessor(JsonRequest) returns (JsonResponse);
+  rpc GetEssayProcessor(JsonRequest) returns (JsonResponse);
+  rpc ReceiveAssetNotices(JsonRequest) returns (JsonResponse);
+  rpc GetEssayReport(JsonRequest) returns (JsonResponse);
 }
