@@ -277,24 +277,28 @@ Kèm: cập nhật fixtures ở `contracts/fixtures/v1/valid/`, và `core-api` c
 
 **Nghiệm thu (đã chạy):** 19 test mới trong `worker/tests/unit/test_model_routing.py` + 26 test trong `ai-sdk/tests/test_registry.py`; một request sinh quiz để lại hai dòng usage với hai provider khác nhau, và token của lần sửa JSON vẫn được cộng dồn.
 
-### Giai đoạn 3 — binding trong Postgres, không restart — đề xuất
+### Giai đoạn 3 — binding trong Postgres, không restart — ✅ 2026-10-14
+
+Admin chọn model cho từng task ở trang web `/manage/models`; worker đọc lại bảng mỗi 30 giây.
 
 ```sql
 CREATE TABLE llm_model_bindings (
-    task             VARCHAR(50) PRIMARY KEY,   -- khớp llm_usage_logs.use_case
-    profile          VARCHAR(50) NOT NULL,      -- TÊN profile, không phải model id
-    fallback_profile VARCHAR(50),
-    temperature      NUMERIC(3,2),
-    enabled          BOOLEAN NOT NULL DEFAULT TRUE,
-    updated_by       UUID REFERENCES lms_user_mappings(internal_user_id),
-    updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+    task       VARCHAR(50) PRIMARY KEY,   -- khoá task trong catalog, trùng llm_usage_logs.use_case
+    profile    VARCHAR(50) NOT NULL,      -- TÊN profile, không phải model id
+    updated_by UUID NOT NULL REFERENCES lms_user_mappings(internal_user_id),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ```
 
-- [ ] `PostgresConfigSource` + cache TTL 30s + fallback về env khi DB lỗi (không được để DB chết là LLM chết).
-- [ ] `core-api`: endpoint admin đọc/ghi binding, validate `profile ∈ PROFILES`, ghi `admin_audit`.
+- [x] `ai-sdk`: `OverrideConfigSource(fetch, base, ttl_seconds=30, known_profiles=...)` đặt chồng lên `EnvConfigSource`. Đọc lỗi (DB chết, bảng chưa có) thì giữ lựa chọn cũ và rơi về env; profile ngoài catalog bị bỏ qua kèm cảnh báo. SDK không phụ thuộc Postgres: worker truyền hàm đọc vào.
+- [x] `worker`: `ModelBindingStore` đọc bảng; `TaskRoles` phân giải task → `LlmRole` mỗi job, client giữ theo profile. Use case của ba container (quiz/card, chấm tự luận, enrichment) thành property dựng lại mỗi job, nên runner không đổi.
+- [x] Thứ tự mới: **bảng** → `LLM_PROFILE__<TASK>` → `LLM_PROFILE` → `LLM__*` (chỉ khi có `LLM__API_KEY`) → `TASK_DEFAULTS`. Điều kiện key sửa lỗi `worker/Dockerfile` gắn `LLM__PROVIDER/MODEL` vào image: profile cũ thắng mà không có key, mọi lần chấm tự luận hỏng.
+- [x] `core-api`: `ListModelBindings` / `SetModelBinding` (gRPC), chỉ admin LMS (`lms_user_mappings.role = 'administrator'`), chỉ nhận profile có trong `contracts/proto/llm_model_catalog.json`; mỗi lần đổi ghi `review_audit_logs` (`entity_type = 'llm_model_binding'`, `raw_changes = {task, from, to}`).
+- [x] `contracts/proto/llm_model_catalog.json` sinh từ catalog của ai-sdk bằng `scripts/check_model_catalog.py --write`; CI chạy bản `--check`, và kiểm luôn danh sách task khớp các task worker phân giải qua `TaskRoles`.
+- [x] Web: trang `/manage/models` (chỉ admin) — mỗi task một dropdown, kèm lần gọi gần nhất và số lần OK/lỗi 24 giờ qua từ `llm_usage_logs`.
+- Không làm: `fallback_profile`, `temperature`, `enabled` của bản đề xuất — chưa có gì dùng. `quiz_regeneration` không có trên trang vì worker không phân giải task này (viết lại dùng model của writer). `tutor` không có vì `ai-tutor` chưa đọc bảng.
 
-**Nghiệm thu:** `UPDATE llm_model_bindings SET profile='gemini-pro' WHERE task='quiz_generation';` → trong ≤ 30s request mới dùng model mới, **không** restart container nào.
+**Nghiệm thu:** đổi một task trên trang → trong ≤ 30s job mới ghi `llm_usage_logs` với model mới, **không** restart container nào.
 
 ### Giai đoạn 4 — override theo request, A/B — đề xuất
 

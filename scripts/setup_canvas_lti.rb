@@ -12,6 +12,11 @@ tool_jwks_url = ENV.fetch(
   "DA_LTI_JWKS_URL",
   "http://host.docker.internal:3001/.well-known/jwks.json"
 )
+# Every tool is deployed to the root account, so member tools show their own
+# entries in each course. Tag their menu labels to tell them apart.
+menu_suffix = ENV.fetch("DA_LTI_MENU_SUFFIX") do
+  tool_name == "DA Platform Local" ? "" : " (#{tool_name.sub(/\ADA Platform\s*-\s*/, "")})"
+end
 
 account = Account.default
 admin = account.active_account_users.preload(:user).filter_map(&:user).first
@@ -37,14 +42,19 @@ configuration_params = {
   scopes: [
     "https://purl.imsglobal.org/spec/lti-ags/scope/lineitem",
     "https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
-    "https://purl.imsglobal.org/spec/lti-ags/scope/score"
+    "https://purl.imsglobal.org/spec/lti-ags/scope/score",
+    # Asset Processor (Document Processor): nhận thông báo bài nộp, tải file,
+    # gửi báo cáo chấm về SpeedGrader. Xem docs/essay-asset-processor.md.
+    "https://purl.imsglobal.org/spec/lti/scope/noticehandlers",
+    "https://purl.imsglobal.org/spec/lti/scope/asset.readonly",
+    "https://purl.imsglobal.org/spec/lti/scope/report"
   ],
   domain: tool_domain,
   tool_id: "da-platform-local",
   privacy_level: "public",
   custom_fields: {},
   launch_settings: {
-    text: "DA Platform",
+    text: "DA Platform#{menu_suffix}",
     display_type: "full_width_in_context"
   },
   placements: [
@@ -52,17 +62,25 @@ configuration_params = {
       placement: "course_navigation",
       enabled: true,
       message_type: "LtiResourceLinkRequest",
-      text: "DA Platform",
+      text: "DA Platform#{menu_suffix}",
       target_link_uri: "#{tool_base_url}/"
     },
     {
       placement: "module_menu_modal",
       enabled: true,
       message_type: "LtiDeepLinkingRequest",
-      text: "Sinh quiz bằng DA",
+      text: "Sinh quiz bằng DA#{menu_suffix}",
       target_link_uri: "#{tool_base_url}/lti/deep-link",
       selection_width: 1100,
       selection_height: 800
+    },
+    {
+      # Nút "Add Document Processing App" trên trang sửa Assignment nộp file.
+      placement: "ActivityAssetProcessor",
+      enabled: true,
+      message_type: "LtiDeepLinkingRequest",
+      text: "Chấm bài luận bằng AI (DA)#{menu_suffix}",
+      target_link_uri: "#{tool_base_url}/lti/asset-processor"
     }
   ]
 }.with_indifferent_access

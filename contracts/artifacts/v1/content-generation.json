@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://da-platform.dev/contracts/artifacts/v1/content-generation.json",
   "title": "ContentGenerationArtifactV1",
-  "description": "Artifact content-generation. All-or-nothing: phải chứa đúng tất cả LO trong content_generation_targets; mỗi LO có 1..count_per_lo items.",
+  "description": "Artifact content-generation. All-or-nothing: phải chứa đúng tất cả LO trong content_generation_targets; mỗi LO có 1..count_per_lo items. Một kết quả mang quiz_items (type='quiz') hoặc lesson_cards (type='card').",
   "type": "object",
   "properties": {
     "schema_version": { "type": "integer", "const": 1 },
@@ -22,12 +22,29 @@
             "type": "array",
             "minItems": 1,
             "maxItems": 10,
+            "description": "Mỗi lần sinh một kiểu câu (scope.question_type); mỗi kiểu một dạng câu. quizItem là MCQ_SINGLE.",
             "items": {
-              "$ref": "#/definitions/quizItem"
+              "oneOf": [
+                { "$ref": "#/definitions/quizItem" },
+                { "$ref": "#/definitions/multiAnswerItem" },
+                { "$ref": "#/definitions/trueFalseItem" },
+                { "$ref": "#/definitions/fillBlankItem" },
+                { "$ref": "#/definitions/shortAnswerItem" }
+              ]
+            }
+          },
+          "lesson_cards": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 6,
+            "description": "Thứ tự trong mảng là thứ tự học trong lesson (lesson_cards.position).",
+            "items": {
+              "$ref": "#/definitions/lessonCard"
             }
           }
         },
-        "required": ["lo_id", "lo_code", "bloom_level", "quiz_items"],
+        "required": ["lo_id", "lo_code", "bloom_level"],
+        "anyOf": [{ "required": ["quiz_items"] }, { "required": ["lesson_cards"] }],
         "additionalProperties": false
       }
     }
@@ -60,6 +77,180 @@
         "explanation",
         "difficulty",
         "lo_alignment_rationale",
+        "source_chunk_ids",
+        "model_id"
+      ],
+      "additionalProperties": false
+    },
+    "multiAnswerItem": {
+      "type": "object",
+      "description": "MCQ_MULTI: chọn tất cả đáp án đúng; còn ít nhất một phương án sai.",
+      "properties": {
+        "question": { "type": "string", "minLength": 1 },
+        "choices": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 6,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "correct_indices": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 0, "maximum": 5 }
+        },
+        "explanation": { "type": "string", "minLength": 1 },
+        "difficulty": { "enum": ["easy", "medium", "hard"] },
+        "lo_alignment_rationale": { "type": "string", "minLength": 1 },
+        "source_chunk_ids": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        },
+        "model_id": { "type": "string", "minLength": 1 }
+      },
+      "required": [
+        "question",
+        "choices",
+        "correct_indices",
+        "explanation",
+        "difficulty",
+        "lo_alignment_rationale",
+        "source_chunk_ids",
+        "model_id"
+      ],
+      "additionalProperties": false
+    },
+    "trueFalseItem": {
+      "type": "object",
+      "description": "TRUE_FALSE: question là một mệnh đề; lưu với phương án cố định [\"Đúng\", \"Sai\"].",
+      "properties": {
+        "question": { "type": "string", "minLength": 1 },
+        "is_true": { "type": "boolean" },
+        "explanation": { "type": "string", "minLength": 1 },
+        "difficulty": { "enum": ["easy", "medium", "hard"] },
+        "lo_alignment_rationale": { "type": "string", "minLength": 1 },
+        "source_chunk_ids": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        },
+        "model_id": { "type": "string", "minLength": 1 }
+      },
+      "required": [
+        "question",
+        "is_true",
+        "explanation",
+        "difficulty",
+        "lo_alignment_rationale",
+        "source_chunk_ids",
+        "model_id"
+      ],
+      "additionalProperties": false
+    },
+    "fillBlankItem": {
+      "type": "object",
+      "description": "FILL_BLANK: một chỗ trống viết là ____; chấm bằng so khớp đã chuẩn hoá với accepted_answers.",
+      "properties": {
+        "question": { "type": "string", "pattern": "_{3,}" },
+        "accepted_answers": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 10,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "explanation": { "type": "string", "minLength": 1 },
+        "difficulty": { "enum": ["easy", "medium", "hard"] },
+        "lo_alignment_rationale": { "type": "string", "minLength": 1 },
+        "source_chunk_ids": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        },
+        "model_id": { "type": "string", "minLength": 1 }
+      },
+      "required": [
+        "question",
+        "accepted_answers",
+        "explanation",
+        "difficulty",
+        "lo_alignment_rationale",
+        "source_chunk_ids",
+        "model_id"
+      ],
+      "additionalProperties": false
+    },
+    "shortAnswerItem": {
+      "type": "object",
+      "description": "SHORT_ANSWER: worker chấm bài làm bằng LLM, điểm = số ý trong rubric đạt / tổng số ý.",
+      "properties": {
+        "question": { "type": "string", "minLength": 1 },
+        "model_answer": { "type": "string", "minLength": 1 },
+        "rubric": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 6,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "explanation": { "type": "string", "minLength": 1 },
+        "difficulty": { "enum": ["easy", "medium", "hard"] },
+        "lo_alignment_rationale": { "type": "string", "minLength": 1 },
+        "source_chunk_ids": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        },
+        "model_id": { "type": "string", "minLength": 1 }
+      },
+      "required": [
+        "question",
+        "model_answer",
+        "rubric",
+        "explanation",
+        "difficulty",
+        "lo_alignment_rationale",
+        "source_chunk_ids",
+        "model_id"
+      ],
+      "additionalProperties": false
+    },
+    "lessonCard": {
+      "type": "object",
+      "description": "Một micro-content card: một ý, bám nguồn, kèm một cặp câu tự kiểm tra (mặt lật của flashcard).",
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 150 },
+        "key_insight": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400,
+          "description": "1–2 câu người học phải nhớ nếu chỉ đọc một câu."
+        },
+        "bullets": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "items": { "type": "string", "minLength": 1, "maxLength": 300 }
+        },
+        "example": {
+          "type": ["string", "null"],
+          "maxLength": 600,
+          "description": "Ví dụ lấy từ nguồn; null nếu nguồn không có."
+        },
+        "misconception": {
+          "type": ["string", "null"],
+          "maxLength": 400,
+          "description": "Lỗi hiểu nhầm, chỉ khi nguồn nêu hoặc hàm ý rõ; null nếu không."
+        },
+        "check_question": { "type": "string", "minLength": 1, "maxLength": 400 },
+        "check_answer": { "type": "string", "minLength": 1, "maxLength": 400 },
+        "source_chunk_ids": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        },
+        "model_id": { "type": "string", "minLength": 1 }
+      },
+      "required": [
+        "title",
+        "key_insight",
+        "bullets",
+        "check_question",
+        "check_answer",
         "source_chunk_ids",
         "model_id"
       ],

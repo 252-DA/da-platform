@@ -1,0 +1,55 @@
+{
+  "$comment": "Generated from ai-sdk/src/ai_runtime/catalog.py by scripts/check_model_catalog.py --write. Do not edit by hand.",
+  "profiles": [
+    {
+      "name": "deepseek-chat",
+      "provider": "deepseek",
+      "model": "deepseek-chat"
+    },
+    {
+      "name": "gemini-flash",
+      "provider": "gemini",
+      "model": "gemini-3-flash-preview"
+    },
+    {
+      "name": "gemini-flash-2",
+      "provider": "gemini",
+      "model": "gemini-2.0-flash"
+    },
+    {
+      "name": "gemini-pro",
+      "provider": "gemini",
+      "model": "gemini-3-pro-preview"
+    }
+  ],
+  "tasks": [
+    {
+      "task": "quiz_generation",
+      "default_profile": "deepseek-chat",
+      "use_cases": [
+        "quiz_generation",
+        "quiz_regeneration",
+        "card_generation",
+        "card_regeneration"
+      ]
+    },
+    {
+      "task": "quiz_verification",
+      "default_profile": "gemini-flash",
+      "use_cases": [
+        "quiz_verification",
+        "card_verification",
+        "answer_grading",
+        "essay_grading"
+      ]
+    },
+    {
+      "task": "enrichment",
+      "default_profile": "gemini-flash",
+      "use_cases": [
+        "enrichment_cards",
+        "enrichment_quiz"
+      ]
+    }
+  ]
+}

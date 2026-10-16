@@ -35,7 +35,8 @@ x-common-env: &common-env
   # LLM — model được chọn bằng TÊN PROFILE trong catalog của ai-sdk
   # (ai-sdk/src/ai_runtime/catalog.py, xem docs/model-routing-design.md).
   # Compose chỉ khai báo những núm có thể xoay; để trống thì dùng TASK_DEFAULTS
-  # trong catalog. Đổi model = đặt một biến dưới đây trong .env rồi restart.
+  # trong catalog. Cách đổi model chính là trang web /manage/models (admin,
+  # không cần restart); lựa chọn ở đó thắng các biến dưới đây.
   LLM_PROFILE: ${LLM_PROFILE:-}
   LLM_PROFILE__ENRICHMENT: ${LLM_PROFILE__ENRICHMENT:-}
   # Key đi theo provider, không theo task: catalog chỉ giữ TÊN biến env.
@@ -539,6 +540,40 @@ services:
       redis:
         condition: service_healthy
       mcp-service:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Chấm tự luận ngắn (hàng đợi answer_grading). Tách khỏi content-generation
+  # worker để người học chờ điểm không phải xếp sau các lần sinh quiz hàng phút.
+  answer-grading-worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    entrypoint: *worker-entrypoint
+    command:
+      [
+        "dev_reload",
+        "worker.runners.answer_grading_worker",
+        "/app/worker/worker",
+        "/app/packages-ai/src",
+        "/app/ai-sdk/src",
+      ]
+    environment:
+      <<: *common-env
+      WORKER_TYPE: answer_grading
+      WORKER_CONCURRENCY: "2"
+      # Chấm bài dùng profile của judge, như bước kiểm tra câu hỏi.
+      LLM_PROFILE__QUIZ_VERIFICATION: ${LLM_PROFILE__QUIZ_VERIFICATION:-}
+      HEALTH_PORT: "8085"
+      METRICS__PORT: "9096"
+    ports:
+      - "8085:8085"
+      - "9096:9096"
+    volumes: *worker-volumes
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     restart: unless-stopped
 

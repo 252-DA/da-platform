@@ -72,8 +72,8 @@ Cột "Nguồn": **chạy** = đã chạy thử bằng `.venv`; **code** = kết
 
 | # | Vị trí | Vấn đề | Nguồn |
 |---|---|---|---|
-| G1 | `_build_prompt` | Bloom chỉ là một con số trong prompt; không định nghĩa, không động từ, không mẫu câu; không kiểm tra câu có đạt mức đó | code |
-| G2 | `_build_prompt` | Distractor do LLM tự nghĩ hoàn toàn; không có luật chống gợi ý (độ dài, "tất cả đều đúng", đồng nghĩa với đáp án) | code |
+| G1 | `prompts/curriculum_quiz.py` `generation` | Bloom chỉ là một con số trong prompt; không định nghĩa, không động từ, không mẫu câu; không kiểm tra câu có đạt mức đó | code |
+| G2 | `prompts/curriculum_quiz.py` `generation` | Distractor do LLM tự nghĩ hoàn toàn; không có luật chống gợi ý (độ dài, "tất cả đều đúng", đồng nghĩa với đáp án) | code |
 | G3 | cả hai đường + `lesson.service.ts:64-71` | Không xáo đáp án (grep không thấy `shuffle`/`random`); core-api phục vụ các phương án theo đúng thứ tự đã lưu | code (đo: SQL ở §11.5) |
 | G4 | `postgres_curriculum_repository.py` (INSERT) | Chỉ `MCQ_SINGLE`, dù schema hỗ trợ `MCQ_MULTI`, `TRUE_FALSE`, `FILL_BLANK` | code |
 | G5 | `quiz_items` DDL | LLM tự gán `difficulty` nhưng bảng không có cột để lưu → mất; không hiệu chỉnh | code |
@@ -87,7 +87,7 @@ Cột "Nguồn": **chạy** = đã chạy thử bằng `.venv`; **code** = kết
 |---|---|---|---|
 | V1 | `_run_verifier` | Cùng model, cùng cấu hình tự chấm bài mình; chấm cả N câu trong một lần gọi | code |
 | V2 | `generate_curriculum_quiz.py:474-479` | Câu vẫn bị loại sau khi hết lượt sửa **vẫn được lưu** (chỉ log warning); verifier lỗi thì coi như qua. Đây là **chủ ý** (docstring `_verify_and_refine`: người duyệt vẫn là cổng cuối; có test `test_verify_exhausts_retries_and_persists_last_attempt`, `test_verifier_error_does_not_block_persistence`). v2 đổi chính sách này (§7.8): câu sai về đúng/sai thì không đẩy sang người duyệt | code |
-| V3 | `_build_verification_prompt` | Verifier thấy đáp án trước khi phán xét; không kiểm tra Bloom, bám LO, lộ đáp án, hay câu phụ thuộc ngữ cảnh ("theo đoạn trên…") | code |
+| V3 | `prompts/curriculum_quiz.py` `verification` | Verifier thấy đáp án trước khi phán xét; không kiểm tra Bloom, bám LO, lộ đáp án, hay câu phụ thuộc ngữ cảnh ("theo đoạn trên…") | code |
 
 **O: Vận hành**
 

@@ -17,7 +17,7 @@ scrape_configs:
     static_configs:
       - targets: ["grpc-server:9090"]
 
-  # 3 workers (METRICS__PORT 9091/9092/9093)
+  # workers (METRICS__PORT 9091/9092/9093/9094/9096)
   - job_name: workers
     metrics_path: /metrics
     static_configs:
@@ -25,6 +25,8 @@ scrape_configs:
           - "document-worker:9091"
           - "enrichment-worker:9092"
           - "outbox-worker:9093"
+          - "content-generation-worker:9094"
+          - "answer-grading-worker:9096"
         labels:
           tier: worker
 

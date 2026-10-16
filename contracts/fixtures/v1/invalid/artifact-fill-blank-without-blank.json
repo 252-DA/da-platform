@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "request_id": "55555555-5555-4555-8555-555555555555",
+  "course_id": "33333333-3333-4333-8333-333333333333",
+  "results": [
+    {
+      "lo_id": "77777777-7777-4777-8777-777777777777",
+      "lo_code": "L.O.3.1",
+      "bloom_level": 2,
+      "quiz_items": [
+        {
+          "question": "Câu điền khuyết nhưng không có chỗ trống.",
+          "accepted_answers": ["phi chức năng"],
+          "explanation": "Theo slide chương 3.",
+          "difficulty": "easy",
+          "lo_alignment_rationale": "Kiểm tra L.O.3.1.",
+          "source_chunk_ids": ["11111111-1111-4111-8111-111111111111"],
+          "model_id": "gemini/gemini-3-flash-preview"
+        }
+      ]
+    }
+  ]
+}
