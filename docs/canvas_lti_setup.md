@@ -17,6 +17,14 @@ cách xử lý lỗi. Cách chạy stack dev nằm ở [dev-setup.md](dev-setup.
 | Scope AGS | `lineitem`, `result.readonly`, `score` |
 | Privacy | `public`: Canvas gửi tên và email người dùng |
 
+Tool riêng của thành viên (tạo ngày 08/10/2026). Menu của các tool này có thêm
+tên người, ví dụ **DA Platform (thien)**:
+
+| Tool | `client_id` | `deployment_id` | URL |
+|---|---|---|---|
+| `DA Platform - thien` | `10000000000003` | `2:8865aa05…` | `https://app-thien.canxphung.dev` |
+| `DA Platform - binh` | `10000000000004` | `3:8865aa05…` | `https://app-binh.canxphung.dev` |
+
 ## Hai chiều ký
 
 | Chiều | Ai ký | Bằng khóa nào | Bên kia kiểm bằng |
@@ -116,15 +124,20 @@ Modules để Canvas lấy menu mới. Việc này không cần build lại hay 
 Canvas.
 
 **Tool riêng cho thành viên:** chạy cùng lệnh với `DA_LTI_TOOL_NAME` khác
-`DA Platform Local`, kèm URL của người đó. Các bước đầy đủ nằm ở
+`DA Platform Local`, kèm URL của người đó. Tên `DA Platform - <tên>` cho menu
+`DA Platform (<tên>)`; muốn hậu tố khác thì đặt `DA_LTI_MENU_SUFFIX`. Các bước
+đầy đủ nằm ở
 [dev-setup.md, mục 5](dev-setup.md#5-launch-từ-canvas-vào-stack-của-bạn-không-bắt-buộc).
 
 ## Canvas do trường host (Instructure)
 
 Không chạy được script vì không có `rails runner`. Admin của trường phải tạo
 Developer Key loại LTI bằng tay với cùng các giá trị như trên: target link URI,
-OIDC initiation URL, redirect URI, public JWK URL, ba scope AGS và hai
-placement (Course Navigation; Module Menu Modal với Deep Linking). Sau đó bật
+OIDC initiation URL, redirect URI, public JWK URL, ba scope AGS, ba scope
+Asset Processor (`noticehandlers`, `asset.readonly`, `report`) và ba placement
+(Course Navigation; Module Menu Modal với Deep Linking; Document Processor
+`ActivityAssetProcessor` với Deep Linking, xem
+[essay-asset-processor.md](essay-asset-processor.md)). Sau đó bật
 key, cài app bằng Client ID ở cấp account, rồi lấy Deployment ID. Tên menu có
 thể khác theo phiên bản Canvas. Biến môi trường điền theo
 [.env.canvas.example](../.env.canvas.example): issuer vẫn là
@@ -137,9 +150,22 @@ file đề cương phải dùng REST API với `CANVAS_API_TOKEN`. Môi trườn
 token của admin. Các bước đổi token:
 
 1. Đăng nhập Canvas bằng tài khoản admin, vào **Account → Settings → New Access
-   Token**.
+   Token**, để trống ô **Expires**.
+
+   `admin@canvas.local` là site admin, và Canvas mặc định bật cờ ẩn
+   `site_admin_access_token_expiration`: mọi token của site admin bị ép hạn
+   tối đa 1 tuần, bất kể ô Expires (`AccessToken#set_permanent_expiration`).
+   Token đầu tiên vì thế hết hạn ngày 2026-10-04, và từ đó mọi lệnh gọi REST
+   nhận `401 Expired access token`. Cờ này không có nút trên giao diện. Ở
+   Canvas dev, tắt nó trước khi tạo token:
+
+   ```bash
+   docker exec canvas-lms-web-1 bundle exec rails runner \
+     'Account.site_admin.disable_feature!(:site_admin_access_token_expiration)'
+   ```
 2. Cập nhật `CANVAS_API_TOKEN` trên Infisical.
-3. Báo nhóm chạy `scripts/dc up -d core-api`.
+3. Báo nhóm chạy `scripts/dc up -d core-api`. Container chỉ đọc biến môi trường
+   lúc được tạo, nên `docker restart` không đủ.
 
 Lịch đồng bộ được mô tả ở
 [canvas-document-auto-sync.md](canvas-document-auto-sync.md).

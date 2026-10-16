@@ -723,7 +723,7 @@ Sau khi upsert Qdrant **thành công**:
 
 ### 11.4 Consumer
 
-- **ai-tutor** `_build_prompt`: render `[i] (Chương 2 > 2.1 Khái niệm · tr. 12)\n{content}` từ `heading_path` và `page_number`, vốn đã có trong context (sửa C6).
+- **ai-tutor** `prompts.build_prompt`: render `[i] (Chương 2 > 2.1 Khái niệm · tr. 12)\n{content}` từ `heading_path` và `page_number`, vốn đã có trong context (sửa C6).
 - **`retrieve_quiz_context`**: nâng `max_chunk_chars` từ 1600 lên 2600, hoặc tốt hơn là đổi sang giới hạn theo `token_count`. 512 token ≈ 1950 ký tự văn xuôi tiếng Việt và ≈ 2200 ký tự tiếng Anh (§3).
 - **`generate_curriculum_quiz`**: `max_context_chars=6000` chứa được khoảng 3 chunk; giữ nguyên nhưng cân nhắc đổi sang token.
 

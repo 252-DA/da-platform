@@ -116,6 +116,11 @@ bước:
    ```bash
    scripts/dc up -d web core-api
    ```
+4. **Mỗi lần làm việc, chạy tunnel** bằng token admin gửi riêng. Token là
+   secret, không commit:
+   ```bash
+   cloudflared tunnel --no-autoupdate --url http://localhost:3001 run --token <token>
+   ```
 
 ## 6. Dùng chung DB thì cẩn thận những gì
 
@@ -163,6 +168,14 @@ container tunnel.
   project `da-platform`. Gói Free cho tối đa 5 identity, tính cả người lẫn máy.
 - Tailscale: mời vào tailnet, hoặc share node `fedoralap`.
 - Canvas: tạo tài khoản cho họ.
+- Nếu họ cần launch từ Canvas (mục 5): trên máy admin, tạo tunnel và DNS,
+  rồi lấy token gửi riêng cho họ:
+  ```bash
+  cloudflared tunnel create da-<tên>
+  cloudflared tunnel route dns da-<tên> app-<tên>.canxphung.dev
+  cloudflared tunnel token da-<tên>
+  ```
+  Sau đó chạy `setup_canvas_lti.rb` như ở mục 5, bước 2.
 
 **Đổi một secret.**
 
@@ -185,5 +198,7 @@ infisical secrets delete <TÊN> --env=dev --type shared
 2. Rotate những gì họ đã đọc được: `POSTGRES_PASSWORD`, `REDIS_PASSWORD`,
    `MINIO_ROOT_PASSWORD`, `NEO4J_PASSWORD`, `QDRANT_API_KEY`,
    `CANVAS_API_TOKEN` (xoá token cũ trong profile Canvas, tạo token mới).
-3. Xoá developer key Canvas của họ (Admin → Developer Keys).
+3. Xoá developer key Canvas của họ (Admin → Developer Keys), rồi xoá tunnel:
+   `cloudflared tunnel delete -f da-<tên>`. Record CNAME `app-<tên>` phải xoá
+   tay trên dashboard Cloudflare.
 4. Key model là của họ nên không cần làm gì.

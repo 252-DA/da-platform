@@ -27,3 +27,6 @@ jobs:
 
       - name: Verify contract, prompt and parser agree on the quiz item and lesson card shapes
         run: python3 scripts/check_content_schema.py
+
+      - name: Verify core-api's model catalog matches the ai-sdk catalog
+        run: python3 scripts/check_model_catalog.py

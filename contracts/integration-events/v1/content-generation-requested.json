@@ -51,7 +51,11 @@
             },
             "style": {
               "type": "string",
-              "description": "Worker mặc định 'quiz'; _build_prompt hiểu quiz|midterm|final."
+              "description": "Worker mặc định 'quiz'; prompts/curriculum_quiz.py hiểu quiz|midterm|final."
+            },
+            "question_type": {
+              "enum": ["MCQ_SINGLE", "MCQ_MULTI", "TRUE_FALSE", "FILL_BLANK", "SHORT_ANSWER"],
+              "description": "Chỉ quiz. Một kiểu câu cho cả mẻ; core-api ghi MCQ_SINGLE khi request không chỉ định (quiz/question-types.ts)."
             }
           },
           "additionalProperties": true

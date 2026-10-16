@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/essay-grading-requested.json",
+  "title": "ESSAY_GRADING_REQUESTED",
+  "description": "Core command → answer-grading worker (queue: essay_grading, worker/runners/answer_grading_worker.py). Phát khi core-api đã tải file của một bài luận sinh viên nộp vào Assignment Canvas có gắn công cụ làm Asset Processor (core-api essay-processor/essay-report.publisher.ts): essay_submissions.status = QUEUED, mỗi asset có storage_key trong MinIO. Worker đọc chữ, chấm theo rubric của essay_processors, ghi result và chuyển GRADED, hoặc FAILED kèm error_code; core-api gửi báo cáo về SpeedGrader. Worker không gọi LMS.",
+  "type": "object",
+  "allOf": [{ "$ref": "envelope.json" }],
+  "properties": {
+    "event_type": { "const": "ESSAY_GRADING_REQUESTED" },
+    "aggregate_type": { "const": "essay_submission" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "essay_submission_id": { "type": "string", "format": "uuid" },
+        "course_id": { "type": "string", "format": "uuid" }
+      },
+      "required": ["essay_submission_id", "course_id"],
+      "additionalProperties": false
+    }
+  }
+}

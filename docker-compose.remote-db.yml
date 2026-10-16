@@ -88,6 +88,9 @@ services:
     depends_on: !override
       mcp-service:
         condition: service_healthy
+  answer-grading-worker:
+    environment: *remote-env
+    depends_on: !reset {}
   outbox-worker:
     environment: *remote-env
     depends_on: !reset {}

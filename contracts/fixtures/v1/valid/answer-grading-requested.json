@@ -1,0 +1,12 @@
+{
+  "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "event_type": "ANSWER_GRADING_REQUESTED",
+  "aggregate_type": "quiz_submission",
+  "aggregate_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+  "payload": {
+    "submission_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+    "course_id": "33333333-3333-4333-8333-333333333333",
+    "attempt_ids": ["cccccccc-cccc-4ccc-8ccc-cccccccccccc", "dddddddd-dddd-4ddd-8ddd-dddddddddddd"],
+    "essay_attempt_ids": ["dddddddd-dddd-4ddd-8ddd-dddddddddddd"]
+  }
+}
