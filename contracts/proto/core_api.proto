@@ -77,4 +77,24 @@ service CoreApiService {
   rpc GetEssayProcessor(JsonRequest) returns (JsonResponse);
   rpc ReceiveAssetNotices(JsonRequest) returns (JsonResponse);
   rpc GetEssayReport(JsonRequest) returns (JsonResponse);
+
+  // Micro Content
+  rpc ListMicroContents(JsonRequest) returns (JsonResponse);
+  rpc GetMicroContent(JsonRequest) returns (JsonResponse);
+  rpc CreateMicroContent(JsonRequest) returns (JsonResponse);
+  rpc UpdateMicroContent(JsonRequest) returns (JsonResponse);
+  rpc DeleteMicroContent(JsonRequest) returns (JsonResponse);
+  rpc PublishMicroContent(JsonRequest) returns (JsonResponse);
+  rpc SaveMicroContentQuestions(JsonRequest) returns (JsonResponse);
+  rpc CreateMicroContentUpload(JsonRequest) returns (JsonResponse);
+  rpc ConfirmMicroContentUpload(JsonRequest) returns (JsonResponse);
+  rpc GetMicroContentVideoUrl(JsonRequest) returns (JsonResponse);
+  rpc RequestMicroContentScript(JsonRequest) returns (JsonResponse);
+  rpc SaveMicroContentScript(JsonRequest) returns (JsonResponse);
+  rpc RequestMicroContentRender(JsonRequest) returns (JsonResponse);
+  rpc ReportMicroContentProgress(JsonRequest) returns (JsonResponse);
+  rpc SubmitMicroContent(JsonRequest) returns (JsonResponse);
+  rpc GetMicroContentResult(JsonRequest) returns (JsonResponse);
+  rpc ListMicroContentAttempts(JsonRequest) returns (JsonResponse);
 }
+
