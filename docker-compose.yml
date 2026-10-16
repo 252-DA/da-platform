@@ -71,7 +71,7 @@ x-worker-entrypoint: &worker-entrypoint ["uv", "run", "--frozen", "python", "-m"
 # ─────────────────────────────────────────────────────────
 services:
   postgres:
-    image: postgres:18-alpine
+    image: postgres:17-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -118,7 +118,7 @@ services:
       default: {}
 
   minio:
-    image: minio/minio:latest
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: minioadmin
