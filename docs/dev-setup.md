@@ -201,4 +201,5 @@ infisical secrets delete <TÊN> --env=dev --type shared
 3. Xoá developer key Canvas của họ (Admin → Developer Keys), rồi xoá tunnel:
    `cloudflared tunnel delete -f da-<tên>`. Record CNAME `app-<tên>` phải xoá
    tay trên dashboard Cloudflare.
+3. Xoá developer key Canvas của họ (Admin → Developer Keys).
 4. Key model là của họ nên không cần làm gì.

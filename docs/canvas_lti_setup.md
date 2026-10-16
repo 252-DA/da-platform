@@ -127,6 +127,7 @@ Canvas.
 `DA Platform Local`, kèm URL của người đó. Tên `DA Platform - <tên>` cho menu
 `DA Platform (<tên>)`; muốn hậu tố khác thì đặt `DA_LTI_MENU_SUFFIX`. Các bước
 đầy đủ nằm ở
+`DA Platform Local`, kèm URL của người đó. Các bước đầy đủ nằm ở
 [dev-setup.md, mục 5](dev-setup.md#5-launch-từ-canvas-vào-stack-của-bạn-không-bắt-buộc).
 
 ## Canvas do trường host (Instructure)
@@ -138,6 +139,8 @@ Asset Processor (`noticehandlers`, `asset.readonly`, `report`) và ba placement
 (Course Navigation; Module Menu Modal với Deep Linking; Document Processor
 `ActivityAssetProcessor` với Deep Linking, xem
 [essay-asset-processor.md](essay-asset-processor.md)). Sau đó bật
+OIDC initiation URL, redirect URI, public JWK URL, ba scope AGS và hai
+placement (Course Navigation; Module Menu Modal với Deep Linking). Sau đó bật
 key, cài app bằng Client ID ở cấp account, rồi lấy Deployment ID. Tên menu có
 thể khác theo phiên bản Canvas. Biến môi trường điền theo
 [.env.canvas.example](../.env.canvas.example): issuer vẫn là
@@ -166,6 +169,9 @@ token của admin. Các bước đổi token:
 2. Cập nhật `CANVAS_API_TOKEN` trên Infisical.
 3. Báo nhóm chạy `scripts/dc up -d core-api`. Container chỉ đọc biến môi trường
    lúc được tạo, nên `docker restart` không đủ.
+   Token**.
+2. Cập nhật `CANVAS_API_TOKEN` trên Infisical.
+3. Báo nhóm chạy `scripts/dc up -d core-api`.
 
 Lịch đồng bộ được mô tả ở
 [canvas-document-auto-sync.md](canvas-document-auto-sync.md).
