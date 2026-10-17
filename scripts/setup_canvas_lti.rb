@@ -66,6 +66,18 @@ configuration_params = {
       target_link_uri: "#{tool_base_url}/"
     },
     {
+      # Nút chat ở thanh trên của Canvas, mở thành ngăn bên ở mọi trang. Cần cờ
+      # top_navigation_placement của root account. custom_fields đi trong id_token
+      # đã ký; launch route đọc target_kind=chat để vào thẳng trang chat của khóa
+      # học đang mở (không có khóa học thì báo rõ).
+      placement: "top_navigation",
+      enabled: true,
+      message_type: "LtiResourceLinkRequest",
+      text: "Hỏi đáp AI#{menu_suffix}",
+      target_link_uri: "#{tool_base_url}/",
+      custom_fields: { target_kind: "chat" }
+    },
+    {
       placement: "module_menu_modal",
       enabled: true,
       message_type: "LtiDeepLinkingRequest",

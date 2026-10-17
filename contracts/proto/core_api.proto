@@ -77,4 +77,13 @@ service CoreApiService {
   rpc GetEssayProcessor(JsonRequest) returns (JsonResponse);
   rpc ReceiveAssetNotices(JsonRequest) returns (JsonResponse);
   rpc GetEssayReport(JsonRequest) returns (JsonResponse);
+
+  // Chatbot ba chế độ truy xuất (docs/chatbot-ba-che-do-ke-hoach.md).
+  // GetChatSettings: ai đã đăng nhập; SetChatMode: chỉ admin LMS; GetChatStats:
+  // giảng viên/TA của khóa (courseId) hoặc admin (không courseId).
+  rpc GetChatSettings(JsonRequest) returns (JsonResponse);
+  rpc SetChatMode(JsonRequest) returns (JsonResponse);
+  rpc RecordChatRun(JsonRequest) returns (JsonResponse);
+  rpc RateChatRun(JsonRequest) returns (JsonResponse);
+  rpc GetChatStats(JsonRequest) returns (JsonResponse);
 }

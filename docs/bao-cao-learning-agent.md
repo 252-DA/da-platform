@@ -3,20 +3,24 @@
 **Đề tài:** Hệ thống LMS tự động tạo Micro-Content & Quiz bằng Generative AI (DA Platform)  
 **Nội dung:** Tổng quan nghiên cứu, thiết kế hệ thống và kế hoạch đánh giá  
 **Ngày:** 16/10/2026  
+**Cập nhật phạm vi:** 17/10/2026
+
 **Trạng thái:** Đề xuất thiết kế, chưa triển khai Learning Agent và chưa có kết quả thực nghiệm của thành phần này.  
+**Vai trò tài liệu:** Báo cáo chính của hướng Learning Agent; đọc cùng [thiết kế chi tiết](bao-cao-thiet-ke-learning-agent.md) và [tổng quan tài liệu](learning-agent-tong-quan-tai-lieu.md). Phương án [bổ trợ sau kiểm tra](bao-cao-thiet-ke-bo-tro-sau-kiem-tra.md) được giữ để đối chiếu.
+
 **Mục đích báo cáo:** Xin ý kiến giảng viên hướng dẫn về hướng nghiên cứu, phạm vi thực hiện và phương pháp đánh giá trước khi triển khai.
 
 ## Tóm tắt
 
 DA Platform đã có luồng sinh câu hỏi từ tài liệu theo chuẩn đầu ra học tập (Learning Outcome, LO), tổ chức đề luyện tập hoặc kiểm tra, chấm tự luận ngắn bằng mô hình ngôn ngữ lớn (LLM) và tích hợp Canvas qua LTI 1.3. Theo hiện trạng được mô tả trong tài liệu dự án, hệ thống chưa sử dụng lịch sử làm bài để quyết định hoạt động tiếp theo cho từng sinh viên. Kết quả chấm từng ý của rubric cũng chưa được lưu đầy đủ để phục vụ phản hồi và theo dõi tiến bộ.
 
-Báo cáo đề xuất một Learning Agent thực hiện vòng lặp: **quan sát kết quả → cập nhật mô hình người học → chọn hoạt động → giải thích → ghi nhận phản hồi**. Agent đảm nhiệm vòng ngoài của hệ thống dạy học thông minh: chọn nội dung và hoạt động luyện tập. Phiên bản đầu theo dõi mức thành thạo theo LO bằng Bayesian Knowledge Tracing (BKT), dùng bộ quy tắc để chọn câu luyện, đề xuất xem lại nguồn, lên lịch ôn, chuyển LO hoặc đánh dấu cần giảng viên hỗ trợ.
+Báo cáo đề xuất một Learning Agent thực hiện vòng lặp: **quan sát kết quả → cập nhật mô hình người học → chọn hoạt động → giải thích → ghi nhận phản hồi**. Agent đảm nhiệm vòng ngoài của hệ thống dạy học thông minh, điều phối luyện tập theo LO **trong bài hoặc chương do giảng viên giao và mở cho Agent**. Phiên bản đầu theo dõi mức thành thạo theo LO bằng Bayesian Knowledge Tracing (BKT), dùng bộ quy tắc để chọn câu luyện, đề xuất xem lại nguồn có sẵn, lên lịch ôn, chuyển LO trong phạm vi được mở hoặc đánh dấu cần giảng viên hỗ trợ.
 
 Tổng quan nghiên cứu được tổ chức theo 10 nhóm vấn đề, kế thừa danh mục 91 tài liệu của quá trình khảo sát. Các nghiên cứu về knowledge tracing, tiêu chí thành thạo, luyện tập ngắt quãng và đánh giá chính sách là căn cứ cho thiết kế. Các ngưỡng và tham số cụ thể của đồ án là **giả định khởi đầu cần kiểm tra**, không được xem là giá trị tối ưu đã được chứng minh cho môn học này. Các hệ thống agent dùng LLM gần đây được dùng để đối chiếu phạm vi và xác định câu hỏi thực nghiệm.
 
 Phần đánh giá dự kiến so sánh sáu chính sách trên ba mô hình người học mô phỏng, gồm đối chứng đề cố định, ba câu đúng liên tiếp và trung bình trượt mũ. Chỉ số chính là tỉ lệ công nhận thành thạo khi người học chưa nắm, số câu cần luyện, số câu luyện thừa và mức chênh lệch giữa nhóm học nhanh, học chậm. Độ tin cậy của chấm tự luận được đánh giá riêng vì kết quả chấm là đầu vào của mô hình người học. Thử nghiệm nhỏ với sinh viên thật được đề xuất để kiểm tra khả năng sử dụng, không dùng để khẳng định hiệu quả học tập trên diện rộng.
 
-Phạm vi đề nghị là hoàn thành lưu dữ liệu, mô hình theo LO, planner theo luật, giao diện và đánh giá mô phỏng. Theo dõi theo mức Bloom, gắn đơn vị kiến thức nhỏ hơn LO và sinh câu hỏi nhắm chỗ hụt được đặt ở giai đoạn mở rộng.
+Phạm vi đề nghị là hoàn thành lưu dữ liệu, mô hình theo LO, planner theo luật, giao diện và đánh giá mô phỏng. Theo dõi theo mức Bloom, gắn đơn vị kiến thức nhỏ hơn LO và sinh câu hỏi nhắm chỗ hụt được đặt ở giai đoạn mở rộng. Việc xây micro-content, video, trình xem tài liệu và trợ giảng chat thuộc phần việc của thành viên khác; Agent chỉ sử dụng tài nguyên phù hợp qua định danh, liên kết và hợp đồng dữ liệu.
 
 ## Mục lục
 
@@ -48,6 +52,8 @@ Các chức năng nền được mô tả trong tài liệu dự án gồm:
 - Tổ chức thẻ bài học theo LO và lưu liên kết tới đoạn tài liệu nguồn, có số trang khi dữ liệu nguồn hỗ trợ.
 
 Learning Agent là thành phần đề xuất bổ sung trên nền này. Những chức năng và cấu trúc dữ liệu mô tả từ mục 5 trở đi là thiết kế dự kiến, trừ khi được ghi rõ là thành phần nền đang có.
+
+Phần việc được giới hạn ở bốn khâu: chuẩn hoá bằng chứng làm bài; mô hình người học theo LO; chọn hoạt động có giải thích; ghi nhận và đánh giá quyết định. Sinh viên vào một bài luyện hoặc chương đã được giao, Agent điều chỉnh các bước trong phạm vi đó. Giảng viên giữ quyền xác định nội dung, thời điểm mở và giới hạn luyện. Agent không tự lập lộ trình toàn khoá học hay điều chỉnh đề Kiểm tra đang diễn ra.
 
 ### 1.2. Tình huống minh hoạ
 
@@ -177,7 +183,7 @@ Các câu hỏi được đặt theo hướng kiểm chứng. Kết quả không
 
 ### 3.3. Đóng góp dự kiến
 
-1. **Về hệ thống:** bổ sung vòng luyện tập thích ứng theo LO, có lịch ôn, giải thích và đường chuyển cho giảng viên, trên nền LMS hiện có.
+1. **Về hệ thống:** bổ sung vòng luyện tập thích ứng theo LO trong bài/chương được giao, có lịch ôn, giải thích và đường chuyển cho giảng viên, trên nền LMS hiện có.
 2. **Về thực nghiệm:** đánh giá chính sách trên ngân hàng trộn loại câu, có khác biệt xác suất trả lời đúng khi chưa nắm, sai lệch mô hình và nhiễu chấm tự luận.
 3. **Về dữ liệu:** giữ lại kết quả từng ý rubric và nhật ký quyết định để phục vụ phản hồi, kiểm tra và hiệu chỉnh về sau.
 4. **Về đối chiếu vai trò LLM:** đo giá trị và chi phí của biến thể chọn hành động có ràng buộc so với planner luật.
@@ -199,6 +205,7 @@ Canvas, LTI 1.3 và môn học tiếng Việt là bối cảnh tích hợp và t
 
 | Thành phần | Phạm vi cốt lõi | Phần mở rộng |
 |---|---|---|
+| Phạm vi điều phối | Bài/chương và danh sách LO được giảng viên mở; giới hạn thời gian, lượt luyện | Mở rộng sang các phạm vi khác khi giảng viên cho phép |
 | Đơn vị theo dõi | LO đã có trong ngân hàng | LO × Bloom; đơn vị kiến thức nhỏ hơn LO |
 | Mô hình người học | BKT cố định; N-CCR/EMA làm đối chứng | Hiệu chỉnh tham số, Elo/PFA, quan hệ tiên quyết |
 | Chọn hoạt động | Planner luật; LLM chọn có kiểm tra trong mô phỏng | Chính sách học từ dữ liệu khi đủ dữ liệu |
@@ -206,13 +213,25 @@ Canvas, LTI 1.3 và môn học tiếng Việt là bối cảnh tích hợp và t
 | Ôn tập | Lịch kiểu Leitner cấu hình được | Bộ lập lịch cá nhân hoá, có dữ liệu hiệu chỉnh |
 | Đánh giá | Mô phỏng; đánh giá chấm tự luận trên tập bài mẫu | Thử nghiệm sử dụng nhỏ; thực nghiệm học tập có đối chứng khi đủ điều kiện |
 
-Hoạt động do Agent giao được dùng để luyện tập và không gửi điểm về sổ điểm Canvas. Đề Kiểm tra vẫn theo cấu hình giảng viên. Thành phần video, trình xem tài liệu và trợ giảng chat được tích hợp qua liên kết hoặc RPC, theo ranh giới công việc của nhóm.
+Hoạt động do Agent giao được dùng để luyện tập và không gửi điểm về sổ điểm Canvas. Một bài luyện có thể được giảng viên giao và mở từ Canvas mà không dùng kết quả luyện để đổi điểm bài Kiểm tra. Đề Kiểm tra vẫn theo cấu hình giảng viên. Giai đoạn đầu chọn một chương có ngân hàng đủ rõ để kiểm chứng trọn vòng trước khi mở rộng.
+
+### 4.3. Ranh giới với phần việc của thành viên khác
+
+| Thành phần | Trách nhiệm của Learning Agent | Dữ liệu hoặc chức năng sử dụng từ phần liên quan |
+|---|---|---|
+| Micro-content, thẻ bài học | Chọn tài nguyên đã có khi cần xem lại; ghi việc sinh viên mở tài nguyên | Định danh nội dung, LO liên quan, tiêu đề, liên kết và quyền truy cập |
+| Video, trình xem tài liệu | Trả liên kết tới nội dung hoặc trang nguồn phù hợp | Chức năng hiển thị và điều hướng do thành viên phụ trách cung cấp |
+| Trợ giảng chat | Có thể cung cấp tóm tắt trạng thái LO qua RPC | Chat quyết định cách sử dụng tóm tắt; không là điều kiện để Agent chạy |
+| Sinh câu và chấm bài | Dùng kho đã duyệt, lưu kết quả từng ý và chuẩn hoá quan sát | Luồng sinh câu, duyệt và chấm hiện có; sinh câu nhắm chỗ hụt là mở rộng |
+| Giao diện học tập | Hiển thị đề xuất và trang luyện tập của Agent | Thống nhất vị trí tích hợp và liên kết với người phụ trách trang |
+
+Agent không xây lại trình soạn, đóng gói hay phát micro-content. Một tài nguyên chưa có liên kết phù hợp chỉ làm mất lựa chọn xem tài nguyên đó; vòng chọn câu và cập nhật mô hình người học vẫn phải chạy được với kho câu và nguồn hiện có.
 
 ## 5. Kiến trúc và dữ liệu
 
 ### 5.1. Vòng hoạt động của Agent
 
-1. Sinh viên làm một câu; hệ thống ghi lượt làm và nguồn hoạt động.
+1. Sinh viên mở phạm vi luyện được giảng viên giao; hệ thống xác thực khoá học, danh sách LO, quyền truy cập và thời gian mở. Khi sinh viên làm một câu, hệ thống ghi lượt làm và nguồn hoạt động.
 2. Khi đã có kết quả chấm hợp lệ, module người học chuẩn hoá và cập nhật các quan sát của LO liên quan.
 3. Module lập lịch cập nhật việc đạt ngưỡng và hạn ôn; planner tính tập hành động hợp lệ rồi chọn đề xuất chính.
 4. Giao diện hiển thị đề xuất, lý do và tối đa hai lựa chọn khác.
@@ -234,7 +253,7 @@ Web yêu cầu GetNextActivity → kho câu hợp lệ + mô hình người họ
                     nhật ký quyết định và hoạt động sinh viên
 ```
 
-Mô hình người học, kho luyện, lịch ôn và planner dự kiến nằm trong module `learning-agent` của `core-api`. LLM tiếp tục chạy qua `worker`. Web gọi `GetNextActivity` khi sinh viên mở trang kết quả hoặc trang luyện tập; bài đến hạn ôn được phát hiện tại lần truy cập, chưa cần dịch vụ gửi nhắc nền.
+Mô hình người học, kho luyện, lịch ôn và planner dự kiến nằm trong module `learning-agent` của `core-api`. LLM tiếp tục chạy qua `worker`. Web gọi `GetNextActivity` kèm định danh phạm vi luyện khi sinh viên mở trang kết quả hoặc trang luyện tập; máy chủ tự kiểm tra phạm vi, không tin danh sách LO do trình duyệt gửi. Bài đến hạn ôn được phát hiện tại lần truy cập, chưa cần dịch vụ gửi nhắc nền.
 
 ### 5.2. Nguyên tắc tái tính và truy vết
 
@@ -257,12 +276,13 @@ Làm mới trang không được tạo lại một lần xem nguồn, một lầ
 | Tự luận ngắn | Cả câu là một quan sát: đúng khi đạt mọi ý bắt buộc của rubric; còn lại là chưa đạt |
 | Kết quả từng ý rubric | Lưu để phản hồi và đối chiếu chất lượng chấm; chưa coi các ý cùng câu là nhiều quan sát độc lập |
 | Câu có nhiều LO | Phiên bản đầu cần một LO chính được xác nhận; câu chưa xác định LO chính chưa dùng để cập nhật nhiều trạng thái đồng thời |
+| Mở hoặc hoàn thành tài nguyên học | Ghi sự kiện tiến độ/can thiệp; không tự tạo quan sát đúng, tăng P(L) hay công nhận thành thạo |
 
 Quy tắc tự luận đạt mọi ý là một lựa chọn nhị phân tương đối chặt. Điểm phần trăm vẫn được lưu riêng, không đồng nhất với kết luận nắm LO. RQ5 kiểm tra ảnh hưởng của sai số chấm; khả năng dùng điểm một phần hoặc từng đơn vị kiến thức là hướng phát triển tiếp theo.
 
 ### 5.4. Kho câu luyện tập
 
-Câu được giao trong hoạt động học mới phải đã duyệt, thuộc LO đang mở, không thuộc đề Kiểm tra và sinh viên chưa gặp theo nhóm câu trùng. Với hoạt động ôn, ưu tiên câu chưa gặp; nếu không còn thì có thể dùng lại câu gặp lâu nhất, theo quy tắc ở mục 6.5.
+Câu được giao trong hoạt động học mới phải đã duyệt, thuộc đúng khoá học và LO trong phạm vi luyện đang mở, không thuộc đề Kiểm tra và sinh viên chưa gặp theo nhóm câu trùng. Với hoạt động ôn, ưu tiên câu chưa gặp; nếu không còn thì có thể dùng lại câu gặp lâu nhất, theo quy tắc ở mục 6.5. Kết quả lịch sử từ các bài khác của cùng khoá học vẫn có thể là bằng chứng cho LO; điều đó không mở quyền giao nội dung ngoài phạm vi hiện tại.
 
 Trước khi bật Agent, cần thống kê số câu đủ điều kiện theo LO × loại câu. Cấu hình ban đầu cảnh báo LO dưới sáu câu; mốc sáu là ngưỡng vận hành đề xuất, không bảo đảm ngân hàng đã đủ cho mọi người học. Khi soạn đề Kiểm tra, giảng viên xem được câu nào đã dùng trong luyện và số sinh viên đã gặp.
 
@@ -273,10 +293,25 @@ Trước khi bật Agent, cần thống kê số câu đủ điều kiện theo 
 | Lượt làm và kết quả chấm | Câu, nhóm câu trùng, LO, loại, nguồn, thời điểm, trạng thái chấm, điểm, từng ý rubric, phiên bản rubric/model/prompt và kết quả giảng viên chỉnh |
 | Trạng thái người học | P(L), số quan sát, chuỗi sai, lượt luyện trong đợt hiện tại, trạng thái đạt/cần ôn/tạm dừng, phiên bản tham số |
 | Lịch ôn | Hộp, lần ôn gần nhất, hạn ôn, kết quả ôn và mã sự kiện đã áp dụng |
-| Cấu hình khoá học | LO được mở, ngưỡng thành thạo, số câu tối đa/ngày, giới hạn ôn và các quyền do giảng viên đặt |
-| Nhật ký hoạt động | Quyết định, tập hành động hợp lệ, lý do, phiên bản chính sách, lựa chọn sinh viên, mở nguồn, cờ hỗ trợ và việc xử lý |
+| Cấu hình khoá học và phạm vi luyện | Bài/chương được giao, LO được mở, thời gian mở/đóng nếu có, ngưỡng thành thạo, số câu tối đa/ngày, giới hạn ôn và các quyền do giảng viên đặt |
+| Nhật ký hoạt động | Phạm vi luyện, quyết định, tập hành động hợp lệ, lý do, phiên bản chính sách/cấu hình, lựa chọn sinh viên, mở nguồn, cờ hỗ trợ và việc xử lý |
 
 Thiết kế ban đầu dự kiến mở rộng `quiz_attempts`, thêm `learner_unit_state`, `agent_course_settings` và tái sử dụng `learning_events` theo tài liệu dự án. Tên cột và mức tái sử dụng được xác nhận khi triển khai migration, để khớp schema thực tế.
+
+### 5.6. Hợp đồng dữ liệu phục vụ quyết định
+
+Các trường dưới đây là yêu cầu thiết kế, chưa phải API đã triển khai:
+
+| Hợp đồng | Dữ liệu tối thiểu |
+|---|---|
+| Phạm vi luyện | Định danh phạm vi, khoá học, bài/chương liên quan, danh sách LO được mở và giới hạn giảng viên đặt; máy chủ kiểm tra người học có quyền vào phạm vi |
+| Tài nguyên xem lại | Định danh và loại tài nguyên, LO liên quan, tiêu đề, liên kết mở và trạng thái khả dụng với người học; tài liệu nguồn có thể thêm số trang |
+| Kết quả quyết định | Mã quyết định, phạm vi, LO, hành động, đích cụ thể, lý do dựa trên bằng chứng và tối đa hai lựa chọn hợp lệ khác |
+| Sự kiện thực hiện | Mã sự kiện duy nhất, mã quyết định nếu có, người học, tài nguyên/câu, hành động thực hiện và thời điểm |
+
+Mức nắm được giữ theo sinh viên × khoá học × LO, không tạo một mức nắm độc lập chỉ vì LO xuất hiện trong nhiều bài luyện. Nhật ký giữ phạm vi và phiên bản cấu hình để truy vết từng quyết định. Cấu hình phạm vi chỉ thu hẹp quyền chọn hoạt động, không xoá bằng chứng lịch sử của LO.
+
+Đề xuất xem nguồn, mở nguồn và trả lời sau khi xem là các sự kiện khác nhau. Chỉ kết quả câu trả lời đủ điều kiện ở mục 5.3 được đưa vào BKT. Khi thiếu tài nguyên, hệ thống chọn hoạt động còn hợp lệ hoặc giải thích lý do dừng; không gắn thiếu tài nguyên thành lỗi của sinh viên.
 
 ## 6. Mô hình người học và lịch ôn
 
@@ -329,6 +364,8 @@ Trong BKT, G là xác suất **đúng khi chưa nắm**, không chỉ xác suấ
 
 Một LO đạt tiêu chí của hệ thống khi đồng thời P(L) ≥ θ và số quan sát hợp lệ ≥ n_min. Cấu hình đầu là θ = 0.95, n_min = 3; phân tích thêm θ = 0.98 và n_min = 1. Ngưỡng ba quan sát là biện pháp vận hành thận trọng, chưa thay thế một phép đo độ bất định thống kê đầy đủ.
 
+Giao diện phân biệt **chưa có/thiếu bằng chứng**, **đang luyện**, **đạt tiêu chí**, **cần ôn** và **cần hỗ trợ**. Kết quả đang chờ chấm được hiển thị riêng, không coi là sai. P(L) cao nhưng chưa đủ số quan sát vẫn thuộc nhóm chưa đủ bằng chứng; một câu đúng chưa đủ để cho rằng sinh viên đã nắm LO.
+
 Với bộ tham số ở mục 6.3, số câu đúng liên tiếp để P(L) vượt ngưỡng được tính như sau:
 
 | Loại câu | Vượt 0.95 | Vượt 0.98 | Được công nhận với θ = 0.95, n_min = 3 |
@@ -358,7 +395,9 @@ Lịch ôn được tách khỏi module BKT để sau này thay bằng một mô
 
 ### 7.1. Trạng thái dùng để ra quyết định
 
-Planner dùng LO đang xử lý, P(L), số quan sát hợp lệ, số câu sai liên tiếp, số lần xem lại nguồn đã được ghi nhận, các LO đến hạn và giới hạn ngày. LO đang xử lý là LO của hoạt động vừa có kết quả; khi chưa có hoạt động thì chọn LO chưa đạt, đang mở và không bị tạm dừng, theo thứ tự giảng viên cấu hình.
+Planner dùng phạm vi luyện đã xác thực, LO đang xử lý, P(L), số quan sát hợp lệ, số câu sai liên tiếp, số lần xem lại nguồn đã được ghi nhận, các LO đến hạn và giới hạn ngày. LO đang xử lý là LO của hoạt động vừa có kết quả và nằm trong phạm vi hiện tại; khi chưa có hoạt động thì chọn LO chưa đạt, đang mở và không bị tạm dừng trong phạm vi đó, theo thứ tự giảng viên cấu hình.
+
+Ràng buộc khoá học, quyền truy cập, thời gian mở và danh sách LO được kiểm tra trước mọi luật, kể cả ôn đến hạn, chuyển LO và các lựa chọn khác. LO đến hạn ngoài phạm vi giữ lịch ôn nhưng không được tự chèn vào bài đang làm. Giới hạn câu/ngày áp dụng chung trong khoá học, không đặt lại khi người học đổi bài luyện. Khi phạm vi đóng hoặc cấu hình thay đổi, máy chủ tính lại tập hành động hợp lệ.
 
 Cần phân biệt số quan sát tích luỹ với số lượt trong **đợt luyện hiện tại**. Số lượt của đợt được dùng phát hiện bị kẹt; đợt mới bắt đầu khi LO được mở lại để luyện hoặc giảng viên cho tiếp tục sau can thiệp. Một sinh viên từng đạt LO rồi quay lại ôn không bị gắn cờ chỉ vì trước đó đã làm nhiều câu.
 
@@ -381,7 +420,7 @@ A6 tạo cờ trên trang giảng viên, gồm lý do và bằng chứng; không
 
 ### 7.3. Thứ tự luật dự kiến
 
-Trước khi chọn hành động, hệ thống cập nhật chuyển trạng thái đạt và lịch ôn đúng một lần. Planner sau đó xét các luật theo thứ tự; mọi ngưỡng dưới đây là cấu hình khởi đầu.
+Sau khi xác thực phạm vi, hệ thống cập nhật chuyển trạng thái đạt và lịch ôn đúng một lần. Planner sau đó xét các luật theo thứ tự trên tập hành động hợp lệ trong phạm vi; mọi ngưỡng dưới đây là cấu hình khởi đầu.
 
 | Luật | Điều kiện | Đề xuất | Căn cứ và phần cần kiểm chứng |
 |---|---|---|---|
@@ -394,6 +433,8 @@ Trước khi chọn hành động, hệ thống cập nhật chuyển trạng th
 | R6 | LO đang xử lý đã đạt; cần chọn nội dung tiếp theo | A5; hết LO thì A0 | Mastery learning; lịch ôn đã được ghi ở bước cập nhật trạng thái |
 
 Nếu không có nguồn phù hợp cho A3, hệ thống bỏ qua nhánh xem nguồn và chọn hành động hợp lệ khác, đồng thời ghi tình trạng thiếu nguồn. Nếu LO đến hạn không có cả câu mới lẫn câu ôn dùng lại được, ghi cờ thiếu tài nguyên rồi xét LO khác; tránh lặp một đề xuất không thể thực hiện.
+
+Nếu đang chờ chấm và chưa có hoạt động khác hợp lệ, trả trạng thái chờ cùng lý do. Hệ thống không tự tính câu đang chờ là sai, không gắn cờ khó khăn học tập chỉ vì chấm chậm và không dùng lại câu vừa làm như bằng chứng mới.
 
 Sau một lần xem nguồn đã được ghi nhận, chuỗi sai cho đợt can thiệp được đặt lại để đánh giá các câu tiếp theo. Giới hạn ngày và quyền mở LO là ràng buộc chung cho mọi hành động. Tạm dừng một LO chỉ cho phép chuyển tới LO đáp ứng điều kiện của giảng viên, không tự suy ra rằng có thể bỏ qua quan hệ tiên quyết.
 
@@ -465,7 +506,7 @@ Ví dụ lý do: “Câu vừa rồi của bạn chưa nêu giới hạn của c
 
 ### 9.2. Giao diện giảng viên
 
-Giảng viên xem bảng sinh viên × LO, số quan sát và các trường hợp cần hỗ trợ; phân biệt cờ khó khăn học tập, thiếu câu và chờ duyệt kết quả. Trang cấu hình cho phép mở LO, đặt giới hạn câu/ngày, ngưỡng thành thạo, hạn mức ôn và quyền sinh câu mở rộng. Khi soạn đề Kiểm tra, hệ thống hiện lịch sử dùng câu trong luyện tập.
+Giảng viên xem bảng sinh viên × LO, số quan sát và các trường hợp cần hỗ trợ; phân biệt cờ khó khăn học tập, thiếu câu và chờ duyệt kết quả. Trang cấu hình cho phép chọn bài/chương và LO được mở cho Agent, thời gian mở nếu có, giới hạn câu/ngày, ngưỡng thành thạo, hạn mức ôn và quyền sinh câu mở rộng. Khi soạn đề Kiểm tra, hệ thống hiện lịch sử dùng câu trong luyện tập.
 
 ### 9.3. Các thay đổi dự kiến
 
@@ -475,7 +516,7 @@ Giảng viên xem bảng sinh viên × LO, số quan sát và các trường h�
 | Cơ sở dữ liệu | Mở rộng lượt làm; lưu trạng thái, cấu hình, lịch ôn và sự kiện | 0–2 |
 | `core-api` | Module `learning-agent`; RPC dự kiến `GetNextActivity`, `GetLearnerSummary`, `GetCourseMastery`, `RecordAgentEvent`, `GetAgentSettings`, `UpdateAgentSettings` | 1–2 |
 | Luồng nộp bài | Ghi nguồn hoạt động; không gửi điểm hoạt động Agent về Canvas | 1–2 |
-| `contracts` | Hợp đồng RPC và kiểu dữ liệu quan sát, kết quả từng ý, quyết định; trường nhắm ý hụt chỉ ở mở rộng | 0–2; mở rộng |
+| `contracts` | Hợp đồng RPC và kiểu dữ liệu phạm vi luyện, tài nguyên, quan sát, kết quả từng ý, quyết định và sự kiện; trường nhắm ý hụt chỉ ở mở rộng | 0–2; mở rộng |
 | `web` | Các trang sinh viên, giảng viên và đường liên kết về nguồn | 1–2 |
 | Bộ đánh giá | Gọi cùng module mô hình/planner dùng trong ứng dụng, lưu cấu hình và seed | 3 |
 
@@ -544,6 +585,7 @@ Các trục phân tích gồm:
 - θ = 0.95/0.98; số quan sát tối thiểu 1/3; thay đổi P(L₀), T và S theo các khoảng được công bố trong cấu hình chạy.
 - G chung so với G theo loại; thay đổi cơ cấu năm loại câu, G thật và mức biết một phần để tránh mô phỏng chỉ thuận lợi cho giả định planner.
 - Ngân hàng mỏng/dày, câu trùng, giới hạn lượt trong đợt và xác suất sinh viên làm theo đề xuất.
+- Các phạm vi luyện hẹp/rộng và thời gian mở khác nhau; mọi chính sách dùng cùng phạm vi, ngân hàng và giới hạn để so sánh công bằng. Kiểm tra riêng trường hợp LO đến hạn nằm ngoài phạm vi hiện tại.
 - Tác dụng của xem nguồn: với bộ sinh BKT thử hệ số T × 1.0, × 1.5, × 2.0 và chặn trong miền xác suất hợp lệ; với AFM công bố cách quy đổi can thiệp sang cơ hội học. Mức ×1.0 kiểm tra trường hợp can thiệp không có lợi ích giả định.
 - Nhiễu chấm: thêm đúng giả và sai giả ở các mức 0%, 5%, 10%, 20%; bổ sung mức ước lượng từ đối chiếu giảng viên nếu có. Tách hai loại lỗi và ưu tiên áp dụng cho câu tự luận.
 - Lan truyền giữa mức Bloom bật/tắt chỉ ở giai đoạn mở rộng, chưa là điều kiện hoàn thành đánh giá cốt lõi.
@@ -574,7 +616,9 @@ Kết quả tham chiếu của giảng viên cũng có thể có bất đồng; 
 | Chuẩn hoá quan sát | Chờ chấm không thay mức nắm; câu lặp không thêm bằng chứng; chấm lại dùng đúng phiên bản |
 | Tiêu chí đạt | Đủ xác suất nhưng thiếu số quan sát thì chưa công nhận |
 | Planner | Mỗi luật có trường hợp kiểm tra, gồm khi nhiều luật cùng thoả và tài nguyên không còn |
+| Phạm vi luyện | Từ chối sai khoá/quyền; không giao câu, nguồn, LO ôn hoặc lựa chọn khác ngoài phạm vi; phạm vi đóng hoặc cấu hình đổi được kiểm tra lại; đổi phạm vi không đặt lại giới hạn ngày |
 | Sự kiện | Làm mới trang không đếm lại xem nguồn, cảnh báo hoặc chuyển hộp; mở lại đợt không dùng sai bộ đếm cũ |
+| Tài nguyên và tiến độ | Đề xuất chưa tính là đã xem; mở/hoàn thành nguồn không tăng BKT; thiếu liên kết không làm hỏng vòng luyện |
 | Kho luyện | Loại câu thi; gộp câu trùng; phân biệt câu mới với câu ôn dùng lại |
 | LLM chọn hành động | Từ chối hành động hoặc tài nguyên ngoài tập hợp lệ; fallback và nhật ký đầy đủ |
 | Tích hợp Canvas | Lượt Agent có nguồn riêng và không phát sinh cập nhật điểm về sổ điểm |
@@ -593,9 +637,9 @@ Thử nghiệm này hỗ trợ kiểm tra hệ thống và giả định sử d�
 
 | Giai đoạn | Nội dung | Điều kiện hoàn thành |
 |---|---|---|
-| 0. Dữ liệu nền | Lưu từng ý rubric, nguồn lượt làm, phiên bản chấm; lọc câu thi và câu trùng; thống kê kho theo LO × loại; chuẩn bị tập đối chiếu chấm | Migration và luồng lưu được kiểm tra; có bảng ngân hàng và kế hoạch chấm tham chiếu |
+| 0. Dữ liệu nền | Chọn một chương thử nghiệm; chốt phạm vi luyện và hợp đồng với phần nội dung; lưu từng ý rubric, nguồn lượt làm, phiên bản chấm; lọc câu thi và câu trùng; thống kê kho theo LO × loại; chuẩn bị tập đối chiếu chấm | Có phạm vi thử nghiệm và hợp đồng tài nguyên; migration và luồng lưu được kiểm tra; có bảng ngân hàng và kế hoạch chấm tham chiếu |
 | 1. Mô hình người học | Chuẩn hoá quan sát; BKT, N-CCR, EMA qua giao diện chung; trạng thái theo LO | Khớp ví dụ tính; xử lý chờ chấm/chấm lại/câu lặp; xem được mức nắm |
-| 2. Planner và tích hợp | Luật, lịch ôn, nhật ký chống ghi trùng, các trang sinh viên/giảng viên và RPC | Chạy được một vòng từ làm bài đến đề xuất và ghi nhận lựa chọn; kiểm tra ranh giới điểm Canvas |
+| 2. Planner và tích hợp | Lọc phạm vi; luật, lịch ôn, nhật ký chống ghi trùng, các trang sinh viên/giảng viên và RPC | Chạy được một vòng trong bài/chương được giao từ làm bài đến đề xuất và ghi nhận lựa chọn; kiểm tra quyền chọn hoạt động và ranh giới điểm Canvas |
 | 3. Đánh giá | Ma trận 6 × 3, đối chiếu bộ chấm, phân tích độ nhạy, biến thể LLM; thử nghiệm sử dụng nếu có điều kiện | Báo cáo RQ1–RQ5 và giới hạn; cấu hình, seed và kết quả có thể kiểm tra lại |
 | 4. Mở rộng | Bloom, đơn vị kiến thức, sinh câu nhắm ý hụt, độ khó thực nghiệm hoặc bộ lập lịch mới | Chỉ triển khai phần có đủ điều kiện đầu vào và thời gian đánh giá |
 
@@ -616,12 +660,14 @@ Thử nghiệm này hỗ trợ kiểm tra hệ thống và giả định sử d�
 | Câu thi đã xuất hiện trong luyện | Ảnh hưởng tính độc lập của kiểm tra | Lọc kho, chỉ báo khi soạn đề; ghi giới hạn của chống trùng văn bản |
 | Chi phí hoặc độ trễ LLM | Vượt ngân sách thực nghiệm | P4 chạy tập con; lưu chi phí; fallback về luật |
 | Mở rộng vượt thời gian | Thiếu đánh giá cho phần cốt lõi | Chốt theo giai đoạn và ưu tiên đầu ra giai đoạn 0–3 |
+| Lấn sang phần nội dung của thành viên khác | Tăng phụ thuộc, chồng công việc và chậm vòng luyện | Chốt hợp đồng tài nguyên; dùng nguồn có sẵn và phương án khi thiếu liên kết; phần soạn/phát nội dung do thành viên phụ trách |
+| Agent vượt phạm vi giảng viên giao | Giao LO chưa mở hoặc làm sai nhịp môn học | Xác thực phạm vi trước mọi hành động; ghi phiên bản cấu hình và kiểm tra lại khi thực hiện |
 
 ## 12. Nội dung xin ý kiến giảng viên hướng dẫn
 
 | Vấn đề cần chốt | Đề xuất để thầy góp ý |
 |---|---|
-| Phạm vi đồ án | Hoàn thành giai đoạn 0–3; phần Bloom và sinh câu cá nhân hoá là mở rộng |
+| Phạm vi đồ án | Hoàn thành giai đoạn 0–3 cho Agent luyện theo LO trong bài/chương được giao; micro-content và các trình hiển thị thuộc phần việc thành viên khác; phần Bloom và sinh câu cá nhân hoá là mở rộng |
 | Đơn vị theo dõi | Bắt đầu theo LO; chọn một chương có LO và ngân hàng đủ rõ để thử nghiệm |
 | Định hướng đóng góp | Tập trung vòng luyện có giải thích và đánh giá quyết định trong ngân hàng nhiều loại câu, có nhiễu chấm |
 | Mức đánh giá cần thiết | Mô phỏng và đối chiếu chấm là kết quả chính; thử nghiệm sử dụng nhỏ là bổ sung. Cần thầy xác nhận có yêu cầu thực nghiệm học tập với lớp thật hay không |
@@ -638,6 +684,7 @@ Thử nghiệm này hỗ trợ kiểm tra hệ thống và giả định sử d�
 | Quyết định | Căn cứ liên quan | Phần do đồ án đề xuất và cần kiểm tra |
 |---|---|---|
 | Agent làm vòng ngoài của ITS | Wooldridge & Jennings (1995); VanLehn (2006) | Vòng sau mỗi kết quả và tập hành động trong DA Platform |
+| Giới hạn điều phối trong bài/chương được giao, dùng tài nguyên của thành viên khác | Ràng buộc phạm vi công việc được chốt ngày 17/10/2026 | Hợp đồng phạm vi/tài nguyên và kiểm tra mọi hành động; đây là quyết định của dự án, không phải kết luận thực nghiệm từ tài liệu |
 | BKT theo LO | Corbett & Anderson (1995); Pelánek (2017); Gervet et al. (2020) | Mức phù hợp của LO và khả năng sử dụng tham số cố định |
 | G phụ thuộc loại câu | Baker et al. (2008); Pardos & Heffernan (2011) | Các giá trị ban đầu và ảnh hưởng của hiểu một phần |
 | Tách mô hình khỏi tiêu chí dừng | Rollinson & Brunskill (2015); Käser et al. (2016) | Giao diện chung để thay BKT/N-CCR/EMA |

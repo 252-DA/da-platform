@@ -52,3 +52,9 @@ scripts/dc up -d --build --scale cloudflared=0   # scripts/dc = docker compose +
 ```
 
 Setup LTI với Canvas: xem `docs/canvas_lti_setup.md`.
+
+## Diagram phục vụ phát triển
+
+Bộ Archify đối chiếu code ngày **17/10/2026**: [mở trang tra cứu](.archify/index.html).
+Gồm 54 sơ đồ, ERD đủ 43 bảng / 430 cột / 64 FK, danh mục API, nguồn theo revision
+và ghi chú thay đổi so với bản cũ. Xem [hướng dẫn và phạm vi](docs/architecture.md).

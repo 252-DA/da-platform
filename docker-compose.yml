@@ -298,6 +298,7 @@ services:
       CHOKIDAR_USEPOLLING: "true"
       REDIS_URL: redis://redis:6379
       CORE_API_INTERNAL_URL: http://core-api:4000
+      TUTOR_URL: http://ai-tutor:8010
       BFF_TO_CORE_PRIVATE_KEY_PATH: /keys/bff-to-core.pem
       BFF_TO_CORE_KEY_ID: bff-2026-05
       LTI_LMS_TYPE: ${LTI_LMS_TYPE:-openedx}
@@ -520,7 +521,7 @@ services:
       WORKER_CONCURRENCY: "2"
       # Ba vai trò trong sinh quiz, ba profile độc lập — cùng một process vẫn
       # gọi được hai model khác nhau. Để trống thì lấy TASK_DEFAULTS của catalog
-      # (viết câu: deepseek-chat, chấm: gemini-flash — judge phải khác model
+      # (viết câu: deepseek-chat, chấm: gemini-flash-lite — judge phải khác model
       # vừa viết câu, xem docs/quiz-generation-redesign.md §7.8).
       LLM_PROFILE__QUIZ_GENERATION: ${LLM_PROFILE__QUIZ_GENERATION:-}
       LLM_PROFILE__QUIZ_VERIFICATION: ${LLM_PROFILE__QUIZ_VERIFICATION:-}
@@ -649,6 +650,49 @@ services:
       qdrant:
         condition: service_healthy
       embedding-service:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      default: {}
+
+  # ─────────────────────────────────────────────────────────
+  # ai-tutor — chatbot bám tài liệu khóa học, ba chế độ truy xuất (vector, tools,
+  # graph; docs/chatbot-ba-che-do-ke-hoach.md). Không có DB: mọi dữ liệu đi qua
+  # công cụ của mcp-service. Chế độ do web truyền vào từng yêu cầu.
+  # Mặc định dùng Gemini 3.1 Flash-Lite cho các chế độ vector/tools/graph; đổi bằng
+  # LLM_PROFILE__TUTOR. Mã được mount và uvicorn --reload để sửa không phải build lại.
+  # ─────────────────────────────────────────────────────────
+  ai-tutor:
+    build:
+      context: .
+      dockerfile: ai-tutor/Dockerfile
+    command:
+      [
+        "python", "-m", "uvicorn", "ai_tutor.api:app",
+        "--host", "0.0.0.0", "--port", "8010",
+        "--reload", "--reload-dir", "/app/ai-tutor/src",
+      ]
+    environment:
+      PYTHONPATH: /app/ai-tutor/src
+      LEARNING_CONTEXT_MCP_URL: http://mcp-service:8001/mcp
+      LEARNING_CONTEXT_MCP_TIMEOUT_SECONDS: "30"
+      LLM_PROFILE__TUTOR: ${LLM_PROFILE__TUTOR:-gemini-flash-lite}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      TUTOR_MAX_TOOL_CALLS_TOOLS: ${TUTOR_MAX_TOOL_CALLS_TOOLS:-5}
+      TUTOR_MAX_TOOL_CALLS_GRAPH: ${TUTOR_MAX_TOOL_CALLS_GRAPH:-6}
+    volumes:
+      - ./ai-tutor/src:/app/ai-tutor/src
+    ports:
+      - "8010:8010"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8010/health').read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    depends_on:
+      mcp-service:
         condition: service_healthy
     restart: unless-stopped
     networks:

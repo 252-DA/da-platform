@@ -2,7 +2,12 @@
 
 **Đề tài:** Hệ thống LMS tự động tạo Micro-Content & Quiz bằng Generative AI (DA Platform)
 **Ngày:** 14/10/2026
-**Mục đích:** gom các nghiên cứu liên quan để thiết kế Learning Agent dựa trên bằng chứng. Thiết kế dùng tài liệu này nằm ở [bao-cao-thiet-ke-learning-agent.md](bao-cao-thiet-ke-learning-agent.md).
+**Cập nhật phạm vi áp dụng:** 17/10/2026
+**Mục đích:** gom các nghiên cứu liên quan để thiết kế Learning Agent dựa trên bằng chứng. [Báo cáo chính](bao-cao-learning-agent.md) tổng hợp hướng hiện tại; [thiết kế chi tiết](bao-cao-thiet-ke-learning-agent.md) trình bày mô hình và planner.
+
+**Phạm vi sử dụng hiện tại.** Agent quan sát kết quả, cập nhật mức nắm theo LO và chọn hoạt động luyện trong bài/chương được giảng viên giao. Micro-content, video, trình xem tài liệu và chat thuộc phần của thành viên khác; Agent chỉ chọn nguồn đã có qua liên kết và ánh xạ LO. BKT và planner luật là lựa chọn cần đánh giá cùng đối chứng N-CCR/EMA. Tiến độ xem nội dung không được coi là bằng chứng thành thạo. Các nhóm nghiên cứu về Bloom, sinh câu cá nhân hoá và mô hình phức tạp phục vụ phần mở rộng, không tự trở thành yêu cầu triển khai cốt lõi.
+
+Lần cập nhật này làm rõ phạm vi và cách dùng các nghiên cứu đã tổng hợp; không bổ sung kết quả thực nghiệm hay tuyên bố đã kiểm tra lại toàn văn của danh mục.
 
 ---
 
@@ -338,11 +343,12 @@ Tổng cộng 91 tài liệu, chia 10 nhóm. Mỗi nhóm gồm: câu hỏi thi�
 | Quyết định trong thiết kế | Căn cứ |
 |---|---|
 | Agent là vòng ngoài của ITS; tính agent nằm ở việc chọn hành động theo trạng thái | Wooldridge & Jennings (1995); VanLehn (2006) |
+| Giới hạn Agent trong bài/chương được giao, dùng tài nguyên của thành viên khác | Ràng buộc phạm vi công việc của dự án, chốt ngày 17/10/2026; chi tiết ở báo cáo chính, mục 4.3 và 5.6 |
 | BKT tham số cố định, xác suất đoán theo loại câu | Corbett & Anderson (1995); Pardos & Heffernan (2011); Beck & Chang (2007) |
 | Không dùng DKT, không dùng LLM làm mô hình người học | Gervet et al. (2020); Khajah et al. (2016); Neshaei et al. (2024); Hooshyar et al. (2025) |
 | So sánh BKT với 3 câu liên tiếp và EMA | Kelly et al. (2015); Pelánek & Řihák (2017); Niu et al. (2026) |
 | Ngưỡng 0.95, phân tích thêm 0.98; số quan sát tối thiểu | Corbett & Anderson (1995); Zhang et al. (2025); Pelánek (2018) |
-| Báo giảng viên sau 10 lần chưa đạt | Beck & Gong (2013) |
+| Can thiệp khi có dấu hiệu bị kẹt trong đợt luyện | Beck & Gong (2013); mốc 10 lượt là giả định vận hành của đồ án cần kiểm chứng |
 | Thứ bậc mức Bloom là giả định có thể bật/tắt | Krathwohl (2002); Lalwani & Agrawal (2018); Käser et al. (2017) |
 | Planner theo luật thay vì RL | Doroudi et al. (2019) |
 | Đề xuất kèm lựa chọn, trong giới hạn hệ thống | Corbalan et al. (2008); Noh et al. (2026) |
@@ -360,8 +366,10 @@ Tổng cộng 91 tài liệu, chia 10 nhóm. Mỗi nhóm gồm: câu hỏi thi�
 
 ## 12. Khoảng trống đồ án nhắm tới
 
+Các hướng dưới đây là câu hỏi kiểm chứng trong phạm vi dự án. Tổng quan hiện tại chưa đủ để khẳng định tính mới tuyệt đối hoặc rằng BKT/LLM sẽ vượt đối chứng.
+
 1. **Ngân hàng nhiều loại câu.** Các so sánh tiêu chí thành thạo trước đây chủ yếu dùng dữ liệu một loại bài, như toán trên ASSISTments. Ngân hàng của hệ thống có 5 loại câu với xác suất đoán từ 0.5 đến gần 0. Đồ án đo xem việc tính xác suất đoán theo loại câu ảnh hưởng thế nào đến tỉ lệ "thạo giả".
-2. **Quan sát từ chấm tự luận bằng LLM.** Kết quả đạt hay chưa của từng ý rubric, do LLM phán, được dùng làm đầu vào cho mô hình người học và cho phản hồi.
+2. **Quan sát từ chấm tự luận bằng LLM.** Lưu kết quả từng ý để phản hồi và chẩn đoán. Ở giai đoạn theo LO, cả câu chỉ tạo một quan sát khi đã chấm hợp lệ; không đếm từng ý cùng câu thành nhiều bằng chứng độc lập. Đo ảnh hưởng của nhiễu chấm đối với quyết định của Agent.
 3. **LLM bị ràng buộc ở vòng ngoài.** So sánh planner theo luật với LLM chọn hành động trong tập hợp lệ (LLM-Modulo), đo cả chất lượng quyết định lẫn chi phí.
 4. **Bối cảnh triển khai.** Hệ thống chạy trong LMS thật (Canvas, qua LTI 1.3), với môn học bằng tiếng Việt.
 

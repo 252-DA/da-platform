@@ -2,10 +2,12 @@
 
 | | |
 |---|---|
-| Trạng thái | Đề xuất cũ. Bản chi tiết hơn, có căn cứ tài liệu: [bao-cao-thiet-ke-learning-agent.md](bao-cao-thiet-ke-learning-agent.md) (14/10/2026) |
+| Trạng thái | Bản nháp lịch sử ngày 08/10/2026, giữ để tham khảo. Phạm vi hiện tại được cập nhật ngày 17/10/2026 trong [báo cáo chính](bao-cao-learning-agent.md) và [thiết kế chi tiết](bao-cao-thiet-ke-learning-agent.md) |
 | Ngày | 2026-10-08 |
 | Phạm vi | `core-api` (Learner Model, planner, RPC), `worker` + `packages-ai` (lưu kết quả chấm theo ý, sinh câu nhắm chỗ hụt), `web` (khung "Bước tiếp theo" ở trang sinh viên) |
 | Liên quan | [quiz-generation-redesign.md](quiz-generation-redesign.md): Agent dùng ngân hàng câu và cần kiểm tra Bloom ở §7.8; [kiem-soat-chat-luong-genai.md](kiem-soat-chat-luong-genai.md): nguyên tắc "LLM viết, code quyết định" |
+
+**Phạm vi hiện tại để triển khai:** Learning Agent điều phối luyện tập theo LO trong bài/chương giảng viên giao và mở cho Agent. Phần việc gồm chuẩn hoá bằng chứng, mô hình người học, planner, giải thích và đánh giá. Micro-content cùng các trình hiển thị do thành viên khác phụ trách; Agent sử dụng tài nguyên đã có qua hợp đồng dữ liệu. Bản đầu theo LO; Bloom, đơn vị kiến thức nhỏ hơn LO và sinh câu nhắm chỗ hụt là mở rộng. Các sơ đồ, mã hành động, quy tắc và lộ trình bên dưới ghi lại bản nháp cũ; khi triển khai dùng hai báo cáo hiện hành nêu trên.
 
 ---
 
@@ -23,7 +25,7 @@
 
 ## 1. Bối cảnh
 
-Video, chat (ai-tutor) và trình xem tài liệu đã giao cho thành viên khác. Phần còn lại của tài liệu này là sinh câu hỏi và chấm điểm. Micro-content cần video nên không còn là hướng chính của phần này.
+Micro-content, video, chat (ai-tutor) và trình xem tài liệu do thành viên khác phụ trách. Phần Learning Agent dùng kết quả làm bài để chọn hoạt động luyện và đề xuất tài nguyên đã có theo LO. Ranh giới này xuất phát từ phân công của nhóm; không phụ thuộc vào việc micro-content có video hay không.
 
 QuizGen v2 §13 (Q5) đã ghi "chọn câu thích ứng theo người học" là ngoài phạm vi. Tài liệu này nhận phần đó.
 

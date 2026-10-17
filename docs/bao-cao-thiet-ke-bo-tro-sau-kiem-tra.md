@@ -2,9 +2,10 @@
 
 **Đề tài:** Hệ thống LMS tự động tạo Micro-Content & Quiz bằng Generative AI (DA Platform)
 **Ngày:** 16/10/2026
-**Trạng thái:** thiết kế, chưa triển khai. Báo cáo này để xin ý kiến thầy trước khi làm.
+**Trạng thái:** phương án đối chiếu, chưa triển khai; giữ lại thiết kế bổ trợ sau kiểm tra để tham khảo.
+**Cập nhật vai trò tài liệu:** 17/10/2026. Phạm vi đang đề xuất là Learning Agent luyện tập theo LO trong bài/chương được giao, trình bày trong [báo cáo chính](bao-cao-learning-agent.md) và [thiết kế chi tiết](bao-cao-thiet-ke-learning-agent.md).
 **Tài liệu kèm:** [bo-tro-sau-kiem-tra-tong-quan-tai-lieu.md](bo-tro-sau-kiem-tra-tong-quan-tai-lieu.md) tổng hợp 42 tài liệu liên quan, có bảng truy vết từ quyết định thiết kế về căn cứ.
-**Thay cho:** phương án Learning Agent tự lên lộ trình luyện tập ([bao-cao-thiet-ke-learning-agent.md](bao-cao-thiet-ke-learning-agent.md)). Lý do đổi ở mục 4.2.
+**Quan hệ với Learning Agent:** từng được cân nhắc để thay hướng Agent tự lên lộ trình. Những cân nhắc ở mục 4.2 được giữ để đối chiếu; tài liệu này không thay thế phạm vi Agent đã cập nhật ngày 17/10/2026.
 
 ---
 
@@ -74,7 +75,7 @@ Sinh viên A làm đúng câu trắc nghiệm, sai câu đúng/sai. Ở câu t�
 
 **Không làm**
 - Không đổi điểm của bài gốc. Bài bổ trợ có điểm riêng nếu giảng viên chọn (mục 7.3).
-- Không lên lộ trình học dài hạn cho từng sinh viên, không lịch ôn. Đây là phương án đã cân nhắc và không chọn (mục 4.2).
+- Phương án bổ trợ trong tài liệu này không lên lộ trình học dài hạn hay lập lịch ôn. Thiết kế Learning Agent hiện tại được trình bày riêng trong báo cáo chính.
 - Không huấn luyện mô hình, vì không đủ dữ liệu.
 - Không để LLM kết luận sinh viên đạt hay chưa đạt, và không để LLM viết phản hồi mới cho sinh viên mà không qua duyệt.
 - Không sửa phần video, trình xem tài liệu và trợ giảng chat của các thành viên khác; chỉ nối với chúng qua đường dẫn.
@@ -132,17 +133,17 @@ Mỗi bước có một chủ thể rõ ràng. Code quyết định đạt hay c
 | Thống kê câu | Độ khó, độ phân biệt, tỉ lệ chọn phương án, từ lượt làm thật | Tin nhãn độ khó do LLM gán | Nhãn độ khó của LLM gần như không khớp thực tế, ρ = 0.06 (arXiv:2609.27063); phân tích câu (Haladyna & Rodriguez, 2013) |
 | Đánh giá | Đồng thuận chấm; chất lượng câu sinh; thử nghiệm ngẫu nhiên theo LO | Mô phỏng; so với khoá trước; so người làm với người không làm | Người tự chọn dùng phản hồi vốn giỏi hơn (Thomas et al., 2025); so với khoá trước dễ nhiễu (Hinkle, 2023) |
 
-### 4.2 Vì sao không chọn phương án Learning Agent
+### 4.2 Những cân nhắc khi từng ưu tiên bổ trợ sau kiểm tra
 
-Phương án trước là một Agent sau mỗi câu trả lời cập nhật mức thạo theo LO bằng BKT và chọn hoạt động tiếp theo cho sinh viên, có lịch ôn. Phương án này không hợp với LMS vì ba lý do:
+So sánh dưới đây ghi lại bối cảnh phương án Agent luyện tự chọn ban đầu: sau mỗi câu trả lời cập nhật mức thạo theo LO bằng BKT, chọn hoạt động tiếp theo và có lịch ôn. Ba điểm sau là rủi ro của cách tổ chức đó, không phải kết luận rằng Learning Agent không phù hợp với LMS:
 
 1. **LMS chạy theo nhịp giảng viên.** Sinh viên vào Canvas vì có bài được giao, có hạn nộp, có điểm. Luyện tập tự chọn, không tính điểm thì ít người làm (Kibble, 2007). Vòng ngoài kiểu hệ thống dạy học thông minh chạy tốt khi luyện tập là hoạt động chính, với rất nhiều câu ngắn cho mỗi kỹ năng. Một môn đại học chỉ có vài LO mỗi chương và vài chục câu mỗi LO.
-2. **Canvas đã có bản đơn giản.** Outcomes tính mức thạo bằng trung bình giảm dần hoặc "đạt n lần"; đó chính là các đối chứng của phương án trước. Mastery Paths mở nội dung theo điểm. Câu hỏi "Canvas có rồi, phần mới là gì?" không có câu trả lời rõ.
+2. **Cần đối chiếu với cơ chế đơn giản của LMS.** Outcomes và Mastery Paths là các tính năng được khảo sát để đối chiếu cách tính mức thạo và mở nội dung theo điểm. Việc chỉ thêm một điểm mức thạo chưa làm rõ giá trị của Agent; cần đánh giá chất lượng chọn hoạt động so với các đối chứng đơn giản. Khả năng sử dụng các tính năng LMS phụ thuộc môi trường, không mặc định có đầy đủ trên bản tự host.
 3. **Luồng chính gần như không dùng GenAI.** Phần GenAI duy nhất gắn với Agent (sinh câu nhắm chỗ hụt) nằm ở giai đoạn mở rộng.
 
-So sánh ba cách:
+So sánh ba cách trong bối cảnh khảo sát ban đầu:
 
-| | Canvas Mastery Paths | Learning Agent (phương án trước) | Bổ trợ sau kiểm tra (đề xuất) |
+| | Canvas Mastery Paths | Learning Agent luyện tự chọn (bản ban đầu) | Bổ trợ sau kiểm tra (phương án đối chiếu) |
 |---|---|---|---|
 | Kích hoạt | Điểm của một bài đã chấm | Mỗi câu trả lời | Bài gốc đã chấm xong |
 | Đơn vị quyết định | Khoảng điểm của cả bài | Mức thạo BKT theo LO | LO và ý rubric |
@@ -152,6 +153,8 @@ So sánh ba cách:
 | Đánh giá được bằng | Không áp dụng | Chủ yếu mô phỏng | Dữ liệu thật quy mô nhỏ |
 
 Phương án mới giữ lại các phần còn đúng của phương án trước: lưu kết quả từng ý, kho câu loại câu thi, chống trùng câu, trỏ về thẻ bài học và trang tài liệu.
+
+**Điều chỉnh phạm vi ngày 17/10/2026:** hướng Learning Agent được tiếp tục với quyền điều phối giới hạn trong bài/chương giảng viên giao. Phần việc tập trung vào bằng chứng, mô hình người học, planner, giải thích và đánh giá; nội dung có sẵn được dùng qua hợp đồng với thành viên phụ trách. Giới hạn này xử lý một phần lo ngại về nhịp học và phân công, nhưng không tự chứng minh sinh viên sẽ tham gia hoặc BKT/LLM tốt hơn đối chứng. Các rủi ro về ngân hàng, chất lượng chấm, vai trò GenAI và mức sử dụng vẫn phải đánh giá. Nội dung còn lại của tài liệu này tiếp tục mô tả phương án bổ trợ để tham khảo.
 
 ---
 

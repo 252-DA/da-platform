@@ -17,6 +17,11 @@
       "model": "gemini-2.0-flash"
     },
     {
+      "name": "gemini-flash-lite",
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite"
+    },
+    {
       "name": "gemini-pro",
       "provider": "gemini",
       "model": "gemini-3-pro-preview"
@@ -30,12 +35,13 @@
         "quiz_generation",
         "quiz_regeneration",
         "card_generation",
-        "card_regeneration"
+        "card_regeneration",
+        "relation_extraction"
       ]
     },
     {
       "task": "quiz_verification",
-      "default_profile": "gemini-flash",
+      "default_profile": "gemini-flash-lite",
       "use_cases": [
         "quiz_verification",
         "card_verification",
@@ -45,7 +51,7 @@
     },
     {
       "task": "enrichment",
-      "default_profile": "gemini-flash",
+      "default_profile": "gemini-flash-lite",
       "use_cases": [
         "enrichment_cards",
         "enrichment_quiz"

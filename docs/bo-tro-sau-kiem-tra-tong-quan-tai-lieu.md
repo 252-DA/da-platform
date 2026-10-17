@@ -1,8 +1,11 @@
 # Tổng quan tài liệu: chẩn đoán và bổ trợ sau bài kiểm tra
 
 **Ngày:** 16/10/2026
+**Cập nhật vai trò tài liệu:** 17/10/2026. Tài liệu tham khảo bổ sung cho phản hồi, chấm theo rubric và chất lượng câu hỏi; không thay thế hướng Learning Agent trong [báo cáo chính](bao-cao-learning-agent.md).
 **Đi kèm:** [bao-cao-thiet-ke-bo-tro-sau-kiem-tra.md](bao-cao-thiet-ke-bo-tro-sau-kiem-tra.md)
-**Tài liệu nền:** [learning-agent-tong-quan-tai-lieu.md](learning-agent-tong-quan-tai-lieu.md) (91 tài liệu, cho phương án Learning Agent trước đó). Tài liệu này giữ lại phần còn dùng được và bổ sung các nhóm mới: chấm theo rubric bằng LLM, chất lượng câu do LLM sinh, cách đưa bổ trợ vào LMS, báo cáo cho giảng viên.
+**Tài liệu nền:** [learning-agent-tong-quan-tai-lieu.md](learning-agent-tong-quan-tai-lieu.md) (91 tài liệu cho hướng Learning Agent). Tài liệu này bổ sung các nhóm: chấm theo rubric bằng LLM, chất lượng câu do LLM sinh, cách đưa bổ trợ vào LMS, báo cáo cho giảng viên.
+
+**Cách dùng cho phạm vi hiện tại.** Kế thừa căn cứ về lưu từng ý rubric, phản hồi theo chỗ hụt, luyện bằng câu khác, duyệt câu và báo cáo hỗ trợ. Vòng bổ trợ sau cả bài kiểm tra, điểm hoàn thành và sinh câu theo chỗ hụt của lớp là thiết kế riêng của phương án đối chiếu, không tự trở thành yêu cầu cho Agent. Learning Agent hiện điều phối sau kết quả câu trả lời trong bài/chương được giao; phần xây micro-content và trình hiển thị do thành viên khác phụ trách.
 
 ---
 
@@ -209,6 +212,8 @@
 ---
 
 ## 8. Truy vết: quyết định thiết kế và căn cứ
+
+Bảng dưới truy vết **phương án bổ trợ sau kiểm tra** được khảo sát trong tài liệu này. Phạm vi cốt lõi và kế hoạch đánh giá của Learning Agent được chốt riêng trong báo cáo chính.
 
 | Quyết định | Căn cứ |
 |---|---|

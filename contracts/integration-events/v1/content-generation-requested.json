@@ -15,8 +15,8 @@
         "request_id": { "type": "string", "format": "uuid" },
         "course_id": { "type": "string", "format": "uuid" },
         "type": {
-          "enum": ["card", "quiz"],
-          "description": "core-api nhận cả hai (content-generation.service.ts:35). Worker xử lý 'quiz' (GenerateCurriculumQuizUseCase) và 'card' (GenerateLessonCardsUseCase); cả hai đọc target từ scope theo cùng một cách."
+          "enum": ["card", "quiz", "relations"],
+          "description": "core-api nhận cả ba (content-generation.service.ts). 'relations' dựng đồ thị quan hệ cho chatbot (ExtractRelationsUseCase): scope chỉ có source_document_ids (và chapter_id nếu chọn theo chương).  Worker xử lý 'quiz' (GenerateCurriculumQuizUseCase) và 'card' (GenerateLessonCardsUseCase); cả hai đọc target từ scope theo cùng một cách."
         },
         "scope": {
           "type": "object",
