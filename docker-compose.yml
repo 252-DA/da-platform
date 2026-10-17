@@ -577,6 +577,39 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # Worker sinh video AI cho Micro Content (hàng đợi micro_content_video: slide + TTS + ffmpeg)
+  micro-content-video-worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    entrypoint: *worker-entrypoint
+    command:
+      [
+        "dev_reload",
+        "worker.runners.micro_content_video_worker",
+        "/app/worker/worker",
+        "/app/packages-ai/src",
+        "/app/ai-sdk/src",
+      ]
+    environment:
+      <<: *common-env
+      WORKER_TYPE: micro_content_video
+      WORKER_CONCURRENCY: "1"
+      HEALTH_PORT: "8086"
+      METRICS__PORT: "9097"
+    ports:
+      - "8086:8086"
+      - "9097:9097"
+    volumes: *worker-volumes
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+
   outbox-worker:
     build:
       context: .
