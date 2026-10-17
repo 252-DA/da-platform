@@ -72,7 +72,8 @@ x-worker-entrypoint: &worker-entrypoint ["uv", "run", "--frozen", "python", "-m"
 # ─────────────────────────────────────────────────────────
 services:
   postgres:
-    image: postgres:17-alpine
+    # Cần PG18: schema dùng uuidv7() (core-api/prisma/migrations/0_init). Đừng hạ xuống 17.
+    image: postgres:18-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
