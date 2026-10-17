@@ -113,11 +113,15 @@ def _register_course_tools(server: FastMCP, tools: CourseToolsUseCase) -> None:
     """Công cụ tra cứu của chatbot. Course id có thể là UUID hoặc mã môn (CO3137)."""
 
     @server.tool()
-    def get_document_page(document_id: str, page: int) -> dict:
+    def get_document_page(
+        document_id: str, page: int, course_id: str | None = None
+    ) -> dict:
         """Return every chunk on one page of a document, in reading order.
 
         Use for "explain this slide/page" — an exact lookup, not a similarity search.
         """
+        if course_id is not None:
+            return _unwrap(tools.get_document_page(document_id, page, course_id))
         return _unwrap(tools.get_document_page(document_id, page))
 
     @server.tool()

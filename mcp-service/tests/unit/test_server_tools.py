@@ -42,8 +42,10 @@ def test_tool_call_reaches_the_use_case_and_returns_its_payload():
     tools = MagicMock()
     tools.get_document_page.return_value = Ok({"page": 3, "chunks": []})
     server = _server(tools)
-    blocks = asyncio.run(server.call_tool("get_document_page", {"document_id": "d1", "page": 3}))
-    tools.get_document_page.assert_called_once_with("d1", 3)
+    blocks = asyncio.run(
+        server.call_tool("get_document_page", {"course_id": "CO3137", "document_id": "d1", "page": 3})
+    )
+    tools.get_document_page.assert_called_once_with("d1", 3, "CO3137")
     assert json.loads(blocks[0].text)["page"] == 3
 
 
