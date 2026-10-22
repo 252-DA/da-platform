@@ -105,4 +105,8 @@ service CoreApiService {
   rpc RecordChatRun(JsonRequest) returns (JsonResponse);
   rpc RateChatRun(JsonRequest) returns (JsonResponse);
   rpc GetChatStats(JsonRequest) returns (JsonResponse);
+  rpc ListChatConversations(JsonRequest) returns (JsonResponse);
+  rpc GetChatConversation(JsonRequest) returns (JsonResponse);
+  rpc DeleteChatConversation(JsonRequest) returns (JsonResponse);
 }
+
