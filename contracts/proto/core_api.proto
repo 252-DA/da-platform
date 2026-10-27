@@ -96,5 +96,15 @@ service CoreApiService {
   rpc SubmitMicroContent(JsonRequest) returns (JsonResponse);
   rpc GetMicroContentResult(JsonRequest) returns (JsonResponse);
   rpc ListMicroContentAttempts(JsonRequest) returns (JsonResponse);
+  // Video Asset Library (DAM)
+  rpc ListVideoAssets(JsonRequest) returns (JsonResponse);
+  rpc GetVideoAsset(JsonRequest) returns (JsonResponse);
+  rpc CreateVideoAssetUpload(JsonRequest) returns (JsonResponse);
+  rpc ConfirmVideoAssetUpload(JsonRequest) returns (JsonResponse);
+  rpc GetVideoAssetUrl(JsonRequest) returns (JsonResponse);
+  rpc UpdateVideoAsset(JsonRequest) returns (JsonResponse);
+  rpc DeleteVideoAsset(JsonRequest) returns (JsonResponse);
+  rpc ForkVideoAsset(JsonRequest) returns (JsonResponse);
+  rpc CheckVideoAssetHash(JsonRequest) returns (JsonResponse);
+  rpc AttachVideoAssetToMicroContent(JsonRequest) returns (JsonResponse);
 }
-
