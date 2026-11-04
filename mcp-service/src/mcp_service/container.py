@@ -47,9 +47,13 @@ class McpServiceContainer:
             GrpcEmbedder(settings.embedder, expected_dimension=settings.qdrant.vector_size),
         )
 
+        # metadata_store cũng là ICourseKnowledgeStore: search_course_chunks (chatbot)
+        # dùng nó để tra tài liệu bị ẩn ở LMS. retrieve_quiz_context dùng chung use
+        # case này nhưng không bật cờ exclude_unpublished nên vẫn thấy tài liệu chưa publish.
         self.search_chunks_use_case = SearchChunksUseCase(
             embedder=self.embedder,
             vector_store=self.vector_store,
+            knowledge_store=self.metadata_store,
         )
         self.retrieve_quiz_context_use_case = RetrieveQuizContextUseCase(
             metadata_store=self.metadata_store,

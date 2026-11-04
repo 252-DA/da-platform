@@ -59,3 +59,27 @@ def test_use_case_error_becomes_a_tool_error():
         assert "db down" in str(exc)
     else:
         raise AssertionError("expected the tool to fail")
+
+
+def test_search_course_chunks_hides_unpublished_documents_from_the_chatbot():
+    from document_chunk.application.dto.search_dto import SearchResponse
+
+    search = MagicMock()
+    search.execute.return_value = Ok(
+        SearchResponse(query="deadlock", results=[], total_found=0, search_time_ms=0.0)
+    )
+    server = create_mcp_server(
+        retrieve_quiz_context_use_case=MagicMock(),
+        search_chunks_use_case=search,
+        course_tools_use_case=None,
+    )
+    asyncio.run(
+        server.call_tool(
+            "search_course_chunks",
+            {"course_id": "CO3137", "query": "deadlock", "document_ids": ["d1"]},
+        )
+    )
+    request = search.execute.call_args.args[0]
+    assert request.exclude_unpublished is True
+    assert request.course_id == "CO3137"
+    assert request.document_ids == ["d1"]
