@@ -311,6 +311,9 @@ services:
       LTI_REDIRECT_URI: ${LTI_REDIRECT_URI:-http://localhost:3000/lti/launch}
       LTI_KEY_ID: ${LTI_KEY_ID:-ai-nextjs-1}
       LTI_CLIENT_ID: ${LTI_CLIENT_ID:-ai-nextjs-1}
+      # Đăng ký phụ "Trợ giảng AI" (mục riêng ở menu khóa học), cách nhau dấu phẩy.
+      LTI_EXTRA_CLIENT_IDS: ${LTI_EXTRA_CLIENT_IDS:-}
+      LTI_EXTRA_DEPLOYMENT_IDS: ${LTI_EXTRA_DEPLOYMENT_IDS:-}
       LTI_PRIVATE_KEY_PATH: /keys/lti.pem
       LTI_PUBLIC_KEY_PATH: /keys/lti.pub.pem
       LTI_COOKIE_SAMESITE: ${LTI_COOKIE_SAMESITE:-lax}

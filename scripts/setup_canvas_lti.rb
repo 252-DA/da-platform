@@ -70,10 +70,13 @@ configuration_params = {
       # top_navigation_placement của root account. custom_fields đi trong id_token
       # đã ký; launch route đọc target_kind=chat để vào thẳng trang chat của khóa
       # học đang mở (không có khóa học thì báo rõ).
+      # Công cụ được ghim chỉ hiện icon (16x16), không có chữ; thiếu icon_url thì
+      # Canvas tự vẽ một ô chữ cái khó nhận ra. Tên ở đây là tiêu đề ngăn bên.
       placement: "top_navigation",
       enabled: true,
       message_type: "LtiResourceLinkRequest",
-      text: "Hỏi đáp AI#{menu_suffix}",
+      text: "Trợ giảng AI#{menu_suffix}",
+      icon_url: "#{tool_base_url}/icons/tro-giang-ai.svg",
       target_link_uri: "#{tool_base_url}/",
       custom_fields: { target_kind: "chat" }
     },

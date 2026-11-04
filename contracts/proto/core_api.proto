@@ -108,5 +108,8 @@ service CoreApiService {
   rpc ListChatConversations(JsonRequest) returns (JsonResponse);
   rpc GetChatConversation(JsonRequest) returns (JsonResponse);
   rpc DeleteChatConversation(JsonRequest) returns (JsonResponse);
+  // Tài liệu đã index của khóa và tiêu đề mục của chúng (không có nội dung):
+  // màn hình chat dùng làm phạm vi và câu hỏi gợi ý. Mọi thành viên khóa học.
+  rpc GetChatCatalog(JsonRequest) returns (JsonResponse);
 }
 
