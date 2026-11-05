@@ -8,11 +8,11 @@ x-common-env: &common-env
   QDRANT__COLLECTION_NAME: documents
   QDRANT__VECTOR_SIZE: "1024"
   # MinIO
-  MINIO__ENDPOINT: minio:9000
-  MINIO__ACCESS_KEY: minioadmin
-  MINIO__SECRET_KEY: minioadmin
-  MINIO__BUCKET_NAME: documents
-  MINIO__SECURE: "false"
+  MINIO__ENDPOINT: ${MINIO__ENDPOINT:-minio:9000}
+  MINIO__ACCESS_KEY: ${MINIO__ACCESS_KEY:-minioadmin}
+  MINIO__SECRET_KEY: ${MINIO__SECRET_KEY:-minioadmin}
+  MINIO__BUCKET_NAME: ${MINIO__BUCKET_NAME:-documents}
+  MINIO__SECURE: "${MINIO__SECURE:-false}"
   # PostgreSQL
   SQL__ENABLED: "true"
   SQL__DSN: postgresql://postgres:postgres@postgres:5432/chunking
@@ -152,6 +152,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 60s
     networks:
       default: {}
 
@@ -194,6 +195,8 @@ services:
       neo4j:
         condition: service_healthy
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
     networks:
       default: {}
 
@@ -206,6 +209,8 @@ services:
     depends_on:
       - web
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
     networks:
       default: {}
 
@@ -238,6 +243,8 @@ services:
       minio:
         condition: service_healthy
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
     networks:
       default: {}
 
@@ -279,6 +286,8 @@ services:
       neo4j:
         condition: service_healthy
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
     networks:
       default: {}
 
@@ -333,6 +342,8 @@ services:
       - core-api
       - redis
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
     networks:
       default: {}
 
@@ -350,11 +361,11 @@ services:
       PORT: "4000"
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/chunking
       REDIS_URL: redis://redis:6379
-      MINIO__ENDPOINT: minio:9000
-      MINIO__ACCESS_KEY: minioadmin
-      MINIO__SECRET_KEY: minioadmin
-      MINIO__BUCKET_NAME: documents
-      MINIO__SECURE: "false"
+      MINIO__ENDPOINT: ${MINIO__ENDPOINT:-minio:9000}
+      MINIO__ACCESS_KEY: ${MINIO__ACCESS_KEY:-minioadmin}
+      MINIO__SECRET_KEY: ${MINIO__SECRET_KEY:-minioadmin}
+      MINIO__BUCKET_NAME: ${MINIO__BUCKET_NAME:-documents}
+      MINIO__SECURE: "${MINIO__SECURE:-false}"
       BFF_TO_CORE_PUBLIC_KEY_PATH: /app/keys/bff-to-core.pub.pem
       BFF_TO_CORE_JWT_ISSUER: web-bff
       BFF_TO_CORE_JWT_AUDIENCE: core-api
@@ -394,6 +405,8 @@ services:
       redis:
         condition: service_healthy
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
     networks:
       default: {}
 
@@ -428,7 +441,7 @@ services:
       API__DIMENSIONS: ${EMBEDDING_API_DIMENSIONS:-}
       HF_HOME: /root/.cache/huggingface
     ports:
-      - "50061:50051"
+      - "${EMBEDDING_SERVICE_PORT:-50061}:50051"
       - "9095:9095"
     volumes:
       - hf_cache:/root/.cache/huggingface
@@ -445,6 +458,8 @@ services:
       retries: 30
       start_period: 120s
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
     networks:
       default: {}
 
@@ -481,6 +496,8 @@ services:
       embedding-service:
         condition: service_healthy
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
 
   enrichment-worker:
     build:
@@ -504,6 +521,8 @@ services:
       redis:
         condition: service_healthy
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
 
   content-generation-worker:
     build:
@@ -547,6 +566,8 @@ services:
       mcp-service:
         condition: service_healthy
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
 
   # Chấm tự luận ngắn (hàng đợi answer_grading). Tách khỏi content-generation
   # worker để người học chờ điểm không phải xếp sau các lần sinh quiz hàng phút.
@@ -581,9 +602,10 @@ services:
       redis:
         condition: service_healthy
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
 
-  # Render video micro-content (slide + edge-tts + ffmpeg) — khối lấy nguyên từ
-  # nhánh origin/feat/micro-content-feature của Bình.
+  # Worker sinh video AI cho Micro Content (hàng đợi micro_content_video: slide + TTS + ffmpeg)
   micro-content-video-worker:
     build:
       context: .
@@ -644,6 +666,8 @@ services:
       neo4j:
         condition: service_healthy
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
 
   # ─────────────────────────────────────────────────────────
   # mcp-service — split từ packages-ai/delivery/mcp. Không dùng Neo4j (đã
@@ -691,6 +715,8 @@ services:
       embedding-service:
         condition: service_healthy
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
     networks:
       default: {}
 
@@ -757,6 +783,8 @@ services:
       retries: 5
     profiles: ["tools"]
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
     networks:
       default: {}
 

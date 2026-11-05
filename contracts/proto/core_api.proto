@@ -115,5 +115,16 @@ service CoreApiService {
   // Tài liệu đã index của khóa và tiêu đề mục của chúng (không có nội dung):
   // màn hình chat dùng làm phạm vi và câu hỏi gợi ý. Mọi thành viên khóa học.
   rpc GetChatCatalog(JsonRequest) returns (JsonResponse);
+  // Video Asset Library (DAM)
+  rpc ListVideoAssets(JsonRequest) returns (JsonResponse);
+  rpc GetVideoAsset(JsonRequest) returns (JsonResponse);
+  rpc CreateVideoAssetUpload(JsonRequest) returns (JsonResponse);
+  rpc ConfirmVideoAssetUpload(JsonRequest) returns (JsonResponse);
+  rpc GetVideoAssetUrl(JsonRequest) returns (JsonResponse);
+  rpc UpdateVideoAsset(JsonRequest) returns (JsonResponse);
+  rpc DeleteVideoAsset(JsonRequest) returns (JsonResponse);
+  rpc ForkVideoAsset(JsonRequest) returns (JsonResponse);
+  rpc CheckVideoAssetHash(JsonRequest) returns (JsonResponse);
+  rpc AttachVideoAssetToMicroContent(JsonRequest) returns (JsonResponse);
 }
 
