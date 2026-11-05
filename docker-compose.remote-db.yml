@@ -91,6 +91,9 @@ services:
   answer-grading-worker:
     environment: *remote-env
     depends_on: !reset {}
+  micro-content-video-worker:
+    environment: *remote-env
+    depends_on: !reset {}
   outbox-worker:
     environment: *remote-env
     depends_on: !reset {}

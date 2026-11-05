@@ -62,6 +62,10 @@ service CoreApiService {
   rpc GradeEssayAnswer(JsonRequest) returns (JsonResponse);
   rpc RetryEssayGrading(JsonRequest) returns (JsonResponse);
 
+  // Learning Agent — mô hình người học theo LO (docs/bao-cao-learning-agent.md).
+  rpc GetLearnerSummary(JsonRequest) returns (JsonResponse);
+  rpc GetCourseMastery(JsonRequest) returns (JsonResponse);
+
   rpc CreateContentGenerationRequest(JsonRequest) returns (JsonResponse);
   rpc ListContentGenerationRequests(JsonRequest) returns (JsonResponse);
 
