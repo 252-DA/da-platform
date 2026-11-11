@@ -91,8 +91,8 @@ def create_mcp_server(
                 top_k=top_k,
                 score_threshold=score_threshold,
                 document_ids=list(document_ids or []),
-                # Công cụ này chỉ chatbot dùng: không trả tài liệu bị ẩn ở LMS cho học viên.
-                exclude_unpublished=True,
+                # Công cụ này chỉ chatbot dùng: không trả tài liệu bị ẩn ở LMS hay đã xoá cho học viên.
+                exclude_hidden=True,
             )
         )
         if result.is_err():

@@ -61,7 +61,7 @@ def test_use_case_error_becomes_a_tool_error():
         raise AssertionError("expected the tool to fail")
 
 
-def test_search_course_chunks_hides_unpublished_documents_from_the_chatbot():
+def test_search_course_chunks_hides_unpublished_and_deleted_documents_from_the_chatbot():
     from document_chunk.application.dto.search_dto import SearchResponse
 
     search = MagicMock()
@@ -80,6 +80,6 @@ def test_search_course_chunks_hides_unpublished_documents_from_the_chatbot():
         )
     )
     request = search.execute.call_args.args[0]
-    assert request.exclude_unpublished is True
+    assert request.exclude_hidden is True
     assert request.course_id == "CO3137"
     assert request.document_ids == ["d1"]

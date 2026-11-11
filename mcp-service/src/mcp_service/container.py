@@ -48,8 +48,8 @@ class McpServiceContainer:
         )
 
         # metadata_store cũng là ICourseKnowledgeStore: search_course_chunks (chatbot)
-        # dùng nó để tra tài liệu bị ẩn ở LMS. retrieve_quiz_context dùng chung use
-        # case này nhưng không bật cờ exclude_unpublished nên vẫn thấy tài liệu chưa publish.
+        # dùng nó để tra tài liệu bị ẩn ở LMS hoặc đã xoá. retrieve_quiz_context dùng chung
+        # use case này nhưng không bật cờ exclude_hidden nên vẫn thấy tài liệu chưa publish.
         self.search_chunks_use_case = SearchChunksUseCase(
             embedder=self.embedder,
             vector_store=self.vector_store,
