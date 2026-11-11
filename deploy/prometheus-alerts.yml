@@ -7,24 +7,29 @@
 groups:
   - name: core-api
     rules:
-      - alert: CoreOutboxEventsFailed
-        # Gauge dựa trên COUNT(*) WHERE status='FAILED' — không có first-sample
-        # problem như increase() trên counter, và phản ánh đúng state sau
-        # restart/downtime. Counter core_outbox_events_failed_total chỉ để xem rate.
-        expr: core_outbox_events_failed > 0
+      - alert: CoreOutboxEventsDeadLetter
+        # Gauge dựa trên COUNT(*) WHERE status='DEAD_LETTER' — không có
+        # first-sample problem như increase() trên counter, và phản ánh đúng
+        # state sau restart/downtime. Từ migration 20261107120000 outbox không
+        # còn FAILED: relay lỗi thì thử lại có backoff, lần lỗi thứ 10
+        # (MAX_RELAY_FAILURES) mới thành DEAD_LETTER.
+        # Lưu ý: core-api hiện chưa export gauge này (chưa có /metrics).
+        expr: core_outbox_events_dead_letter > 0
         for: 0m
         labels:
           severity: warning
           service: core-api
         annotations:
-          summary: "Có outbox events ở trạng thái FAILED (core-api)"
+          summary: "Có outbox events ở trạng thái DEAD_LETTER (core-api)"
           description: >-
-            Ít nhất một outbox event đã đạt MAX_RELAY_ATTEMPTS và chuyển sang
-            status 'FAILED'. Kiểm tra bảng outbox_events:
+            Ít nhất một outbox event đã relay lỗi MAX_RELAY_FAILURES lần và
+            chuyển sang status 'DEAD_LETTER'. Kiểm tra bảng outbox_events:
             SELECT event_id, event_type, retry_count, last_error
             FROM outbox_events
-            WHERE status = 'FAILED'
-            ORDER BY processed_at DESC;
+            WHERE status = 'DEAD_LETTER'
+            ORDER BY occurred_at DESC;
+            Đẩy lại một dòng: UPDATE outbox_events SET status = 'PENDING',
+            retry_count = 0, next_retry_at = now() WHERE event_id = '...';
 
       - alert: CoreQueueFailedJobs
         # Gauge dựa trên Queue.getFailedCount() — phản ánh failed jobs còn giữ
