@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://da-platform.dev/contracts/integration-events/v1/content-generation-requested.json",
   "title": "CONTENT_GENERATION_REQUESTED",
-  "description": "Core command → content-generation worker (queue: content_generation). Targets là snapshot LO đã resolve ở Core (content_generation_targets).",
+  "description": "Core command → content-generation worker (queue: content_generation). Targets là snapshot LO đã resolve ở Core (content_generation_targets). Worker không ghi DB: trạng thái request và câu/card đi về core-api qua CONTENT_GENERATION_RESULT (content-generation-result.json), result_id gốc là event_id của lệnh này.",
   "type": "object",
   "allOf": [{ "$ref": "envelope.json" }],
   "properties": {

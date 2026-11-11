@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://da-platform.dev/contracts/integration-events/v1/document-enrichment-started.json",
   "title": "DOCUMENT_ENRICHMENT_STARTED",
-  "description": "AI result event → Core (queue: core_writeback).",
+  "description": "KHÔNG DÙNG: hàng đợi core_writeback chưa từng được cài; kết quả này đi qua worker_results dưới dạng DOCUMENT_PROCESSING_RESULT (status ENRICHING). AI result event → Core (queue: core_writeback).",
   "type": "object",
   "allOf": [{ "$ref": "envelope.json" }],
   "properties": {

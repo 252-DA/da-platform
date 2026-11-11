@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/worker-result-envelope.json",
+  "title": "WorkerResultEnvelopeV1",
+  "description": "Dữ liệu job của hàng đợi BullMQ worker_results: worker Python (producer, worker/worker/services/result_publisher.py) → core-api (consumer duy nhất, core-api/src/worker-results). Tên job = kind, jobId = result_id. Xem docs/ke-hoach-ranh-gioi-du-lieu.md mục 4. Payload của từng kind có schema riêng <kind viết thường, '_' thành '-'>.json (ví dụ quiz-grading-result.json) với allOf $ref tới file này; fixture tên worker-result-envelope-* chỉ kiểm envelope.",
+  "type": "object",
+  "properties": {
+    "result_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,199}$",
+      "description": "Tất định, do producer sinh từ nguồn (make_result_id: <KIND>.<source_id>[.<lần>]) để BullMQ chặn trùng khi worker gửi lại. Không có ':' và không phải số nguyên: BullMQ Node 5.x từ chối custom jobId như vậy."
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "QUIZ_GRADING_RESULT",
+        "MICRO_CONTENT_GRADING_RESULT",
+        "ESSAY_GRADING_RESULT",
+        "CONTENT_GENERATION_RESULT",
+        "ENRICHMENT_CONTENT_RESULT",
+        "CURRICULUM_IMPORT_RESULT",
+        "MICRO_CONTENT_VIDEO_RESULT",
+        "DOCUMENT_PROCESSING_RESULT"
+      ]
+    },
+    "source_event_id": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "event_id outbox của lệnh đã sinh ra việc này; null khi job gốc không đến từ outbox (ví dụ job đề cương, job tài liệu)."
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+      "description": "ISO-8601 có múi giờ; producer gửi UTC dạng ...Z."
+    },
+    "payload": {
+      "type": "object",
+      "description": "Kết quả của kind; schema theo từng kind."
+    }
+  },
+  "required": ["result_id", "kind", "source_event_id", "occurred_at", "payload"],
+  "additionalProperties": false
+}

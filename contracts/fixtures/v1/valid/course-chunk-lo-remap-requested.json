@@ -1,0 +1,10 @@
+{
+  "event_id": "01a1f000-0000-7000-8000-0000000000e1",
+  "event_type": "COURSE_CHUNK_LO_REMAP_REQUESTED",
+  "aggregate_type": "course",
+  "aggregate_id": "01900000-0000-7000-8000-0000000000bb",
+  "payload": {
+    "course_id": "01900000-0000-7000-8000-0000000000bb",
+    "import_id": "01900000-0000-7000-8000-0000000000aa"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/quiz-grading-result.json",
+  "title": "QUIZ_GRADING_RESULT",
+  "description": "Kết quả chấm câu tự luận của một lệnh ANSWER_GRADING_REQUESTED: worker chấm (worker/runners/answer_grading_worker.py) → core-api (core-api/src/quiz/quiz-grading-result.handler.ts), hàng đợi worker_results. Một kết quả cho mỗi lệnh, gồm mọi câu của lệnh: GRADED kèm điểm 0–100, hoặc NEEDS_REVIEW (không có điểm) khi AI không chấm được sau lượt thử cuối, bài không lưu đề hợp lệ, hoặc lệnh dạng cũ. result_id = QUIZ_GRADING_RESULT.<event_id của lệnh>, source_event_id = event_id đó. core-api trong một transaction: khoá lượt nộp (lockAwaitingGroup), chỉ ghi câu còn PENDING (không đè điểm giảng viên đã chấm), rồi mở khoá AGS khi mọi câu của lượt nộp GRADED. Mọi attempt_id phải thuộc course_id và cùng một lượt nộp.",
+  "type": "object",
+  "allOf": [{ "$ref": "worker-result-envelope.json" }],
+  "properties": {
+    "kind": { "const": "QUIZ_GRADING_RESULT" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "submission_id": { "type": "string", "format": "uuid", "description": "submission_id của lệnh." },
+        "course_id": { "type": "string", "format": "uuid" },
+        "answers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "attempt_id": { "type": "string", "format": "uuid" },
+                  "status": { "const": "GRADED" },
+                  "score": { "type": "integer", "minimum": 0, "maximum": 100 },
+                  "is_correct": { "type": "boolean" },
+                  "feedback": { "type": ["string", "null"], "maxLength": 4000 },
+                  "grader_model": { "type": ["string", "null"], "maxLength": 200 }
+                },
+                "required": ["attempt_id", "status", "score", "is_correct", "feedback", "grader_model"],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "attempt_id": { "type": "string", "format": "uuid" },
+                  "status": { "const": "NEEDS_REVIEW" },
+                  "reason": {
+                    "enum": ["MODEL_ERROR", "NO_GRADING_INPUT", "LEGACY_COMMAND"],
+                    "description": "MODEL_ERROR: nhà cung cấp model lỗi tới lượt thử cuối; NO_GRADING_INPUT: đề lúc nộp thiếu hoặc không có rubric; LEGACY_COMMAND: lệnh dạng cũ không kèm dữ liệu chấm."
+                  },
+                  "feedback": { "type": ["string", "null"], "maxLength": 4000, "description": "Nhận xét người học thấy thay cho điểm câu." },
+                  "grader_model": { "type": ["string", "null"], "maxLength": 200 }
+                },
+                "required": ["attempt_id", "status", "reason", "feedback", "grader_model"],
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      },
+      "required": ["submission_id", "course_id", "answers"],
+      "additionalProperties": false
+    }
+  }
+}

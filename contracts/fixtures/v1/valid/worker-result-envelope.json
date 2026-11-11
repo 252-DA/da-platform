@@ -1,0 +1,9 @@
+{
+  "result_id": "QUIZ_GRADING_RESULT.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "kind": "QUIZ_GRADING_RESULT",
+  "source_event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "occurred_at": "2026-11-07T10:30:15.123Z",
+  "payload": {
+    "submission_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "result_id": "DOCUMENT_PROCESSING_RESULT.019fdbaa-c096-78e5-a91a-982998d5b5b0.g3-processing1-CHUNKING",
+  "kind": "DOCUMENT_PROCESSING_RESULT",
+  "source_event_id": null,
+  "occurred_at": "2026-11-07T10:30:15.123Z",
+  "payload": {
+    "document_id": "019fdbaa-c096-78e5-a91a-982998d5b5b0",
+    "status": {
+      "value": "CHUNKING",
+      "stage": "processing",
+      "processing_generation": 3,
+      "attempt": 1
+    }
+  }
+}

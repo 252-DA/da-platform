@@ -1,0 +1,31 @@
+{
+  "result_id": "ESSAY_GRADING_RESULT.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab",
+  "kind": "ESSAY_GRADING_RESULT",
+  "source_event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab",
+  "occurred_at": "2026-11-07T10:32:00.000Z",
+  "payload": {
+    "essay_submission_id": "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+    "status": "GRADED",
+    "result": {
+      "score": 8.5,
+      "max_score": 10,
+      "criteria": [
+        {
+          "criterion": "Ba lớp",
+          "points": 6,
+          "max_points": 6,
+          "comment": "Đủ ý"
+        },
+        {
+          "criterion": "Đánh đổi",
+          "points": 2.5,
+          "max_points": 4,
+          "comment": "Chưa nêu hạn chế"
+        }
+      ],
+      "feedback": "Bài khá.",
+      "truncated": false,
+      "model": "gemini-3-flash-preview"
+    }
+  }
+}

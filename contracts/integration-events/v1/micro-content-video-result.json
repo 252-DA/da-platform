@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/micro-content-video-result.json",
+  "title": "MICRO_CONTENT_VIDEO_RESULT",
+  "description": "Kết quả một lần render video AI của Micro Content: worker video (worker/runners/micro_content_video_worker.py) → core-api (core-api/src/micro-content/micro-content-video-result.handler.ts), hàng đợi worker_results. Mỗi lần render (render_id do core-api sinh trong MICRO_CONTENT_RENDER_REQUESTED) có đúng một kết quả kết thúc: READY sau khi file đã lên object storage, hoặc FAILED khi lệnh sai hoặc lần thử cuối vẫn lỗi. result_id = MICRO_CONTENT_VIDEO_RESULT.<render_id>.<ready|failed>, source_event_id = event_id của lệnh render. core-api chỉ áp dụng khi video_assets.ai_render_id = render_id và asset còn PROCESSING (kết quả của lần render cũ không đè lần mới), rồi cập nhật các micro_contents đang gắn asset đó và còn PROCESSING, trong cùng một transaction.",
+  "type": "object",
+  "allOf": [{ "$ref": "worker-result-envelope.json" }],
+  "properties": {
+    "kind": { "const": "MICRO_CONTENT_VIDEO_RESULT" },
+    "payload": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "micro_content_id": { "type": "string", "format": "uuid" },
+            "asset_id": { "type": "string", "format": "uuid" },
+            "render_id": { "type": "string", "format": "uuid" },
+            "status": { "const": "READY" },
+            "object_key": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512,
+              "description": "Khoá object trong bucket, đã upload xong (micro-content/<course_id>/<micro_content_id>/ai-<render_id>.mp4)."
+            },
+            "duration_ms": { "type": "integer", "minimum": 0, "maximum": 2147483647 },
+            "size_bytes": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+            "mime_type": { "type": "string", "pattern": "^video/[a-z0-9.+-]+$", "maxLength": 100 }
+          },
+          "required": [
+            "micro_content_id",
+            "asset_id",
+            "render_id",
+            "status",
+            "object_key",
+            "duration_ms",
+            "size_bytes",
+            "mime_type"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "micro_content_id": { "type": "string", "format": "uuid" },
+            "asset_id": { "type": "string", "format": "uuid" },
+            "render_id": { "type": "string", "format": "uuid" },
+            "status": { "const": "FAILED" },
+            "error": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000,
+              "description": "Thông báo lỗi hiện cho giảng viên (micro_contents.video_error); worker cắt còn 1000 ký tự."
+            }
+          },
+          "required": ["micro_content_id", "asset_id", "render_id", "status", "error"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

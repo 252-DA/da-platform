@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://da-platform.dev/contracts/integration-events/v1/document-enrichment-completed.json",
   "title": "DOCUMENT_ENRICHMENT_COMPLETED",
-  "description": "AI result event → Core (queue: core_writeback). Core chỉ persist card/quiz có lo_id hợp lệ; generated_count có thể bằng 0.",
+  "description": "KHÔNG DÙNG: hàng đợi core_writeback chưa từng được cài; kết quả này đi qua worker_results dưới dạng ENRICHMENT_CONTENT_RESULT + DOCUMENT_PROCESSING_RESULT (status GENERATED_DRAFT). AI result event → Core (queue: core_writeback). Core chỉ persist card/quiz có lo_id hợp lệ; generated_count có thể bằng 0.",
   "type": "object",
   "allOf": [{ "$ref": "envelope.json" }],
   "properties": {
