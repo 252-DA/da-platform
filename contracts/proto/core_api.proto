@@ -33,6 +33,7 @@ service CoreApiService {
   rpc GetDocumentFileUrl(JsonRequest) returns (JsonResponse);
   rpc DeleteDocument(JsonRequest) returns (JsonResponse);
   rpc SyncDocumentsFromCanvas(JsonRequest) returns (JsonResponse);
+  rpc GetCanvasSyncStatus(JsonRequest) returns (JsonResponse);
   rpc UpdateDocumentPlacement(JsonRequest) returns (JsonResponse);
 
   rpc ListLessons(JsonRequest) returns (JsonResponse);

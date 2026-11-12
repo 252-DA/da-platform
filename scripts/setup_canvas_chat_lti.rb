@@ -43,7 +43,11 @@ configuration_params = {
   domain: tool_domain,
   tool_id: "da-platform-chat",
   privacy_level: "public",
-  custom_fields: {},
+  # Id Canvas của khóa học và người dùng, để core-api gắn với khóa/người của DA.
+  custom_fields: {
+    canvas_course_id: "$Canvas.course.id",
+    canvas_user_id: "$Canvas.user.id"
+  },
   launch_settings: {
     text: "Trợ giảng AI",
     icon_url: "#{tool_base_url}/icons/tro-giang-ai.svg"

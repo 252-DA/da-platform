@@ -382,6 +382,9 @@ services:
       AGS_POLL_INTERVAL_MS: ${AGS_POLL_INTERVAL_MS:-15000}
       # Đồng bộ đề cương từ trang Chương trình học của Canvas (REST API).
       CANVAS_API_URL: ${CANVAS_API_URL:-${CANVAS_PUBLIC_URL:-}}
+      # Để core-api đổi link Canvas mang tên miền công khai về CANVAS_API_URL
+      # khi CANVAS_API_URL là địa chỉ nội bộ (canvas-api.client.ts).
+      CANVAS_PUBLIC_URL: ${CANVAS_PUBLIC_URL:-}
       CANVAS_API_TOKEN: ${CANVAS_API_TOKEN:-}
       CANVAS_AUTO_SYNC_ENABLED: ${CANVAS_AUTO_SYNC_ENABLED:-true}
       CANVAS_SYNC_INTERVAL_MS: ${CANVAS_SYNC_INTERVAL_MS:-900000}
@@ -396,6 +399,12 @@ services:
       - core_api_node_modules:/app/node_modules
       - "./core-api/keys:/app/keys:ro"
       - "./web/keys:/lti-keys:ro"
+    # Canvas chạy trên máy host (cổng 3000). CANVAS_API_URL=http://canvas.docker:3000
+    # cho core-api gọi thẳng, không vòng qua tunnel. Dùng tên canvas.docker vì
+    # Canvas dev chấp nhận *.canvas.docker (VIRTUAL_HOST) còn host.docker.internal
+    # bị Rails chặn (403 Blocked hosts). Máy không đặt CANVAS_API_URL thì không dùng.
+    extra_hosts:
+      - "canvas.docker:host-gateway"
     ports:
       - "4000:4000"
       - "50052:50051"
