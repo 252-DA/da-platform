@@ -13,7 +13,7 @@ cách xử lý lỗi. Cách chạy stack dev nằm ở [dev-setup.md](dev-setup.
 | `client_id` | `10000000000001` |
 | `deployment_id` | `1:8865aa05b4b79b64a91a86042e43af5ea8ae79eb`, ở root account, bật cho mọi khóa học |
 | URL của tool | `https://app.canxphung.dev`: OIDC `/lti/login`, redirect `/lti/launch`, JWKS `/.well-known/jwks.json` |
-| Placement | `course_navigation`: mục **DA Platform** trong menu khóa học (`LtiResourceLinkRequest`, mở `/`)<br>`module_menu_modal`: **Sinh quiz bằng DA** trong menu ⋮ của module (`LtiDeepLinkingRequest`, mở `/lti/deep-link`, xem [canvas-module-quiz.md](canvas-module-quiz.md)) |
+| Placement | `course_navigation`: mục **DA Platform** trong menu khóa học (`LtiResourceLinkRequest`, mở `/`)<br>`module_menu_modal`: **Sinh quiz bằng DA** trong menu ⋮ của module (`LtiDeepLinkingRequest`, mở `/lti/deep-link`, xem [canvas-module-quiz.md](canvas-module-quiz.md))<br>`course_assignments_menu`: cùng mục **Sinh quiz bằng DA** trên trang Assignments, không có module (xem [mục dưới](#bước-3-phiên-role-và-deep-link-không-module)) |
 | Scope | AGS: `lineitem`, `result.readonly`, `score`<br>Asset Processor: `noticehandlers`, `asset.readonly`, `report`<br>NRPS: `contextmembership.readonly` (đọc danh sách lớp, xem [mục dưới](#custom-field-và-danh-sách-lớp-nrps)) |
 | Custom field | `canvas_course_id`, `canvas_user_id`, `canvas_module_id`, `canvas_module_item_id`, `canvas_assignment_id` và sáu trường `assignment_*` (bảng [dưới](#custom-field-và-danh-sách-lớp-nrps)). Tool chat `DA Trợ giảng AI` chỉ có `canvas_course_id` và `canvas_user_id` |
 | Privacy | `public`: Canvas gửi tên và email người dùng |
@@ -48,17 +48,23 @@ lại tool. Chỉ cần URL JWKS vẫn trỏ đúng web đang chạy.
    - `aud` có chứa `LTI_CLIENT_ID`;
    - `deployment_id` = `LTI_DEPLOYMENT_ID` (bỏ qua nếu để trống);
    - `state` và `nonce`.
-4. Map vai trò LTI, theo thứ tự ưu tiên:
+4. Map vai trò LTI. So khớp **URI chính xác** (không dùng regex: mọi URI role đều
+   chứa `membership`), theo thứ tự ưu tiên:
 
-   | Vai trò LTI | Vai trò trong DA |
+   | URI role (đầy đủ hoặc tên ngắn của LTI 1.3) | Vai trò trong DA |
    |---|---|
-   | `Administrator` | administrator |
-   | `Instructor`, `Faculty`, `Staff` | giảng viên |
-   | `TeachingAssistant` | TA |
-   | `Observer`, `Mentor` | observer |
-   | `Learner`, `Student`, `Member` | sinh viên |
+   | `…/institution/person#Administrator`, `…/system/person#SysAdmin`, `…/system/person#Administrator`, `Administrator` | administrator |
+   | `…/membership/Instructor#TeachingAssistant` | TA |
+   | `…/membership#Instructor`, `…#ContentDeveloper`, `Instructor`, `ContentDeveloper` | giảng viên |
+   | `…/membership#Mentor`, `Mentor` | observer |
+   | `…/membership#Learner`, `…#Member`, `Learner`, `Member` | sinh viên |
+   | `…/institution/person#Instructor` / `#Student` | chỉ dùng khi launch không có role trong khóa học |
 
-   Vai trò khác bị từ chối với 403 `Unsupported LTI role`. Sau đó web gọi
+   Canvas gửi trợ giảng kèm cả `membership#Instructor`, nên TA được xét trước
+   giảng viên. Role trong khóa học thắng role cấp trường: giảng viên của khóa
+   khác nhưng là sinh viên ở khóa này là sinh viên ở đây.
+   Role không khớp URI nào (kể cả `system/person#User` đứng một mình) bị từ chối
+   với 403 `Unsupported LTI role`, không rơi thành sinh viên. Sau đó web gọi
    core-api `launchSync` để tạo hoặc cập nhật người dùng, khóa học và ghi danh.
 5. Đặt cookie `sid` rồi chuyển vào app. DA chạy trong iframe của Canvas (khác
    domain), nên cookie phải là `SameSite=None; Secure`. web thêm `Partitioned`
@@ -82,11 +88,11 @@ cho core-api (`customClaims`).
 | `canvas_user_id` | `$Canvas.user.id` | mọi launch | lưu `lms_user_mappings.lms_platform_user_id` |
 | `canvas_module_id` | `$Canvas.module.id` | launch từ một module item | Deep Linking lấy module từ đây trước, rồi mới giải mã `?data=JWT` |
 | `canvas_module_item_id` | `$Canvas.moduleItem.id` | launch từ một module item | chưa dùng |
-| `canvas_assignment_id` | `$Canvas.assignment.id` | launch từ một Assignment | chưa dùng (Bước 2) |
-| `assignment_points` | `$Canvas.assignment.pointsPossible` | launch từ một Assignment | chưa dùng (Bước 2) |
-| `assignment_due`, `assignment_unlock`, `assignment_lock` | `$Canvas.assignment.dueAt.iso8601`, `unlockAt.iso8601`, `lockAt.iso8601` | Assignment có ngày tương ứng | chưa dùng (Bước 2) |
-| `assignment_attempts` | `$Canvas.assignment.allowedAttempts` | launch từ một Assignment | chưa dùng (Bước 2) |
-| `assignment_published` | `$Canvas.assignment.published` | launch từ một Assignment | chưa dùng (Bước 2) |
+| `canvas_assignment_id` | `$Canvas.assignment.id` | launch từ một Assignment | đánh dấu launch từ Assignment; lưu `lti_resource_links.canvas_assignment_id` (xem [Bước 2](#bước-2-canvas-làm-chủ-bài-tập-speedgrader-mở-được-bài-làm)); Deep Linking nhận launch không module |
+| `assignment_points` | `$Canvas.assignment.pointsPossible` | launch từ một Assignment | `lti_line_items.score_maximum` |
+| `assignment_due`, `assignment_unlock`, `assignment_lock` | `$Canvas.assignment.dueAt.iso8601`, `unlockAt.iso8601`, `lockAt.iso8601` | Assignment có ngày tương ứng | hạn nộp, giờ mở, giờ đóng của bài kiểm tra |
+| `assignment_attempts` | `$Canvas.assignment.allowedAttempts` | launch từ một Assignment | số lần làm của bài kiểm tra |
+| `assignment_published` | `$Canvas.assignment.published` | launch từ một Assignment | chưa dùng |
 
 Biến không có ngữ cảnh không bị bỏ khỏi claim: Canvas để nguyên chuỗi, ví dụ
 `"$Canvas.module.id"`. Nên phía nhận chỉ chấp nhận `canvas_user_id` và
@@ -155,6 +161,116 @@ Ghi vào DB:
 Trang kết quả quiz và bảng nắm vững LO của learning agent lấy mẫu số từ sinh
 viên `learner` đang `active` của khóa. Phiên đăng nhập và `listCourses` chưa xét
 `status` (Canvas đã chặn người rời lớp ở bước launch).
+
+## Bước 2: Canvas làm chủ bài tập, SpeedGrader mở được bài làm
+
+Bước 2 của [ke-hoach-tich-hop-canvas.md](ke-hoach-tich-hop-canvas.md). Mỗi bài
+kiểm tra DA tạo ra là một Assignment trên Canvas; từ đây Canvas là nguồn của
+những thứ nó đã có chỗ để lưu.
+
+### Ai làm chủ cái gì
+
+| Cài đặt | Chủ | Nơi lưu |
+|---|---|---|
+| Điểm tối đa | Canvas | `lti_line_items.score_maximum`, ghi lại ở mỗi launch từ Assignment |
+| Hạn nộp, giờ mở, giờ đóng | Canvas | `lti_resource_links.assignment_due_at`, `assignment_unlock_at`, `assignment_lock_at` |
+| Số lần làm | Canvas, sau khi DA đẩy giá trị ban đầu sang một lần | `lti_resource_links.assignment_allowed_attempts` (`NULL` = không giới hạn) |
+| Thời gian làm bài, xáo đề, chế độ luyện tập/kiểm tra | DA | `quiz_sets` |
+| Lúc mở đáp án | quy tắc của DA, chưa có cài đặt riêng | sau giờ đóng của Canvas (hạn nộp nếu không có giờ đóng) cộng 60 giây nộp trễ |
+
+Cách hoạt động:
+
+- Mỗi launch từ một Assignment mang `canvas_assignment_id` là số. Khi đó
+  `LtiService.syncLaunch` ghi các biến `assignment_*` vào resource link. Giá trị
+  chưa mở rộng (`$Canvas.assignment.dueAt.iso8601`) nghĩa là Canvas **không đặt**
+  ngày đó, và được ghi là `NULL`. Launch không đến từ Assignment không đụng tới
+  cài đặt đã lưu.
+- Từ lần đọc đầu tiên (`assignment_synced_at` khác `NULL`), bài kiểm tra dùng
+  hạn, giờ mở/đóng và số lần làm của Canvas thay cho giá trị chốt lúc Deep
+  Linking (`withCanvasSettings` trong `quiz-set-exam.ts`). Sửa hạn, giờ đóng hay số
+  lần làm trên Canvas có hiệu lực từ launch kế tiếp, kể cả đổi chiều (gia hạn
+  một bài đã đóng). Resource link cũ chưa launch lại thì giữ cài đặt của quiz
+  set. Bài luyện tập chỉ nhận điểm tối đa của Canvas.
+- Số lần làm là ngoại lệ ở lần đọc đầu. Deep Linking không có trường nào mang
+  số lần làm, nên Canvas tạo Assignment không giới hạn dù giảng viên đã chọn
+  "1 lần làm" trong trình soạn. Vì vậy ở launch đầu tiên từ Assignment của một
+  bài kiểm tra có giới hạn mà Canvas báo không giới hạn, `syncLaunch` đẩy giới
+  hạn của DA sang Canvas bằng REST (`PUT /api/v1/courses/:id/assignments/:id`,
+  `assignment[allowed_attempts]`, token của user dịch vụ) rồi mới ghi
+  `assignment_synced_at`. Từ đó Canvas làm chủ: giảng viên bỏ giới hạn trên
+  Canvas thì DA cũng bỏ. Nếu Canvas không nhận (mất kết nối, token hỏng, không
+  trả lại đúng giá trị), launch vẫn vào được, resource link chưa được đánh dấu
+  nên giới hạn của DA còn hiệu lực, và launch kế tiếp thử lại; log core-api có
+  dòng cảnh báo "Không đẩy được số lần làm sang Canvas". Sau khi đẩy, Canvas tự
+  chặn bài nộp vượt số lần ở AGS (422); DA đã xử lý bằng cách ghi điểm không kèm
+  bài nộp mới. "Extra attempts" Canvas cấp riêng cho từng sinh viên thì DA không
+  biết.
+- Điểm tối đa trước đây bị `ags_score_maximum` (chốt lúc Deep Linking) ghi đè ở
+  mỗi launch. Giờ `ags_score_maximum` chỉ là giá trị khởi tạo cho line item mới.
+  Canvas quy đổi điểm theo `scoreGiven × score_maximum của line item ÷ scoreMaximum
+  trong payload`, nên điểm vẫn đúng tỉ lệ ngay cả khi DA gửi `scoreMaximum` cũ.
+- Một Assignment có thể có hạn khác nhau theo từng sinh viên hay từng section
+  (override). Canvas mở `dueAt` theo người đang launch, nên DA lưu giá trị của
+  **lần launch gần nhất**. Canvas vẫn tự chặn từng sinh viên theo hạn riêng khi
+  họ mở bài; giới hạn của DA chỉ là lớp thứ hai và có thể lệch khi dùng override.
+- Bài kiểm tra bỏ hạn nộp và giờ đóng trên Canvas thì không bao giờ đóng, và đáp
+  án không bao giờ mở (đáp án chỉ mở sau khi đóng bài).
+- Deep Linking gửi ngày cho Canvas qua `available.startDateTime`,
+  `available.endDateTime` (mở/đóng) và `submission.endDateTime` (hạn nộp). Đây
+  là các trường Canvas đọc khi tạo Assignment
+  (`Lti::IMS::Concerns::DeepLinkingModules#create_update_assignment!`); `lineItem`
+  chỉ mang điểm, nhãn, `resourceId` và `tag`.
+
+### SpeedGrader mở bài làm
+
+Khi đẩy điểm, DA thêm vào score payload:
+
+- `https://canvas.instructure.com/lti/submission` với `submission_type:
+  basic_lti_launch`, `submission_data` là URL trang xem bài
+  (`<origin của LTI_REDIRECT_URI>/learn/quizzes/<quiz>/submissions/<lượt nộp>`) và
+  `submitted_at`; kèm `submission.submittedAt` cùng giá trị.
+- `comment` ngắn: "Đúng 7/10 câu. LO yếu nhất: LO2.3 – … (1/3 câu đúng).". Canvas
+  thêm một bình luận mới ở mỗi lần đẩy điểm, nên DA chỉ gửi nhận xét khi lượt nộp
+  được chọn vừa được chấm, không gửi lại khi chỉ đẩy lại điểm cũ.
+
+DA luôn gửi **lượt nộp tốt nhất** của sinh viên; hòa điểm thì lấy lượt sớm hơn.
+`submitted_at` lấy từ lượt đó nên ổn định giữa các lần đẩy: Canvas chỉ tăng số lần
+nộp khi `submitted_at` đổi. Nếu Canvas báo hết số lần nộp của Assignment, DA gửi
+lại với `new_submission: false` để vẫn ghi điểm.
+
+Core-api cần biết địa chỉ công khai của tool: biến `LTI_REDIRECT_URI` (hoặc
+`LTI_TOOL_URL`) phải có trong môi trường của `core-api`, `docker-compose.yml` đã
+truyền sẵn. Thiếu thì điểm vẫn được đẩy nhưng không kèm bài nộp.
+
+Bài nộp tạo qua AGS không mang `resource_link_lookup_uuid`, nên SpeedGrader
+launch DA bằng đúng URL trong `submission_data` (`external_tools#retrieve` tìm
+tool theo tên miền của URL). Launch route:
+
+- chỉ nhận URL trong claim `target_link_uri` **đã ký**, cùng origin với tool và
+  đúng dạng `/learn/quizzes/<uuid>/submissions/<uuid>`; đường dẫn đích dựng lại từ
+  hai UUID, không dùng nguyên chuỗi;
+- chỉ cho giảng viên, trợ giảng hoặc quản trị xem; người khác nhận trang HTML
+  403, không có JSON thô;
+- không tạo resource link hay line item cho launch này;
+- core-api (`GetQuizSubmission`) kiểm tra lại quyền theo khóa học và lượt nộp phải
+  thuộc quiz và một Assignment của nó trong khóa.
+
+## Bước 3: phiên, role và deep link không module
+
+- **Phiên gia hạn trượt.** Mỗi request đọc phiên đẩy hạn Redis ra thêm TTL của
+  phiên (`readLtiSession`). TTL mặc định 30 phút; phiên mở từ bài kiểm tra có thời
+  gian làm dài hơn thì TTL = thời gian làm + 10 phút (`sessionTtlFor`). Có trần tuyệt
+  đối 12 giờ kể từ lúc launch. Cookie `sid` sống tới trần đó vì Next.js không cho
+  đặt cookie lúc render; Redis mới quyết định phiên còn hiệu lực.
+- **Role** so khớp URI chính xác, xem bảng ở mục [Luồng launch](#luồng-launch).
+- **Deep Linking không cần module.** Mở **Sinh quiz bằng DA** từ trang Assignments
+  (placement `course_assignments_menu`) không có module; hộp
+  thoại cho chọn chương và Canvas tạo Assignment ngoài module nào. Launch không
+  module chỉ được nhận khi placement trong `?data=JWT` là `course_assignments_menu`
+  hoặc `assignment_selection`, hoặc `canvas_assignment_id` là số; mở từ chỗ khác
+  mà thiếu module vẫn báo lỗi. Placement `course_assignments_menu` có trong
+  script đăng ký, nên cần chạy lại script (xem
+  [Đăng ký hoặc cập nhật tool](#đăng-ký-hoặc-cập-nhật-tool-canvas-tự-host)).
 
 ## Biến môi trường
 
@@ -242,9 +358,10 @@ Developer Key loại LTI bằng tay với cùng các giá trị như trên: targ
 OIDC initiation URL, redirect URI, public JWK URL, ba scope AGS, ba scope
 Asset Processor (`noticehandlers`, `asset.readonly`, `report`), scope NRPS
 `contextmembership.readonly`, các custom field ở mục
-[Custom field](#custom-field) và ba placement
-(Course Navigation; Module Menu Modal với Deep Linking; Document Processor
-`ActivityAssetProcessor` với Deep Linking, xem
+[Custom field](#custom-field) và bốn placement
+(Course Navigation; Module Menu Modal và Course Assignments Menu, đều Deep Linking
+với target `/lti/deep-link`; Document Processor `ActivityAssetProcessor` với Deep
+Linking, xem
 [essay-asset-processor.md](essay-asset-processor.md)). Sau đó bật
 key, cài app bằng Client ID ở cấp account, rồi lấy Deployment ID. Tên menu có
 thể khác theo phiên bản Canvas. Biến môi trường điền theo
@@ -322,6 +439,22 @@ Lịch đồng bộ được mô tả ở
 [canvas-document-auto-sync.md](canvas-document-auto-sync.md).
 
 ## Kiểm tra nhanh
+
+Chạy `scripts/canvas-doctor` trước tiên (khoảng 3 giây, chỉ đọc, chạy trên máy
+đang chạy cả Canvas lẫn DA bằng Docker). Nó báo `OK`/`WARN`/`FAIL` cho từng
+đường nối và thoát mã 1 nếu có `FAIL`; `--quiet` chỉ in dòng có vấn đề:
+
+- container, migration đã áp so với thư mục `core-api/prisma/migrations`, build
+  của core-api (`nest --watch` có đang giữ bản cũ vì lỗi biên dịch không);
+- biến môi trường trong container (thiếu `LTI_REDIRECT_URI` ở core-api thì điểm
+  vẫn đẩy nhưng SpeedGrader không có bài để mở);
+- placement, scope và custom field trên Canvas so với khai báo trong
+  `setup_canvas_lti.rb` và `setup_canvas_chat_lti.rb`;
+- token REST, lần đồng bộ tài liệu và roster gần nhất của từng khóa, hàng đợi
+  điểm AGS, số resource link đã nhận cài đặt Assignment và bài kiểm tra nào còn
+  chờ đẩy số lần làm sang Canvas.
+
+Các lệnh tay bên dưới dùng khi cần xem sâu hơn:
 
 ```bash
 # JWKS của tool: phải có kid ai-nextjs-1, RS256

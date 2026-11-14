@@ -378,6 +378,10 @@ services:
       LTI_PLATFORM_URL: ${LTI_PLATFORM_URL:-http://local.edly.io}
       LTI_TOKEN_URL: ${LTI_TOKEN_URL:-}
       LTI_PRIVATE_KEY_PATH: /lti-keys/lti.pem
+      # Địa chỉ công khai của tool: AGS dựng URL trang xem bài làm gửi cho
+      # SpeedGrader từ origin của biến này (bài nộp basic_lti_launch). Thiếu thì
+      # điểm vẫn đẩy được, chỉ không kèm bài nộp.
+      LTI_REDIRECT_URI: ${LTI_REDIRECT_URI:-http://localhost:3000/lti/launch}
       AGS_ENABLED: ${AGS_ENABLED:-}
       AGS_POLL_INTERVAL_MS: ${AGS_POLL_INTERVAL_MS:-15000}
       # Đồng bộ đề cương từ trang Chương trình học của Canvas (REST API).

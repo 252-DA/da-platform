@@ -58,6 +58,8 @@ service CoreApiService {
   rpc StartQuizSet(JsonRequest) returns (JsonResponse);
   rpc SubmitQuizSet(JsonRequest) returns (JsonResponse);
   rpc GetQuizSetResults(JsonRequest) returns (JsonResponse);
+  // Bài làm của một lượt nộp, URL mà SpeedGrader mở lại (AGS submission extension).
+  rpc GetQuizSubmission(JsonRequest) returns (JsonResponse);
   rpc ListQuizAttempts(JsonRequest) returns (JsonResponse);
   rpc ListEssaysForReview(JsonRequest) returns (JsonResponse);
   rpc GradeEssayAnswer(JsonRequest) returns (JsonResponse);

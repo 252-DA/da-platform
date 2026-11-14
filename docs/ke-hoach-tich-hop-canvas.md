@@ -47,6 +47,14 @@ Chỗ yếu nằm ở mô hình tích hợp và đường REST API:
 > **Tiến độ 12/11/2026:** bước 0 và 1 đã viết xong (Sonnet làm, chưa commit). Bước 0 đã kiểm chứng trên dev. Bước 1: test xanh, NRPS đọc được lớp thật từ container, chủ dự án đã áp toàn bộ 7 migration treo (kể cả 6 cái từ 7/11) lúc 16:19 ngày 12/11 và generate lại client trong container; sweep ngay sau đó ghi dòng `roster` success cho cả hai khóa; tool chính và tool chat đã đăng ký lại với custom field + scope NRPS; cần một lần launch thật để kiểm chứng claim mới. Ghi chú kỹ thuật: NRPS phải gọi qua tên miền công khai (Canvas kiểm `aud` theo host), REST đi nội bộ qua `canvas.docker:3000`; client Prisma trong container đã mới, nên lớp SQL thô trong `core-api/src/roster/course-roster.repository.ts` và `canvas-sync-runs.service.ts` có thể đổi sang delegate Prisma khi tiện.
 
 
+> **Tiến độ bước 2 và 3 (12/11/2026):** code, test đơn vị và tài liệu đã xong (Claude làm, chưa commit); **chưa kiểm chứng trên Canvas thật**. Trên dev đã áp migration `20261112140000_canvas_assignment_settings`, `prisma generate` và tạo lại container core-api (đã có `LTI_REDIRECT_URI`); còn lại chạy lại `scripts/setup_canvas_lti.rb` để thêm placement `course_assignments_menu`, rồi thử một launch từ Assignment thật. Chi tiết ở [canvas_lti_setup.md](canvas_lti_setup.md#bước-2-canvas-làm-chủ-bài-tập-speedgrader-mở-được-bài-làm). Hai chỗ code lệch với bản kế hoạch bên dưới vì đã đối chiếu source Canvas:
+> - Ngày của Assignment do Canvas đọc từ `available.startDateTime/endDateTime` (mở/đóng) và `submission.endDateTime` (hạn nộp), không phải `lineItem.startDateTime/endDateTime`; Deep Linking đã gửi đúng các trường đó từ trước, nên không đổi.
+> - "Mở từ trang Assignment" là placement `course_assignments_menu`, mà launch này **không có** `canvas_assignment_id` (Assignment chưa tồn tại); deep link nhận launch không module theo placement trong `?data=JWT`, `canvas_assignment_id` chỉ là điều kiện phụ.
+>
+> Còn tồn tại, cố ý chưa làm: (1) override hạn theo section/sinh viên chỉ được lưu theo lần launch gần nhất. Nặng hơn mô tả ban đầu: Canvas mở `dueAt` theo người launch, giảng viên nhận hạn **muộn nhất** của mọi section (`latest_due_at` trong `variable_expander.rb`), nên giảng viên mở xem thử là ghi hạn dễ nhất cho cả lớp. Chỉ lộ khi có override. Hướng sửa đã đánh giá (giữ ngày của người launch trong phiên web rồi truyền cho core-api, 9–10 file ở hai repo), chưa làm; (2) trình soạn quiz vẫn hỏi điểm, hạn, số lần làm vì đó là giá trị khởi tạo. Điểm và ngày sang Canvas qua Deep Linking; số lần làm thì không, xem ghi chú 14/11 bên dưới; (3) "lúc mở đáp án" vẫn là quy tắc cố định (sau giờ đóng), chưa có cài đặt riêng.
+>
+> **Sửa ngày 14/11/2026 (Sonnet làm, đã rà diff và chạy lại toàn bộ test, chưa commit, chưa có launch thật):** bài kiểm tra soạn "1 lần làm" từng thành không giới hạn sau launch đầu từ Assignment, vì Deep Linking không mang số lần làm và Canvas tạo Assignment với `allowed_attempts` rỗng. Giờ launch đầu đẩy giới hạn của DA sang Canvas qua REST một lần rồi mới coi Canvas là chủ; Canvas không nhận thì giữ giới hạn của DA và thử lại ở launch sau (`LtiService.seedAttempts`, `CanvasApiClient.setAssignmentAllowedAttempts`). Cùng lượt: learning agent xét "đã mở đáp án" theo ngày của Canvas thay vì ngày cũ của DA (`learner-model.service.ts`). Trên dev, user dịch vụ có quyền sửa Assignment 6 và cả hai cách định địa chỉ khóa đều đọc được qua host nội bộ; lệnh ghi thật sẽ chạy ở lần launch đầu của "Đề Chương 1".
+
 Mọi cơ chế dưới đây đã kiểm tra có trên Canvas local: biến `Canvas.course.id`, `Canvas.user.id`, `Canvas.module.id`, `Canvas.moduleItem.id`, `Canvas.assignment.{id,pointsPossible,dueAt.iso8601,unlockAt.iso8601,lockAt.iso8601,allowedAttempts,published}` (`lib/lti/variable_expander.rb`); NRPS (`names_and_roles_controller.rb`, scope `contextmembership.readonly`); phần mở rộng `https://canvas.instructure.com/lti/submission` trong AGS score (`scores_controller.rb`); line item có `startDateTime`/`endDateTime`.
 
 | Bước | Việc | Công | Mở khóa gì |
@@ -70,6 +78,7 @@ Mọi cơ chế dưới đây đã kiểm tra có trên Canvas local: biến `Ca
 - Thêm scope `https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly`. Launch lưu `context_memberships_url` (claim `https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice`) vào `lms_course_ref`. Viết `NrpsClientService` dùng lại `AgsTokenService`, phân trang qua header Link. Chạy khi giảng viên launch (cooldown như Canvas sync) và trong sweep 15 phút. Upsert `lms_user_mappings` + `course_memberships` với cột `source` và `status` (Active/Inactive).
 - Trang kết quả quiz liệt kê cả lớp, có dòng "chưa làm". Learning agent có mẫu số thật.
 - Kiểm chứng: thêm sinh viên mới vào Canvas, không mở DA, sau một vòng sync vẫn thấy trong danh sách.
+- Còn thiếu (rà soát 14/11/2026, đọc source, chưa chạy): NRPS định danh người bằng LTI `sub`, nên `lms_platform_user_id` (id số của Canvas) mới có cho người đã launch sau khi đăng ký lại (2/7 trên dev). Mọi thứ đọc REST theo id Canvas (bước 5b, 6.4) cần cột này đủ cả lớp. Cách lấy: thêm `rlid=<lti_context_id của khóa>` vào request NRPS (`nrps-client.service.ts`, `firstPageUrl`); Canvas khi đó trả thêm `message[0]` cho từng thành viên với custom field đã mở rộng, đọc `canvas_user_id` ở claim `.../claim/custom`, bỏ giá trị bắt đầu bằng `$` (`names_and_roles_serializer.rb`, `memberships_provider.rb`). REST không nối được: không endpoint nào trả `users.lti_id` của LTI 1.3. Trang NRPS tối đa 50 người.
 
 ### Bước 2. Canvas làm chủ bài tập, SpeedGrader mở được bài làm
 - Mỗi launch có AGS: đọc các biến `assignment_*`, cập nhật `lti_line_items.score_maximum` và cài đặt của resource link (hạn, mở/đóng, số lần làm). Cài đặt bài kiểm tra trong DA chỉ còn thứ Canvas không có: thời gian làm, xáo đề, lúc mở đáp án. Deep link gửi `startDateTime`/`endDateTime` trong `lineItem` để Canvas tạo đúng hạn từ đầu.
@@ -85,11 +94,23 @@ Mọi cơ chế dưới đây đã kiểm tra có trên Canvas local: biến `Ca
 ### Bước 4. Đọc thêm Canvas
 - Module item kiểu `Page`: `GET /api/v1/courses/:id/pages/:url`, đổi HTML sang Markdown, lưu `documents` với `source='canvas'`, `mime_type='text/markdown'`, thêm cột `lms_page_url`. Mô tả Assignment và Syllabus body làm tương tự. Pipeline đã nhận Markdown nên không đụng worker.
 - Kiểm chứng: hỏi chatbot một điều chỉ có trong một Page.
+- Quyền xem (rà soát 14/11/2026, đọc source, chưa chạy). Hiện sync gộp quyền xem thành một cờ `documents.lms_published = module.published && item.published`, và `exclude_hidden` của chatbot lọc đúng cột đó. File bị khóa (`locked`), bị ẩn (`hidden`), có `unlock_at`/`lock_at`, hay nằm trong module có `unlock_at` tương lai hoặc có điều kiện tiên quyết đều đang được coi là thấy được: đây là lỗ hổng có sẵn với File, không chỉ của bước 4. Với token admin, `locked_for_user`/`hidden_for_user` luôn false nên phải đọc trường gốc. Quy tắc nhỏ nhất mà không lộ, chỉ index khi mọi điều sau đúng:
+  - khóa học và nội dung đã publish; file không `locked`, không `hidden`, chuỗi thư mục cha không khóa;
+  - item nằm trong ít nhất một module đã publish, item đã publish, module không có `unlock_at` tương lai, không điều kiện tiên quyết, không bắt đi tuần tự;
+  - `only_visible_to_overrides` là false và không override nào có `unlock_at` tương lai;
+  - `unlock_at <= now < lock_at`, xét lúc truy vấn. Phải lưu ngày, không lưu một cờ, vì cờ đồng bộ 15 phút một lần sẽ lộ trong khoảng trễ;
+  - Syllabus chỉ index khi tab Syllabus không bị ẩn.
+- Quy tắc này ẩn thừa: nội dung giao riêng cho section/sinh viên, nội dung sau điều kiện tiên quyết kể cả với người đã qua, và mô tả bài tập sau `lock_at` (sinh viên vẫn đọc được trên Canvas). Chấp nhận, vì các trường hợp đó là theo từng sinh viên và không gộp được thành một cờ.
 
 ### Bước 5. Xuất quiz sang Canvas Quiz qua QTI
 - Thiết kế trong `docs/question-bank-design.md`, spike QTI 2.1 đã qua. Bộ đề đóng gói QTI, đẩy qua Content Migrations API (`migration_type=qti_converter`), lưu `canvas_quiz_id`. Giảng viên có hai lựa chọn: gắn bài DA vào module như hiện nay (luyện tập, thích nghi), hoặc xuất thành Canvas Quiz (kiểm tra chính thức, SpeedGrader và thống kê câu hỏi của Canvas).
-- Đọc ngược kết quả qua Quiz Submissions API vào `quiz_attempts` với `source='canvas'`, để learning agent không mù khi sinh viên làm bên Canvas.
+- Đọc ngược kết quả vào `quiz_attempts` với `source='canvas'`, để learning agent không mù khi sinh viên làm bên Canvas.
 - Kiểm chứng: import đề 10 câu, làm bên Canvas, kết quả về DA.
+- Sửa sau rà soát 14/11/2026 (đọc source, chưa chạy): nên tách thành **5a xuất QTI** và **5b đọc ngược**, làm 5b sau một spike, vì 5b nặng hơn dòng trên mô tả:
+  - Quiz Submissions API chỉ trả tổng điểm. Đúng/sai từng câu lấy ở `GET /api/v1/courses/:c/assignments/:a/submissions?include[]=submission_history`: mỗi lượt làm có `submission_data[]` gồm `question_id`, `correct`, `points`, `text`/`answer_id` (`lib/api/v1/submission.rb`). Cần quyền `view_all_grades` hoặc `manage_grades`; user dịch vụ có.
+  - `question_id` là id QuizQuestion của Canvas, không phải identifier trong gói QTI. Importer có lưu identifier vào `quiz_questions.migration_id` nhưng API câu hỏi không trả trường đó, nên phải nối câu hỏi theo tiêu đề hoặc vị trí ghi lại lúc import.
+  - Kết quả mang id Canvas của sinh viên, nên cần xong phần "còn thiếu" của bước 1 trước.
+  - Đích là Classic Quizzes, thứ Instructure đang chuyển dần sang New Quizzes; ghi là giới hạn của luận văn.
 
 ## 4. Cố ý không làm
 
@@ -102,7 +123,7 @@ Mọi cơ chế dưới đây đã kiểm tra có trên Canvas local: biến `Ca
 
 - Tổng khoảng 15 ngày làm việc của một người. Bước 0–2 chạm LTI và schema, nên là của chủ dự án. Bước 4–5 giao được cho teammate.
 - Redis/BullMQ dùng chung với teammates: sweep NRPS cũng phải tắt ở máy họ như Canvas sync hiện nay (`CANVAS_AUTO_SYNC_ENABLED=false`).
-- Bước 2 đổi cách lưu cài đặt bài kiểm tra, phải migrate 5 resource link đang có trên dev.
+- Bước 2 đổi cách lưu cài đặt bài kiểm tra. Không cần migrate dữ liệu: migration chỉ thêm cột, resource link cũ giữ cài đặt của quiz set cho tới lần launch kế tiếp từ Assignment.
 
 ## 6. Hướng sâu hơn (ý tưởng, chưa chốt)
 
@@ -115,6 +136,21 @@ Lộ trình trên làm hai hệ nói chuyện đúng, nhưng vẫn là hai hệ.
 
 ### 6.2 Vòng lặp bổ trợ chạy bằng Mastery Paths của Canvas
 - Bài DA đẩy điểm qua AGS tạo submission đã chấm; Mastery Paths (conditional release) của Canvas kích hoạt trên submission `graded` và `posted` (`conditional_release/override_handler.rb`), không thấy loại trừ bài External Tool. Cần thử một lần với bài DA.
+- Rà soát source ngày 14/11/2026 (chưa chạy):
+  - Bật bằng cài đặt khóa học `course[conditional_release]=true`, không phải feature flag. Đang tắt ở khóa 1 và khóa 8.
+  - Bài kích hoạt: chỉ loại bài `not_graded` và bài nền của Page; `external_tool` được.
+  - Đường chấm: AGS và Submissions API đều đi qua `grade_student`, rồi Canvas xếp một delayed job ưu tiên thấp (cần `canvas-lms-jobs-1` chạy). Bài để chế độ đăng điểm thủ công thì chờ tới lúc đăng.
+  - Mở nhánh: item được mở phải có `only_visible_to_overrides=true` và một override Noop (`noop_id=1`); Canvas mở cho từng sinh viên bằng override ADHOC. Item được mở có thể là bài `external_tool` của DA.
+  - Khoảng điểm là tỉ lệ trên điểm tối đa, cận trên không bao gồm trừ 100%. Chấm lại thì đổi nhánh.
+- Spike nửa ngày trên khóa 8, chỉ dùng REST với token admin, không cần code DA:
+  1. `PUT /api/v1/courses/8` với `course[conditional_release]=true`, `offer=true`.
+  2. Tạo một sinh viên thử và ghi danh vào khóa 8.
+  3. Tạo bài kích hoạt T kiểu `external_tool` (100 điểm, đã publish) và hai bài A1, A2 có `only_visible_to_overrides=true` cùng override `noop_id=1`.
+  4. `POST /api/v1/courses/8/mastery_paths/rules` với `trigger_assignment_id=T` và hai `scoring_ranges` (0.7–1.0 mở A1, 0–0.7 mở A2).
+  5. Chấm sinh viên 85 điểm qua `PUT .../assignments/T/submissions/:user` (`submission[posted_grade]`), chờ job.
+  6. Kiểm: bảng `conditional_release_assignment_set_actions` có dòng `assign`; `GET .../assignments/A1/overrides` có override ADHOC của sinh viên; `GET .../assignments?as_user_id=` thấy A1, không thấy A2. Chấm lại 40 điểm thì đảo.
+  7. Dọn: xóa rule, ba bài, sinh viên thử; tắt `conditional_release` sau cùng vì tắt là hiện lại các item đã mở.
+- Spike này chứng minh chuỗi rule → job → override → quyền xem trên một bài `external_tool`. Nó **không** chứng minh đường AGS của DA (token, payload điểm, ánh xạ line item); muốn đủ thì lặp lại bước 5–6 với một bài DA thật tạo trong khóa 8.
 - Khi đó: sinh viên làm bài DA → Canvas tự mở module/item bổ trợ theo khoảng điểm → item đó là một resource link DA "Ôn theo điểm yếu" tự chọn micro-content theo LO yếu ở phía server. Sinh viên đi hết vòng trong luồng Modules của Canvas; giảng viên cấu hình nhánh bằng UI Mastery Paths quen thuộc. Đây là cách Canvas-native cho hướng "bổ trợ sau kiểm tra" (`docs/bao-cao-thiet-ke-bo-tro-sau-kiem-tra.md`). Mastery Paths rẽ nhánh theo tổng điểm, phần cá nhân hóa theo LO nằm trong item DA.
 - Canvas Outcomes làm từ vựng chung: mỗi chương một outcome group, mỗi LO một outcome, thang mastery theo Bloom (`outcome_groups_api_controller.rb`). Quiz xuất QTI gắn outcome được. Ghi mastery của DA vào Learning Mastery Gradebook không có API trực tiếp; đường khả dĩ là rubric gắn outcome + rubric assessment, cần spike.
 
@@ -135,6 +171,8 @@ Lộ trình trên làm hai hệ nói chuyện đúng, nhưng vẫn là hai hệ.
 1. 6.1 trước: rẻ (2–3 ngày), đổi cảm giác ngay, giải đúng hạn chế đã ghi nhận.
 2. 6.2 vì trùng hướng bổ trợ của luận văn và dùng máy móc sẵn có của Canvas.
 3. 6.3 `editor_button`, rồi 6.5 khi chuẩn bị học kỳ mới.
+
+Thứ tự đề xuất cho cả lộ trình sau rà soát 14/11/2026: kiểm chứng bước 2–3 trên Canvas thật (chạy `scripts/canvas-doctor` trước) → spike Mastery Paths ở 6.2 → vá quyền xem của File (phần đầu của bước 4) → 6.1 hoặc phần còn lại của bước 4 → bước 5a; 5b và hạn nộp theo từng người để sau.
 
 ## 7. UI/UX khi nằm trong Canvas (rà soát 12/11/2026)
 

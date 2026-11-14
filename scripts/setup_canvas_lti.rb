@@ -111,6 +111,18 @@ configuration_params = {
       selection_height: 800
     },
     {
+      # Menu "+" của trang Assignments: Canvas tạo thẳng Assignment từ content item
+      # có lineItem, không gắn module nào (deep link route nhận launch không module
+      # khi placement này nằm trong ?data=JWT).
+      placement: "course_assignments_menu",
+      enabled: true,
+      message_type: "LtiDeepLinkingRequest",
+      text: "Sinh quiz bằng DA#{menu_suffix}",
+      target_link_uri: "#{tool_base_url}/lti/deep-link",
+      selection_width: 1100,
+      selection_height: 800
+    },
+    {
       # Nút "Add Document Processing App" trên trang sửa Assignment nộp file.
       placement: "ActivityAssetProcessor",
       enabled: true,
