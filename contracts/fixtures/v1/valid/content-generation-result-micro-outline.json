@@ -1,0 +1,34 @@
+{
+  "result_id": "CONTENT_GENERATION_RESULT.0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c11.SUCCEEDED",
+  "kind": "CONTENT_GENERATION_RESULT",
+  "source_event_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c11",
+  "occurred_at": "2026-11-15T10:30:15.123Z",
+  "payload": {
+    "request_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c12",
+    "course_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c13",
+    "content_type": "micro_outline",
+    "status": "SUCCEEDED",
+    "document_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c14",
+    "generated_count": 2,
+    "sections": [
+      {
+        "title": "Spark RDD cơ bản",
+        "summary": "Giới thiệu Resilient Distributed Dataset và bất biến tính.",
+        "page_from": 1,
+        "page_to": 6,
+        "suggested_lo_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c15",
+        "low_text": false,
+        "lo_rationale": "Giới thiệu trực tiếp mô hình RDD phù hợp LO về Apache Spark."
+      },
+      {
+        "title": "Biểu diễn DAG và Lineage",
+        "summary": "Sơ đồ trực quan minh họa quá trình khôi phục phân vùng.",
+        "page_from": 7,
+        "page_to": 10,
+        "suggested_lo_id": null,
+        "low_text": true,
+        "lo_rationale": null
+      }
+    ]
+  }
+}

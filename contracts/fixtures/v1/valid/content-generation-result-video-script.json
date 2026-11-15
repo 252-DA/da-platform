@@ -1,0 +1,38 @@
+{
+  "result_id": "CONTENT_GENERATION_RESULT.0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c21.SUCCEEDED",
+  "kind": "CONTENT_GENERATION_RESULT",
+  "source_event_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c21",
+  "occurred_at": "2026-11-15T10:31:15.123Z",
+  "payload": {
+    "request_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c22",
+    "course_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c23",
+    "content_type": "video_script",
+    "status": "SUCCEEDED",
+    "micro_content_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c24",
+    "generated_count": 1,
+    "script": {
+      "voice": "vi-VN-HoaiMyNeural",
+      "source_document_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c25",
+      "source_page_from": 1,
+      "source_page_to": 6,
+      "scenes": [
+        {
+          "title": "Khái niệm RDD",
+          "bullets": ["Tập dữ liệu phân tán bất biến", "Phục hồi nhờ lineage"],
+          "narration": "RDD là cấu trúc dữ liệu cốt lõi trong Spark đại diện cho tập hợp các phần tử được phân vùng trên cụm máy chủ.",
+          "slide_page": 2,
+          "duration_sec": 18,
+          "check": {
+            "status": "VERIFIED",
+            "verdict": "supported",
+            "reason": "Khớp đúng nội dung trang 2.",
+            "writer_model": "gemini-2.5-flash",
+            "judge_model": "gemini-2.5-flash",
+            "source_chunk_ids": ["0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c26"]
+          }
+        }
+      ]
+    },
+    "rejected": []
+  }
+}

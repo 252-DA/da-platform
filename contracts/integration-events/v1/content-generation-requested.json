@@ -15,8 +15,8 @@
         "request_id": { "type": "string", "format": "uuid" },
         "course_id": { "type": "string", "format": "uuid" },
         "type": {
-          "enum": ["card", "quiz", "relations"],
-          "description": "core-api nhận cả ba (content-generation.service.ts). 'relations' dựng đồ thị quan hệ cho chatbot (ExtractRelationsUseCase): scope chỉ có source_document_ids (và chapter_id nếu chọn theo chương).  Worker xử lý 'quiz' (GenerateCurriculumQuizUseCase) và 'card' (GenerateLessonCardsUseCase); cả hai đọc target từ scope theo cùng một cách."
+          "enum": ["card", "quiz", "relations", "micro_outline", "video_script", "micro_quiz"],
+          "description": "Các loại yêu cầu sinh nội dung AI mà content-generation worker xử lý."
         },
         "scope": {
           "type": "object",

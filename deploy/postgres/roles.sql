@@ -199,6 +199,7 @@ INSERT INTO lms_table_domain (table_name, domain, worker, mcp) VALUES
   ('chat_conversations',           'core',   'none',   false),
   ('chat_runs',                    'core',   'none',   false), -- + ai-tutor/scripts/chat_eval.py (công cụ admin)
   ('video_assets',                 'core',   'none',   false),
+  ('canvas_sync_runs',             'core',   'none',   false), -- CanvasDocumentSyncService (core-api); worker/mcp không đụng
   -- Chưa service nào ghi (2026-11-07); để mặc định là nghiệp vụ ------------------------
   ('videos',                       'core',   'none',   false),
   ('video_segments',               'core',   'none',   false),

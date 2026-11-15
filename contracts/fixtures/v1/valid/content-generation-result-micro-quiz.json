@@ -1,0 +1,42 @@
+{
+  "result_id": "CONTENT_GENERATION_RESULT.0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c31.SUCCEEDED",
+  "kind": "CONTENT_GENERATION_RESULT",
+  "source_event_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c31",
+  "occurred_at": "2026-11-15T10:32:15.123Z",
+  "payload": {
+    "request_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c32",
+    "course_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c33",
+    "content_type": "micro_quiz",
+    "status": "SUCCEEDED",
+    "micro_content_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c34",
+    "lo_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c35",
+    "generated_count": 1,
+    "quiz_items": [
+      {
+        "quiz_id": "8d3c6a52-5b1e-5c7a-9f0e-2a4b6c8d0e99",
+        "type": "MCQ_SINGLE",
+        "question": "Đặc tính nào mô tả đúng RDD trong Spark?",
+        "options": ["Bất biến và phân tán", "Chỉ chạy một luồng", "Không thể tái tạo", "Lưu hoàn toàn trên đĩa"],
+        "correct_answer": "Bất biến và phân tán",
+        "explanation": "Slide trang 2 định nghĩa RDD là tập dữ liệu phân tán bất biến.",
+        "bloom_level": 2,
+        "source_chunk_ids": ["0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c36"],
+        "verification_status": "VERIFIED",
+        "verification_evidence": {
+          "criterion": "source_grounding",
+          "judge_verdict": "supported",
+          "judge_reason": "Đúng với trang 2.",
+          "inconclusive_reason": null,
+          "regeneration_attempts": 0,
+          "regenerations_applied": 0,
+          "history": [],
+          "writer_model": "deepseek-chat",
+          "judge_model": "gemini-2.5-flash",
+          "judge_is_writer": false,
+          "source_chunk_ids": ["0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c36"]
+        }
+      }
+    ],
+    "rejected": []
+  }
+}

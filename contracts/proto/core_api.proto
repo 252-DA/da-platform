@@ -96,9 +96,12 @@ service CoreApiService {
   rpc CreateMicroContentUpload(JsonRequest) returns (JsonResponse);
   rpc ConfirmMicroContentUpload(JsonRequest) returns (JsonResponse);
   rpc GetMicroContentVideoUrl(JsonRequest) returns (JsonResponse);
+  rpc GetMicroContentSubtitles(JsonRequest) returns (JsonResponse);
+  rpc RequestMicroContentOutline(JsonRequest) returns (JsonResponse);
   rpc RequestMicroContentScript(JsonRequest) returns (JsonResponse);
   rpc SaveMicroContentScript(JsonRequest) returns (JsonResponse);
   rpc RequestMicroContentRender(JsonRequest) returns (JsonResponse);
+  rpc RequestMicroContentQuiz(JsonRequest) returns (JsonResponse);
   rpc ReportMicroContentProgress(JsonRequest) returns (JsonResponse);
   rpc SubmitMicroContent(JsonRequest) returns (JsonResponse);
   rpc GetMicroContentResult(JsonRequest) returns (JsonResponse);
