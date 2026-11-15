@@ -49,8 +49,10 @@ thay `docker compose`. Dev reload: `scripts/dev_reload.py` mount source nóng.
   luận file), `micro-content` (lớn nhất, 1116 dòng service: CRUD, video,
   attempts, grading), `video-asset` (DAM), `chat` (lưu hội thoại/rating/
   mode chatbot), `learning-agent` (BKT: `bkt.ts`, `planner.ts`,
-  `review-schedule.ts`, mastery theo LO), `model-settings` (binding
-  task->model profile), `content-generation` (nhận request sinh quiz/card),
+  `review-schedule.ts`, mastery theo LO; `review-queue.ts` dẫn xuất lịch ôn
+  từ evidence; `summary` trả kèm `plan` của planner + `review` từng LO),
+  `model-settings` (binding task->model profile), `content-generation` (nhận
+  request sinh quiz/card),
   `outbox` (relay sang BullMQ), `worker-results` (registry handler theo
   kind, `@WorkerResultHandler`).
 - Queue BullMQ (producer ở core-api): `document_processing`,
@@ -86,7 +88,12 @@ thay `docker compose`. Dev reload: `scripts/dev_reload.py` mount source nóng.
   qua GetLearnerSummary), `/manage/mastery` (GV: kho luyện theo LO + ma trận
   SV × LO qua GetCourseMastery, chi tiết 1 SV qua ?userId). Types dùng chung:
   `lib/mastery.ts`; nav item "mastery" trong instructor-nav. planner.ts và
-  review-schedule.ts ở core-api vẫn chưa được nối vào đâu.
+  review-schedule.ts đã nối vào GetLearnerSummary (15/11 chiều): summary trả
+  thêm `plan` (Decision của planner) và `review` (lịch ôn Leitner dẫn xuất,
+  quan sát sau mốc đạt coi như lần ôn); FE learner hiển thị thẻ gợi ý + hạn
+  ôn. Vẫn stateless từ quiz_attempts — chưa có sự kiện xem nguồn
+  (sourceViews=0) và tạm dừng đợt (paused=false) nên R2 chỉ kích theo số quan
+  sát, R3 coi mọi chuỗi sai là "từ lần xem nguồn gần nhất".
 
 ### worker/ (Python 3.10+, uv, BullMQ python) — nhánh master
 - 6 runner (`worker/runners/`): document, enrichment, content_generation,
