@@ -11,8 +11,6 @@
 # Host/DB: DB_HOST, POSTGRES_DB như docker-compose.remote-db.yml; không đặt thì
 # là container `postgres`, DB `chunking` của docker-compose.yml.
 #
-# Không đổi grpc-server/http-api/mcp-server (profile "legacy"): chúng còn ghi
-# bảng nghiệp vụ và sẽ lỗi quyền dưới role worker.
 # MIGRATION_DATABASE_URL không đặt ở đây: chỉ truyền lúc chạy migrate
 # (docker compose exec -e ...), để tài khoản quản trị không nằm trong env core-api.
 # ─────────────────────────────────────────────────────────

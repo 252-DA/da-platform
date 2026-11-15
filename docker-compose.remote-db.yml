@@ -48,17 +48,6 @@ services:
   neo4j:
     profiles: ["local-db"]
 
-  # ── Legacy (profile "legacy") ──
-  grpc-server:
-    environment: *remote-env
-    depends_on: !reset {}
-  http-api:
-    environment: *remote-env
-    depends_on: !reset {}
-  mcp-server:
-    environment: *remote-env
-    depends_on: !reset {}
-
   # ── App ──
   web:
     environment:

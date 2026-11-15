@@ -132,7 +132,7 @@ cloudflared tunnel run da-stack
 
 Các file đã có sẵn trong `deploy/`:
 - `docker-compose.observability.yml` — Prometheus + Loki + Grafana + Alloy, merge chung network `default`.
-- `prometheus.yml` — scrape metrics `grpc-server:9090`, `*-worker:9091/9092/9093` (đã `METRICS__ENABLED=true`). `http-api` và `core-api` để comment, bật sau khi verify endpoint.
+- `prometheus.yml` — scrape metrics `*-worker:9091/9092/9093/9094/9096` (đã `METRICS__ENABLED=true`) và `core-api:4000`.
 - `loki-config.yml` — Loki single-binary, lưu filesystem, giữ log 7 ngày.
 - `alloy-config.alloy` — Grafana Alloy gom log mọi container qua `docker.sock` → đẩy Loki (không phá `docker logs`).
 - `grafana/provisioning/datasources/datasources.yml` — auto nối Prometheus + Loki, khỏi cấu hình tay.
@@ -145,7 +145,7 @@ docker compose -f docker-compose.yml -f deploy/docker-compose.observability.yml 
 
 ✅ Verify:
 - `http://localhost:3001` → Grafana (login admin / `GRAFANA_PASSWORD`).
-- Prometheus → Status → Targets: `chunking-grpc` + `workers` phải `UP`.
+- Prometheus → Status → Targets: `workers` + `core-api` phải `UP`.
 - Grafana → Explore → datasource Loki → thấy log container.
 
 **Gotcha Fedora:**

@@ -17,7 +17,7 @@ services:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.retention.time=15d"
     ports:
-      - "9095:9090"   # host 9095 để khỏi đụng grpc-server (đang giữ host 9090)
+      - "9095:9090"   # host 9095 tránh đụng các cổng 909x khác trên host
     restart: unless-stopped
     networks:
       default: {}
