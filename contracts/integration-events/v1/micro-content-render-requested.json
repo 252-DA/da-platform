@@ -23,6 +23,14 @@
           "format": "uuid",
           "description": "Định danh lần render, core-api sinh mới mỗi lần bấm render và ghi vào video_assets.ai_render_id; kết quả mang lại id này để core-api bỏ kết quả của lần render cũ."
         },
+        "source_document_key": {
+          "type": "string",
+          "description": "Khóa object storage của tài liệu slide nguồn (documents.file_path) để worker kết xuất ảnh trang slide gốc thay cho thẻ chữ đơn giản khi nguồn là PDF."
+        },
+        "source_document_mime_type": {
+          "type": "string",
+          "description": "MIME type của tài liệu nguồn (ví dụ application/pdf)."
+        },
         "script": {
           "type": "object",
           "description": "Kịch bản tại thời điểm yêu cầu render (micro_contents.ai_script). Các trường khác ngoài scenes do web đặt (language, topic, voice) được giữ nguyên.",
@@ -37,7 +45,12 @@
                   "title": { "type": "string" },
                   "bullets": { "type": "array", "items": { "type": "string" } },
                   "narration": { "type": "string" },
-                  "voice": { "type": "string" }
+                  "voice": { "type": "string" },
+                  "slide_page": { "type": "integer", "minimum": 1 },
+                  "source_pages": {
+                    "type": "array",
+                    "items": { "type": "integer", "minimum": 1 }
+                  }
                 }
               }
             }
