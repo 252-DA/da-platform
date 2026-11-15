@@ -82,6 +82,11 @@ thay `docker compose`. Dev reload: `scripts/dev_reload.py` mount source nóng.
   learner `/learn/{dashboard,courses,lessons,quizzes,micro-content}`;
   `/api/*` là BFF proxy. `lib/lti-roles.ts` map role LTI ->
   instructor/learner/ta/administrator.
+- Learning agent FE (15/11): `/learn/courses/[id]/mastery` (người học tự xem
+  qua GetLearnerSummary), `/manage/mastery` (GV: kho luyện theo LO + ma trận
+  SV × LO qua GetCourseMastery, chi tiết 1 SV qua ?userId). Types dùng chung:
+  `lib/mastery.ts`; nav item "mastery" trong instructor-nav. planner.ts và
+  review-schedule.ts ở core-api vẫn chưa được nối vào đâu.
 
 ### worker/ (Python 3.10+, uv, BullMQ python) — nhánh master
 - 6 runner (`worker/runners/`): document, enrichment, content_generation,
