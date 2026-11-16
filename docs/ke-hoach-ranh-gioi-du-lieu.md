@@ -45,6 +45,7 @@ nguyên văn. Mục 2 ghi những gì đã đối chiếu với code; mục 3 gh
   (`core-api/src/quiz/question-types.ts`); `options` là cột riêng.
 - `verify_and_refine` bỏ câu không đạt, không lưu kết luận của judge.
 - `core_api.proto`: 88 RPC, 87 nhận `JsonRequest`, tất cả trả `JsonResponse`.
+  (ghi chú 2026-11-16: kênh web→core-api nay là HTTP REST, proto này chỉ còn giá trị lịch sử.)
 
 ## 3. Đổi so với kế hoạch cũ
 

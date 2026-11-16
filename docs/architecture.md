@@ -4,7 +4,7 @@
 
 Bản ngày **19/10/2026** có **62 diagram thuộc 8 loại**, ERD bao phủ **52 bảng, 529 cột và 82 FK**; danh mục **75 RPC và 38 Web route handlers**. Source được pin theo root `96ce40ac651e` và HEAD riêng của từng submodule đang checkout. Chưa introspect database hoặc chạy full-stack E2E.
 
-Working tree trước tác vụ đã thay đổi `ai-tutor`, `core-api`, `web`, `report` và `contracts/proto/core_api.proto`. Ba RPC hội thoại mới có trong proto local nhưng chưa commit ở meta-repo: proto tại root revision chỉ có 72 RPC, trong khi proto working tree và Core/Web đang khớp 75 RPC. Các source range trong diagram được đối chiếu với committed bytes của đúng repo; inventory proto local được ghi riêng trong [RPC provenance](../.archify/architecture-development-20261019-171859/rpc-provenance.json).
+Working tree trước tác vụ đã thay đổi `ai-tutor`, `core-api`, `web`, `report` và `contracts/proto/core_api.proto`. Ba RPC hội thoại mới có trong proto local nhưng chưa commit ở meta-repo: proto tại root revision chỉ có 72 RPC, trong khi proto working tree và Core/Web đang khớp 75 RPC. Các source range trong diagram được đối chiếu với committed bytes của đúng repo; inventory proto local được ghi riêng trong [RPC provenance](../.archify/architecture-development-20261019-171859/rpc-provenance.json). (ghi chú 2026-11-16: kênh web→core-api nay là HTTP REST, phần gRPC/proto trong đoạn này chỉ còn giá trị lịch sử.)
 
 | Cần phát triển phần nào | Diagram |
 |---|---|

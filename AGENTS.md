@@ -215,7 +215,9 @@ outbox-worker project Qdrant/Neo4j.
 - Model mới: chỉ thêm profile vào ai-sdk catalog.py + llm_model_catalog.json,
   KHÔNG hardcode provider/model ở nơi khác.
 - Test: core-api `pnpm test`; web `pnpm test:lti`; python repos `uv run
-  pytest` (mỗi repo có .venv riêng); video-mcp `go test ./...`.
+  pytest` (mỗi repo có .venv riêng); video-mcp `go test ./...`. Kiểm web đầy
+  đủ (tsc + test client coreApi so route hai chiều với controller core-api +
+  test LTI, chạy trong container): `scripts/test-web-core-api.sh`.
 - Env mẫu: `.env.team.example`, `.env.canvas.example`, `.env.tailscale.example`.
   Secret thật qua Infisical (`.infisical.json`), không commit .env.
 - report/: LaTeX báo cáo LVTN (bản chính `lvtn_en/`), không liên quan runtime.

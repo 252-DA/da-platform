@@ -149,17 +149,17 @@ flowchart TD
 
 ### Bước 3: Hợp Đồng Giao Thức & Backend Service (NestJS Core API)
 
-1. **Contracts Proto** (`contracts/proto/core_api.proto`):
-   Khai báo 10 RPCs:
-   - `ListVideoAssets`, `GetVideoAsset`
-   - `CreateVideoAssetUpload`, `ConfirmVideoAssetUpload`
-   - `GetVideoAssetUrl`, `UpdateVideoAsset`, `DeleteVideoAsset`
-   - `ForkVideoAsset`, `CheckVideoAssetHash`, `AttachVideoAssetToMicroContent`
+1. **API HTTP REST** (`core-api/src/video-asset/video-asset.controller.ts`):
+   Khai báo 10 endpoint dưới `/api/video-assets` (bảo vệ bằng `BffJwtGuard`, body kiểm bằng DTO `class-validator` trong `video-asset/dto/`):
+   - `GET /api/video-assets` (danh sách), `GET /api/video-assets/:id`
+   - `POST /api/video-assets/upload`, `POST /api/video-assets/:id/confirm-upload`
+   - `GET /api/video-assets/:id/stream-url`, `PATCH /api/video-assets/:id`, `DELETE /api/video-assets/:id`
+   - `POST /api/video-assets/:id/fork`, `POST /api/video-assets/check-hash`, `POST /api/video-assets/attach`
 
 2. **Module & Service** (`core-api/src/video-asset/`):
    - `video-asset.service.ts`: Cài đặt logic nghiệp vụ phân quyền, upload presigned URL, xóa mềm an toàn, fork kịch bản AI.
    - `video-asset.module.ts`: Đóng gói `PrismaModule`, `AuthModule`, `DocumentModule` và export `VideoAssetService`.
-   - `grpc-server.service.ts`: Ánh xạ các RPC sang phương thức tương ứng của `VideoAssetService`.
+   - `video-asset.controller.ts`: Nhận request HTTP, kiểm DTO và gọi phương thức tương ứng của `VideoAssetService`.
 
 3. **Cập nhật Micro Content Service**:
    - `micro-content.service.ts`: Tích hợp khởi tạo eager bản ghi `video_assets` khi render kịch bản AI.
@@ -182,8 +182,8 @@ flowchart TD
 
 ### Bước 5: Web Frontend & Next.js BFF
 
-1. **Client gRPC Core API** (`web/src/lib/core-api.ts`):
-   - Mở rộng union `CoreRpcMethod` và bổ sung 10 phương thức gọi backend tương ứng.
+1. **Client HTTP Core API** (`web/src/lib/core-api.ts`):
+   - Bổ sung 10 phương thức gọi backend tương ứng; mỗi call là một `fetch` tới `CORE_API_INTERNAL_URL` (`http://core-api:4000`) kèm JWT ký bằng `web/src/lib/bff-jwt.ts`.
 
 2. **BFF REST API Routes** (`web/src/app/api/videos/`):
    - `GET /api/videos`: Tìm kiếm và phân trang video theo phạm vi.
@@ -211,6 +211,8 @@ flowchart TD
 ---
 
 ## 4. Ma Trận Các File Đã Thay Đổi & Tạo Mới
+
+> (ghi chú 2026-11-16: kênh web→core-api nay là HTTP REST; các dòng trong bảng nhắc `contracts/proto/core_api.proto`, `grpc-server.service.ts` hay "gọi gRPC" chỉ còn giá trị lịch sử — hiện tại là `video-asset.controller.ts` + DTO trong core-api và các method trong `web/src/lib/core-api.ts`.)
 
 | Phân hệ | Đường dẫn file | Hành động | Mục đích |
 | :--- | :--- | :--- | :--- |

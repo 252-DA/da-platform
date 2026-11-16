@@ -175,6 +175,7 @@ Mục đích là biết sớm chất lượng có chấp nhận được không,
 
 **B1. Schema và liên kết nguồn**
 - core-api: migration theo §4; sửa `schema.prisma`; trả các cột mới qua gRPC (`contracts/proto/core_api.proto`).
+  (ghi chú 2026-11-16: kênh web→core-api nay là HTTP REST — "trả qua gRPC" đọc là "trả qua API HTTP `/api/*` của core-api (controller + DTO, gọi từ `web/src/lib/core-api.ts`)"; phần gRPC chỉ còn giá trị lịch sử.)
 - core-api: thêm `micro_content` vào danh sách `targetKind` của [launch-sync.dto.ts](../core-api/src/lti/dto/launch-sync.dto.ts), đi cùng ràng buộc ở §4.5.
 - Xong khi: tạo và đọc được micro-content có nguồn, LO và thứ tự; `LaunchSync` với `targetKind = micro_content` không còn lỗi 23514.
 - Phụ thuộc: bạn chạy `prisma migrate deploy`. Chạy migration trước khi đưa code core-api mới lên, vì core-api chạy ở chế độ watch và truy vấn sẽ lỗi nếu thiếu cột.

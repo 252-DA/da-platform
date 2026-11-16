@@ -298,5 +298,7 @@ Giữ lại phần mô tả để biết vì sao hai file đó tồn tại.
   tức một repo đọc file của repo khác mà không pin gì cả. Cả hai giờ cùng đọc
   `contracts/proto/`. Đường dẫn runtime không đổi (`process.cwd()/proto/`), chỉ
   đổi nguồn của mount và COPY.
+  (ghi chú 2026-11-16: kênh web→core-api nay là HTTP REST, `core_api.proto` không còn
+  được dùng; ghi chú 2026-09-28 trên chỉ còn giá trị lịch sử.)
 - Giao tiếp nội bộ Compose/K3s chưa dùng TLS; bảo mật transport là phase riêng sau khi service boundary ổn định.
 - ~~`embedding-service`, `mcp-service`, `document-inspector` sẽ là repo Git độc lập (§3)~~ → **quyết định lại 2026-09-28: giữ in-tree trong `da-platform`**, cùng lý do với `service-sdk` ở §5. Workflow `.github/` sẵn có trong các thư mục đó hiện **không chạy** (GitHub chỉ đọc `.github/workflows/` ở root repo) — giữ lại để dùng nếu sau này tách thật. Thứ tự **chạy được** (không phải thứ tự scaffold) vẫn đi từ `service-sdk` → `embedding-service` → `packages-ai` (`GrpcEmbedder`) → `mcp-service`, theo đúng §9.
