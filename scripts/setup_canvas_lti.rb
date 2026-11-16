@@ -47,12 +47,33 @@ configuration_params = {
     # gửi báo cáo chấm về SpeedGrader. Xem docs/essay-asset-processor.md.
     "https://purl.imsglobal.org/spec/lti/scope/noticehandlers",
     "https://purl.imsglobal.org/spec/lti/scope/asset.readonly",
-    "https://purl.imsglobal.org/spec/lti/scope/report"
+    "https://purl.imsglobal.org/spec/lti/scope/report",
+    # NRPS: đọc danh sách lớp để biết cả sinh viên chưa từng mở DA
+    # (core-api RosterSyncService). Xem docs/canvas_lti_setup.md.
+    "https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly"
   ],
   domain: tool_domain,
   tool_id: "da-platform-local",
   privacy_level: "public",
-  custom_fields: {},
+  # Biến Canvas được mở rộng thành giá trị thật ở mỗi launch và đi trong claim
+  # .../lti/claim/custom. Biến không có ngữ cảnh (ví dụ $Canvas.assignment.* khi
+  # mở từ menu khóa học) được Canvas để nguyên chuỗi "$Canvas...", nên phía
+  # nhận phải coi chuỗi bắt đầu bằng "$" là không có giá trị.
+  # $Canvas.module.id / moduleItem.id chỉ có khi launch từ một module item, không
+  # có ở launch Deep Linking của module_menu_modal.
+  custom_fields: {
+    canvas_course_id: "$Canvas.course.id",
+    canvas_user_id: "$Canvas.user.id",
+    canvas_module_id: "$Canvas.module.id",
+    canvas_module_item_id: "$Canvas.moduleItem.id",
+    canvas_assignment_id: "$Canvas.assignment.id",
+    assignment_points: "$Canvas.assignment.pointsPossible",
+    assignment_due: "$Canvas.assignment.dueAt.iso8601",
+    assignment_unlock: "$Canvas.assignment.unlockAt.iso8601",
+    assignment_lock: "$Canvas.assignment.lockAt.iso8601",
+    assignment_attempts: "$Canvas.assignment.allowedAttempts",
+    assignment_published: "$Canvas.assignment.published"
+  },
   launch_settings: {
     text: "DA Platform#{menu_suffix}",
     display_type: "full_width_in_context"
@@ -66,7 +87,34 @@ configuration_params = {
       target_link_uri: "#{tool_base_url}/"
     },
     {
+      # Nút chat ở thanh trên của Canvas, mở thành ngăn bên ở mọi trang. Cần cờ
+      # top_navigation_placement của root account. custom_fields đi trong id_token
+      # đã ký; launch route đọc target_kind=chat để vào thẳng trang chat của khóa
+      # học đang mở (không có khóa học thì báo rõ).
+      # Công cụ được ghim chỉ hiện icon (16x16), không có chữ; thiếu icon_url thì
+      # Canvas tự vẽ một ô chữ cái khó nhận ra. Tên ở đây là tiêu đề ngăn bên.
+      placement: "top_navigation",
+      enabled: true,
+      message_type: "LtiResourceLinkRequest",
+      text: "Trợ giảng AI#{menu_suffix}",
+      icon_url: "#{tool_base_url}/icons/tro-giang-ai.svg",
+      target_link_uri: "#{tool_base_url}/",
+      custom_fields: { target_kind: "chat" }
+    },
+    {
       placement: "module_menu_modal",
+      enabled: true,
+      message_type: "LtiDeepLinkingRequest",
+      text: "Sinh quiz bằng DA#{menu_suffix}",
+      target_link_uri: "#{tool_base_url}/lti/deep-link",
+      selection_width: 1100,
+      selection_height: 800
+    },
+    {
+      # Menu "+" của trang Assignments: Canvas tạo thẳng Assignment từ content item
+      # có lineItem, không gắn module nào (deep link route nhận launch không module
+      # khi placement này nằm trong ?data=JWT).
+      placement: "course_assignments_menu",
       enabled: true,
       message_type: "LtiDeepLinkingRequest",
       text: "Sinh quiz bằng DA#{menu_suffix}",
@@ -96,7 +144,8 @@ if registration
     existing_configuration = existing_configuration.with_indifferent_access
     wanted_placements = configuration_params[:placements].map { |p| p[:placement] }
     configuration_params[:placements] += Array(existing_configuration[:placements]).reject { |p| wanted_placements.include?(p["placement"] || p[:placement]) }
-    configuration_params[:custom_fields] = existing_configuration[:custom_fields] || {}
+    # Giữ custom field đã có từ nơi khác, nhưng giá trị khai báo ở đây thắng.
+    configuration_params[:custom_fields] = (existing_configuration[:custom_fields] || {}).to_h.merge(configuration_params[:custom_fields])
     configuration_params[:scopes] |= Array(existing_configuration[:scopes])
   end
   registration = Lti::UpdateRegistrationService.call(

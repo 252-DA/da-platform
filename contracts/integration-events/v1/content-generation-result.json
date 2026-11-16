@@ -1,0 +1,473 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/content-generation-result.json",
+  "title": "CONTENT_GENERATION_RESULT",
+  "description": "Vòng đời một yêu cầu sinh học liệu (content_generation_requests): content-generation worker (worker/runners/content_generation_worker.py) → core-api (core-api/src/content-generation/content-generation-result.handler.ts), hàng đợi worker_results. Mỗi lệnh CONTENT_GENERATION_REQUESTED có tối đa ba kết quả, theo status đích của request: RUNNING khi worker bắt đầu chạy, rồi đúng một trong SUCCEEDED (kèm câu/card đã qua vòng kiểm chứng) hoặc FAILED (lệnh sai, hoặc lần thử cuối vẫn lỗi; giữa các lần thử request vẫn RUNNING). result_id = CONTENT_GENERATION_RESULT.<event_id của lệnh>.<RUNNING|SUCCEEDED|FAILED>, source_event_id = event_id của lệnh. core-api chỉ áp dụng khi request còn QUEUED/RUNNING (không bao giờ đè SUCCEEDED/FAILED/CANCELLED), và áp dụng SUCCEEDED trong một transaction: giữ/tạo lessons theo (course_id, lo_id), upsert quiz_items hoặc lesson_cards theo id (chỉ ghi đè bản còn GENERATED_DRAFT, kể cả verification_status/verification_evidence), cập nhật request. LO không còn hiện hành thì request FAILED và không ghi gì. Thay cho CONTENT_GENERATION_STARTED/COMPLETED/FAILED (thiết kế cũ, chưa từng có producer).",
+  "type": "object",
+  "allOf": [{ "$ref": "worker-result-envelope.json" }],
+  "properties": {
+    "kind": { "const": "CONTENT_GENERATION_RESULT" },
+    "payload": {
+      "oneOf": [
+        { "$ref": "content-generation-result.json#/definitions/running" },
+        { "$ref": "content-generation-result.json#/definitions/succeededQuiz" },
+        { "$ref": "content-generation-result.json#/definitions/succeededCard" },
+        { "$ref": "content-generation-result.json#/definitions/succeededRelations" },
+        { "$ref": "content-generation-result.json#/definitions/succeededMicroOutline" },
+        { "$ref": "content-generation-result.json#/definitions/succeededVideoScript" },
+        { "$ref": "content-generation-result.json#/definitions/succeededMicroQuiz" },
+        { "$ref": "content-generation-result.json#/definitions/failed" }
+      ]
+    }
+  },
+  "definitions": {
+    "uuid": { "type": "string", "format": "uuid" },
+    "contentType": {
+      "enum": ["quiz", "card", "relations", "micro_outline", "video_script", "micro_quiz"],
+      "description": "content_generation_requests.type; core-api đối chiếu với dòng request."
+    },
+    "running": {
+      "type": "object",
+      "description": "Worker bắt đầu chạy: QUEUED → RUNNING, last_error = NULL. Mọi lần thử của job gốc gửi cùng result_id.",
+      "properties": {
+        "request_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "course_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "content_type": { "$ref": "content-generation-result.json#/definitions/contentType" },
+        "status": { "const": "RUNNING" }
+      },
+      "required": ["request_id", "course_id", "content_type", "status"],
+      "additionalProperties": false
+    },
+    "failed": {
+      "type": "object",
+      "description": "QUEUED/RUNNING → FAILED với last_error = error; generated_count giữ nguyên. course_id/content_type là null khi job hỏng tới mức không đọc được (request_id lấy từ aggregate_id của outbox).",
+      "properties": {
+        "request_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "course_id": { "oneOf": [{ "$ref": "content-generation-result.json#/definitions/uuid" }, { "type": "null" }] },
+        "content_type": { "oneOf": [{ "$ref": "content-generation-result.json#/definitions/contentType" }, { "type": "null" }] },
+        "status": { "const": "FAILED" },
+        "error": { "type": "string", "minLength": 1, "maxLength": 4000 }
+      },
+      "required": ["request_id", "course_id", "content_type", "status", "error"],
+      "additionalProperties": false
+    },
+    "succeededQuiz": {
+      "type": "object",
+      "description": "QUEUED/RUNNING → SUCCEEDED, generated_count = số câu gửi về (= quiz_items.length). Câu bị loại không được gửi để lưu, chỉ được đếm trong rejected.",
+      "properties": {
+        "request_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "course_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "content_type": { "const": "quiz" },
+        "status": { "const": "SUCCEEDED" },
+        "lo_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "generated_count": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "quiz_items": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": { "$ref": "content-generation-result.json#/definitions/quizItem" }
+        },
+        "rejected": { "$ref": "content-generation-result.json#/definitions/rejectedList" }
+      },
+      "required": [
+        "request_id",
+        "course_id",
+        "content_type",
+        "status",
+        "lo_id",
+        "generated_count",
+        "quiz_items",
+        "rejected"
+      ],
+      "additionalProperties": false
+    },
+    "succeededCard": {
+      "type": "object",
+      "description": "Như succeededQuiz cho lesson_cards. Thứ tự trong mảng là thứ tự học; card mới nối tiếp vị trí lớn nhất của lesson, card đã có giữ vị trí cũ.",
+      "properties": {
+        "request_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "course_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "content_type": { "const": "card" },
+        "status": { "const": "SUCCEEDED" },
+        "lo_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "generated_count": { "type": "integer", "minimum": 1, "maximum": 20 },
+        "lesson_cards": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "description": "Worker sinh 1–6 card (MAX_CARD_COUNT); 20 là trần an toàn của hợp đồng.",
+          "items": { "$ref": "content-generation-result.json#/definitions/lessonCard" }
+        },
+        "rejected": { "$ref": "content-generation-result.json#/definitions/rejectedList" }
+      },
+      "required": [
+        "request_id",
+        "course_id",
+        "content_type",
+        "status",
+        "lo_id",
+        "generated_count",
+        "lesson_cards",
+        "rejected"
+      ],
+      "additionalProperties": false
+    },
+    "succeededRelations": {
+      "type": "object",
+      "description": "Dựng đồ thị quan hệ: knowledge_relations vẫn do worker ghi (ngoài đợt này); core-api chỉ cập nhật request, generated_count = số quan hệ đã ghi.",
+      "properties": {
+        "request_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "course_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "content_type": { "const": "relations" },
+        "status": { "const": "SUCCEEDED" },
+        "generated_count": { "type": "integer", "minimum": 0, "maximum": 2147483647 }
+      },
+      "required": ["request_id", "course_id", "content_type", "status", "generated_count"],
+      "additionalProperties": false
+    },
+    "microOutlineSection": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "pattern": "\\S", "maxLength": 255 },
+        "summary": { "type": "string" },
+        "page_from": { "type": "integer", "minimum": 1 },
+        "page_to": { "type": "integer", "minimum": 1 },
+        "suggested_lo_id": {
+          "oneOf": [
+            { "$ref": "content-generation-result.json#/definitions/uuid" },
+            { "type": "null" }
+          ]
+        },
+        "low_text": { "type": "boolean" },
+        "lo_rationale": { "type": ["string", "null"] }
+      },
+      "required": ["title", "summary", "page_from", "page_to", "suggested_lo_id", "low_text"],
+      "additionalProperties": false
+    },
+    "succeededMicroOutline": {
+      "type": "object",
+      "properties": {
+        "request_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "course_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "content_type": { "const": "micro_outline" },
+        "status": { "const": "SUCCEEDED" },
+        "document_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "generated_count": { "type": "integer", "minimum": 1, "maximum": 20 },
+        "sections": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": { "$ref": "content-generation-result.json#/definitions/microOutlineSection" }
+        }
+      },
+      "required": ["request_id", "course_id", "content_type", "status", "document_id", "generated_count", "sections"],
+      "additionalProperties": false
+    },
+    "videoScriptScene": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "pattern": "\\S", "maxLength": 255 },
+        "bullets": {
+          "type": "array",
+          "items": { "$ref": "content-generation-result.json#/definitions/nonEmptyText" },
+          "maxItems": 6
+        },
+        "narration": { "$ref": "content-generation-result.json#/definitions/nonEmptyText" },
+        "slide_page": { "type": ["integer", "null"], "minimum": 1 },
+        "duration_sec": { "type": ["number", "null"], "minimum": 1 },
+        "check": {
+          "type": "object",
+          "properties": {
+            "status": { "$ref": "content-generation-result.json#/definitions/verificationStatus" },
+            "verdict": { "type": ["string", "null"] },
+            "reason": { "type": ["string", "null"] },
+            "writer_model": { "type": ["string", "null"] },
+            "judge_model": { "type": ["string", "null"] },
+            "source_chunk_ids": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["status"]
+        }
+      },
+      "required": ["title", "bullets", "narration"],
+      "additionalProperties": true
+    },
+    "succeededVideoScript": {
+      "type": "object",
+      "properties": {
+        "request_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "course_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "content_type": { "const": "video_script" },
+        "status": { "const": "SUCCEEDED" },
+        "micro_content_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "generated_count": { "type": "integer", "minimum": 1, "maximum": 20 },
+        "script": {
+          "type": "object",
+          "properties": {
+            "voice": { "type": "string", "minLength": 1 },
+            "source_document_id": {
+              "oneOf": [
+                { "$ref": "content-generation-result.json#/definitions/uuid" },
+                { "type": "null" }
+              ]
+            },
+            "source_page_from": { "type": ["integer", "null"], "minimum": 1 },
+            "source_page_to": { "type": ["integer", "null"], "minimum": 1 },
+            "scenes": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 20,
+              "items": { "$ref": "content-generation-result.json#/definitions/videoScriptScene" }
+            }
+          },
+          "required": ["scenes"],
+          "additionalProperties": true
+        },
+        "rejected": { "$ref": "content-generation-result.json#/definitions/rejectedList" }
+      },
+      "required": ["request_id", "course_id", "content_type", "status", "micro_content_id", "generated_count", "script", "rejected"],
+      "additionalProperties": false
+    },
+    "succeededMicroQuiz": {
+      "type": "object",
+      "properties": {
+        "request_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "course_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "content_type": { "const": "micro_quiz" },
+        "status": { "const": "SUCCEEDED" },
+        "micro_content_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "lo_id": {
+          "oneOf": [
+            { "$ref": "content-generation-result.json#/definitions/uuid" },
+            { "type": "null" }
+          ]
+        },
+        "generated_count": { "type": "integer", "minimum": 1, "maximum": 20 },
+        "quiz_items": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": { "$ref": "content-generation-result.json#/definitions/quizItem" }
+        },
+        "rejected": { "$ref": "content-generation-result.json#/definitions/rejectedList" }
+      },
+      "required": ["request_id", "course_id", "content_type", "status", "micro_content_id", "generated_count", "quiz_items", "rejected"],
+      "additionalProperties": false
+    },
+    "rejectedList": {
+      "type": "array",
+      "maxItems": 100,
+      "description": "Phần tử bị loại: judge vẫn thấy không bám nguồn sau lượt sửa cuối, hoặc đáp án sai dạng. Không lưu thành câu/card; core-api đếm vào content_generation_requests.verification_summary.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "reason": { "type": "string", "minLength": 1, "maxLength": 300 },
+          "regeneration_attempts": { "type": "integer", "minimum": 0, "maximum": 100 }
+        },
+        "required": ["reason", "regeneration_attempts"],
+        "additionalProperties": false
+      }
+    },
+    "verificationStatus": {
+      "enum": ["UNVERIFIED", "VERIFIED", "INCONCLUSIVE", "FLAGGED"],
+      "description": "CHECK của quiz_items/lesson_cards.verification_status. Worker sinh học liệu gửi VERIFIED (judge nói bản này bám nguồn), INCONCLUSIVE (bước chấm hỏng hoặc judge không trả verdict cho bản này), FLAGGED (verdict gần nhất cho bản này là không đạt nhưng vòng chấm sau hỏng nên vẫn giữ)."
+    },
+    "verificationEvidence": {
+      "type": "object",
+      "description": "Hồ sơ kiểm chứng, lưu nguyên vào verification_evidence. Judge chỉ kiểm bám nguồn (criterion = source_grounding); requested_bloom_level là mức Bloom được YÊU CẦU khi sinh, không có bước nào đánh giá mức Bloom thật của câu.",
+      "properties": {
+        "criterion": { "const": "source_grounding" },
+        "judge_verdict": {
+          "oneOf": [
+            { "enum": ["supported", "contradicted", "not_enough_evidence"] },
+            { "type": "null" }
+          ]
+        },
+        "judge_reason": { "type": ["string", "null"] },
+        "inconclusive_reason": { "oneOf": [{ "enum": ["judge_failed", "no_verdict"] }, { "type": "null" }] },
+        "regeneration_attempts": { "type": "integer", "minimum": 0 },
+        "regenerations_applied": { "type": "integer", "minimum": 0 },
+        "history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "round": { "type": "integer", "minimum": 0 },
+              "verdict": { "type": "string" },
+              "reason": { "type": ["string", "null"] }
+            },
+            "required": ["round", "verdict"]
+          }
+        },
+        "writer_model": { "type": ["string", "null"] },
+        "judge_model": { "type": ["string", "null"] },
+        "judge_is_writer": { "type": "boolean" },
+        "source_chunk_ids": { "type": "array", "items": { "type": "string" } },
+        "requested_bloom_level": { "type": ["integer", "null"], "minimum": 1, "maximum": 6 }
+      },
+      "required": ["criterion", "judge_verdict", "regeneration_attempts", "writer_model", "judge_model"]
+    },
+    "nonEmptyText": { "type": "string", "pattern": "\\S" },
+    "quizItem": {
+      "type": "object",
+      "description": "Một dòng quiz_items ở dạng cột. quiz_id tất định theo (LO, kiểu câu, lời câu hỏi) nên áp lại không nhân bản. Dạng options/correct_answer theo kiểu câu: core-api/src/quiz/question-types.ts (normalizeAnswerKey) và CHECK quiz_items_correct_answer_shape_check.",
+      "properties": {
+        "quiz_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "type": { "enum": ["MCQ_SINGLE", "MCQ_MULTI", "TRUE_FALSE", "FILL_BLANK", "SHORT_ANSWER"] },
+        "question": { "$ref": "content-generation-result.json#/definitions/nonEmptyText" },
+        "options": {
+          "oneOf": [
+            { "type": "array", "items": { "$ref": "content-generation-result.json#/definitions/nonEmptyText" } },
+            { "type": "null" }
+          ]
+        },
+        "correct_answer": {},
+        "explanation": { "type": ["string", "null"] },
+        "bloom_level": { "type": ["integer", "null"], "minimum": 1, "maximum": 6 },
+        "source_chunk_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "content-generation-result.json#/definitions/uuid" }
+        },
+        "verification_status": { "$ref": "content-generation-result.json#/definitions/verificationStatus" },
+        "verification_evidence": { "$ref": "content-generation-result.json#/definitions/verificationEvidence" }
+      },
+      "required": [
+        "quiz_id",
+        "type",
+        "question",
+        "options",
+        "correct_answer",
+        "explanation",
+        "bloom_level",
+        "source_chunk_ids",
+        "verification_status",
+        "verification_evidence"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "MCQ_SINGLE" } } },
+          "then": {
+            "properties": {
+              "options": { "type": "array", "minItems": 4, "maxItems": 4, "uniqueItems": true },
+              "correct_answer": { "$ref": "content-generation-result.json#/definitions/nonEmptyText" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "MCQ_MULTI" } } },
+          "then": {
+            "properties": {
+              "options": { "type": "array", "minItems": 4, "maxItems": 6, "uniqueItems": true },
+              "correct_answer": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "uniqueItems": true,
+                "items": { "$ref": "content-generation-result.json#/definitions/nonEmptyText" }
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "TRUE_FALSE" } } },
+          "then": {
+            "properties": {
+              "options": { "const": ["Đúng", "Sai"] },
+              "correct_answer": { "enum": ["Đúng", "Sai"] }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "FILL_BLANK" } } },
+          "then": {
+            "properties": {
+              "question": { "type": "string", "pattern": "_{3,}" },
+              "options": { "type": "null" },
+              "correct_answer": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": { "$ref": "content-generation-result.json#/definitions/nonEmptyText" }
+              }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "SHORT_ANSWER" } } },
+          "then": {
+            "properties": {
+              "options": { "type": "null" },
+              "correct_answer": {
+                "type": "object",
+                "properties": {
+                  "model_answer": { "$ref": "content-generation-result.json#/definitions/nonEmptyText" },
+                  "rubric": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 6,
+                    "uniqueItems": true,
+                    "items": { "$ref": "content-generation-result.json#/definitions/nonEmptyText" }
+                  }
+                },
+                "required": ["model_answer", "rubric"],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      ]
+    },
+    "lessonCard": {
+      "type": "object",
+      "description": "Một dòng lesson_cards. card_id tất định theo (LO, tiêu đề đã chuẩn hoá). content là object lưu nguyên vào lesson_cards.content.",
+      "properties": {
+        "card_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
+        "title": { "type": "string", "pattern": "\\S", "maxLength": 255 },
+        "content": {
+          "type": "object",
+          "properties": {
+            "key_insight": { "$ref": "content-generation-result.json#/definitions/nonEmptyText" },
+            "bullets": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "content-generation-result.json#/definitions/nonEmptyText" }
+            },
+            "example": { "type": ["string", "null"] },
+            "misconception": { "type": ["string", "null"] },
+            "check_question": { "$ref": "content-generation-result.json#/definitions/nonEmptyText" },
+            "check_answer": { "$ref": "content-generation-result.json#/definitions/nonEmptyText" },
+            "model_id": { "type": ["string", "null"] }
+          },
+          "required": [
+            "key_insight",
+            "bullets",
+            "example",
+            "misconception",
+            "check_question",
+            "check_answer",
+            "model_id"
+          ],
+          "additionalProperties": false
+        },
+        "source_chunk_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "content-generation-result.json#/definitions/uuid" }
+        },
+        "verification_status": { "$ref": "content-generation-result.json#/definitions/verificationStatus" },
+        "verification_evidence": { "$ref": "content-generation-result.json#/definitions/verificationEvidence" }
+      },
+      "required": [
+        "card_id",
+        "title",
+        "content",
+        "source_chunk_ids",
+        "verification_status",
+        "verification_evidence"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

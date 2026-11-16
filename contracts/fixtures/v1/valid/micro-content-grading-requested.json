@@ -1,0 +1,31 @@
+{
+  "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaab1",
+  "event_type": "MICRO_CONTENT_GRADING_REQUESTED",
+  "aggregate_type": "micro_content_attempt",
+  "aggregate_id": "44444444-4444-4444-8444-444444444444",
+  "payload": {
+    "attempt_id": "44444444-4444-4444-8444-444444444444",
+    "course_id": "33333333-3333-4333-8333-333333333333",
+    "micro_content_id": "22222222-2222-4222-8222-222222222222",
+    "answer_ids": [
+      "77777777-7777-4777-8777-777777777777"
+    ],
+    "answers": [
+      {
+        "answer_id": "77777777-7777-4777-8777-777777777777",
+        "grading_input": {
+          "type": "SHORT_ANSWER",
+          "question": "Hàm thuần khiết là gì?",
+          "correct_answer": {
+            "model_answer": "Cùng input cùng output, không tác dụng phụ.",
+            "rubric": [
+              "Cùng input cùng output",
+              "Không tác dụng phụ"
+            ]
+          }
+        },
+        "chosen_answer": "Không đổi biến bên ngoài."
+      }
+    ]
+  }
+}

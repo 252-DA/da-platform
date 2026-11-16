@@ -1,0 +1,27 @@
+{
+  "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab",
+  "event_type": "ESSAY_GRADING_REQUESTED",
+  "aggregate_type": "essay_submission",
+  "aggregate_id": "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+  "payload": {
+    "essay_submission_id": "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+    "course_id": "33333333-3333-4333-8333-333333333333",
+    "user_id": null,
+    "title": "Tiểu luận kiến trúc Lambda",
+    "instructions": "Phân tích ba lớp và một đánh đổi.",
+    "rubric": [
+      {
+        "criterion": "Ba lớp",
+        "description": "Vai trò batch, speed, serving",
+        "points": 6
+      },
+      {
+        "criterion": "Đánh đổi",
+        "description": "",
+        "points": 4
+      }
+    ],
+    "max_score": 10,
+    "assets": []
+  }
+}

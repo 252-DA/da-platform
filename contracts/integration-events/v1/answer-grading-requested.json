@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://da-platform.dev/contracts/integration-events/v1/answer-grading-requested.json",
   "title": "ANSWER_GRADING_REQUESTED",
-  "description": "Core command → answer-grading worker (queue: answer_grading, worker/runners/answer_grading_worker.py). Phát khi một lượt nộp có câu tự luận (SHORT_ANSWER): core-api quiz/answer-grading.ts. Worker chấm từng câu trong essay_attempt_ids theo đề lúc nộp (quiz_attempts.grading_input), rồi chuyển cả attempt_ids từ ags_status AWAITING_GRADE sang PENDING khi mọi câu đã GRADED. Câu AI không chấm được chuyển NEEDS_REVIEW, không có điểm; core-api phát lại sự kiện này khi giảng viên cho AI chấm lại một câu (RetryEssayGrading).",
+  "description": "Core command → answer-grading worker (queue: answer_grading, worker/runners/answer_grading_worker.py). Phát khi một lượt nộp có câu tự luận (SHORT_ANSWER): core-api quiz/answer-grading.ts. Lệnh tự chứa: `answers` mang đề lúc nộp (quiz_attempts.grading_input) và bài làm của từng câu cần chấm, worker không đọc quiz_attempts. Worker chấm rồi trả QUIZ_GRADING_RESULT (quiz-grading-result.json) qua hàng đợi worker_results; core-api ghi điểm và mở khoá AGS khi mọi câu của lượt nộp GRADED. Câu AI không chấm được về NEEDS_REVIEW, không có điểm; core-api phát lại lệnh này (chỉ câu đó) khi giảng viên cho AI chấm lại (RetryEssayGrading). Sự kiện cũ không có `answers` (trước 2026-11-07): worker trả NEEDS_REVIEW với reason LEGACY_COMMAND cho mọi câu trong essay_attempt_ids, không đọc DB để bù.",
   "type": "object",
   "allOf": [{ "$ref": "envelope.json" }],
   "properties": {
@@ -21,16 +21,42 @@
           "type": "array",
           "minItems": 1,
           "items": { "type": "string", "format": "uuid" },
-          "description": "Mọi câu của lượt nộp: mọi câu GRADED mới mở khoá AGS cho cả lượt."
+          "description": "Mọi câu của lượt nộp. Worker mới không dùng (core-api tự gom lượt nộp khi áp dụng kết quả); giữ để worker bản cũ còn chạy được trong lúc chuyển, đợt dọn sau bỏ."
         },
         "essay_attempt_ids": {
           "type": "array",
           "minItems": 1,
           "items": { "type": "string", "format": "uuid" },
-          "description": "Các câu tự luận cần chấm, là tập con của attempt_ids."
+          "description": "Các câu tự luận cần chấm, là tập con của attempt_ids và đúng bằng tập attempt_id của `answers`. Giữ vì cùng lý do với attempt_ids."
+        },
+        "answers": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Dữ liệu chấm của từng câu trong essay_attempt_ids.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "attempt_id": { "type": "string", "format": "uuid" },
+              "grading_input": {
+                "type": "object",
+                "description": "Snapshot đề lúc nộp, đúng quiz_attempts.grading_input (core-api gradingInput()).",
+                "properties": {
+                  "type": { "type": "string" },
+                  "question": { "type": "string" },
+                  "correct_answer": {}
+                },
+                "required": ["type", "question", "correct_answer"]
+              },
+              "chosen_answer": {
+                "description": "quiz_attempts.chosen_answer: bài làm người học (văn bản với SHORT_ANSWER)."
+              }
+            },
+            "required": ["attempt_id", "grading_input", "chosen_answer"],
+            "additionalProperties": false
+          }
         }
       },
-      "required": ["submission_id", "course_id", "attempt_ids", "essay_attempt_ids"],
+      "required": ["submission_id", "course_id", "attempt_ids", "essay_attempt_ids", "answers"],
       "additionalProperties": false
     }
   }

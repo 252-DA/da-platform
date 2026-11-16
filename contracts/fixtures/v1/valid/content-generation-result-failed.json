@@ -1,0 +1,13 @@
+{
+  "result_id": "CONTENT_GENERATION_RESULT.0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c01.FAILED",
+  "kind": "CONTENT_GENERATION_RESULT",
+  "source_event_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c01",
+  "occurred_at": "2026-11-07T10:30:15.123Z",
+  "payload": {
+    "request_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c02",
+    "course_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c03",
+    "content_type": "quiz",
+    "status": "FAILED",
+    "error": "No grounded source chunks available for learning outcome 0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c04"
+  }
+}

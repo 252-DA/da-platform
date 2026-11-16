@@ -8,11 +8,11 @@ x-common-env: &common-env
   QDRANT__COLLECTION_NAME: documents
   QDRANT__VECTOR_SIZE: "1024"
   # MinIO
-  MINIO__ENDPOINT: minio:9000
-  MINIO__ACCESS_KEY: minioadmin
-  MINIO__SECRET_KEY: minioadmin
-  MINIO__BUCKET_NAME: documents
-  MINIO__SECURE: "false"
+  MINIO__ENDPOINT: ${MINIO__ENDPOINT:-minio:9000}
+  MINIO__ACCESS_KEY: ${MINIO__ACCESS_KEY:-minioadmin}
+  MINIO__SECRET_KEY: ${MINIO__SECRET_KEY:-minioadmin}
+  MINIO__BUCKET_NAME: ${MINIO__BUCKET_NAME:-documents}
+  MINIO__SECURE: "${MINIO__SECURE:-false}"
   # PostgreSQL
   SQL__ENABLED: "true"
   SQL__DSN: postgresql://postgres:postgres@postgres:5432/chunking
@@ -44,12 +44,6 @@ x-common-env: &common-env
   DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
   # Metrics
   METRICS__ENABLED: "true"
-
-x-chunking-v2-volumes: &chunking-v2-volumes
-  - ./scripts/dev_reload.py:/app/dev_reload.py:ro
-  - ./packages-ai/src:/app/src
-  - ./packages-ai/pyproject.toml:/app/pyproject.toml:ro
-  - ./packages-ai/uv.lock:/app/uv.lock:ro
 
 x-worker-volumes: &worker-volumes
   - ./scripts/dev_reload.py:/app/worker/dev_reload.py:ro
@@ -152,48 +146,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-    networks:
-      default: {}
-
-  # ─────────────────────────────────────────────────────────
-  # Application — gRPC server (LEGACY)
-  # Bề mặt trùng lặp với core-api: core-api enqueue job qua BullMQ, không gọi
-  # gRPC/HTTP của packages-ai. Giữ dưới profile "legacy" trong lúc migration,
-  # xóa hẳn sau khi E2E remote embedding ổn định — xem
-  # docs/embedding-service-migration.md §9 bước 13.
-  # Image packages-ai chưa cài da_service_sdk (Dockerfile thiếu
-  # --extra remote-embedding) nên nhóm legacy vẫn phải dùng BGE cục bộ qua
-  # EMBEDDER__PROVIDER mặc định của common-env.
-  # ─────────────────────────────────────────────────────────
-  grpc-server:
-    profiles: ["legacy"]
-    build:
-      context: ./packages-ai
-      dockerfile: Dockerfile
-    command: ["dev_reload", "document_chunk.delivery.grpc.server", "/app/src"]
-    environment:
-      <<: *common-env
-      PYTHONPATH: /app/src
-      GRPC__HOST: "0.0.0.0"
-      GRPC__PORT: "50051"
-      GRPC__MAX_WORKERS: "10"
-      METRICS__PORT: "9090"
-    ports:
-      - "50051:50051"
-      - "9090:9090"
-    volumes: *chunking-v2-volumes
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      qdrant:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-      neo4j:
-        condition: service_healthy
-    restart: unless-stopped
+      start_period: 60s
     networks:
       default: {}
 
@@ -206,79 +159,8 @@ services:
     depends_on:
       - web
     restart: unless-stopped
-    networks:
-      default: {}
-
-  # ─────────────────────────────────────────────────────────
-  # HTTP API (FastAPI / Swagger) — LEGACY, trùng với core-api.
-  # Retire cùng grpc-server, xem docs/embedding-service-migration.md §9 bước 13.
-  # ─────────────────────────────────────────────────────────
-  http-api:
-    profiles: ["legacy"]
-    build:
-      context: ./packages-ai
-      dockerfile: Dockerfile
-    command: ["uvicorn", "document_chunk.delivery.http.api:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app/src"]
-    environment:
-      <<: *common-env
-      PYTHONPATH: /app/src
-    ports:
-      - "8000:8000"
-    volumes: *chunking-v2-volumes
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    depends_on:
-      postgres:
-        condition: service_healthy
-      qdrant:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      default: {}
-
-  # ─────────────────────────────────────────────────────────
-  # MCP learning-context server — LEGACY, thay bằng mcp-service (§9 bước 11).
-  # Không publish port 8001 nữa: mcp-service giữ port đó. Truy cập nội bộ qua
-  # mcp-server:8001 vẫn hoạt động khi bật profile "legacy".
-  # ─────────────────────────────────────────────────────────
-  mcp-server:
-    profiles: ["legacy"]
-    build:
-      context: ./packages-ai
-      dockerfile: Dockerfile
-    command: ["dev_reload", "document_chunk.delivery.mcp.server", "/app/src"]
-    environment:
-      <<: *common-env
-      PYTHONPATH: /app/src
-      MCP__HOST: "0.0.0.0"
-      MCP__PORT: "8001"
-      MCP__PATH: /mcp
-      METRICS__ENABLED: "false"
-    volumes: *chunking-v2-volumes
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import socket; s=socket.create_connection(('127.0.0.1',8001),2); s.close()",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    depends_on:
-      postgres:
-        condition: service_healthy
-      qdrant:
-        condition: service_healthy
-      neo4j:
-        condition: service_healthy
-    restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
     networks:
       default: {}
 
@@ -298,6 +180,7 @@ services:
       CHOKIDAR_USEPOLLING: "true"
       REDIS_URL: redis://redis:6379
       CORE_API_INTERNAL_URL: http://core-api:4000
+      TUTOR_URL: http://ai-tutor:8010
       BFF_TO_CORE_PRIVATE_KEY_PATH: /keys/bff-to-core.pem
       BFF_TO_CORE_KEY_ID: bff-2026-05
       LTI_LMS_TYPE: ${LTI_LMS_TYPE:-openedx}
@@ -310,16 +193,15 @@ services:
       LTI_REDIRECT_URI: ${LTI_REDIRECT_URI:-http://localhost:3000/lti/launch}
       LTI_KEY_ID: ${LTI_KEY_ID:-ai-nextjs-1}
       LTI_CLIENT_ID: ${LTI_CLIENT_ID:-ai-nextjs-1}
+      # Đăng ký phụ "Trợ giảng AI" (mục riêng ở menu khóa học), cách nhau dấu phẩy.
+      LTI_EXTRA_CLIENT_IDS: ${LTI_EXTRA_CLIENT_IDS:-}
+      LTI_EXTRA_DEPLOYMENT_IDS: ${LTI_EXTRA_DEPLOYMENT_IDS:-}
       LTI_PRIVATE_KEY_PATH: /keys/lti.pem
       LTI_PUBLIC_KEY_PATH: /keys/lti.pub.pem
       LTI_COOKIE_SAMESITE: ${LTI_COOKIE_SAMESITE:-lax}
       LTI_COOKIE_SECURE: ${LTI_COOKIE_SECURE:-}
     volumes:
       - "./web:/app"
-      # Trước đây mount thẳng ./core-api/proto: web (repo riêng) với tay vào
-      # repo core-api, không pin, không version. Giờ cả hai service cùng đọc
-      # một nguồn duy nhất trong da-platform.
-      - "./contracts/proto:/app/proto:ro"
       - web_node_modules:/app/node_modules
       - web_next_cache:/app/.next
       - "./web/keys:/keys:ro"
@@ -329,6 +211,8 @@ services:
       - core-api
       - redis
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
     networks:
       default: {}
 
@@ -346,11 +230,11 @@ services:
       PORT: "4000"
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/chunking
       REDIS_URL: redis://redis:6379
-      MINIO__ENDPOINT: minio:9000
-      MINIO__ACCESS_KEY: minioadmin
-      MINIO__SECRET_KEY: minioadmin
-      MINIO__BUCKET_NAME: documents
-      MINIO__SECURE: "false"
+      MINIO__ENDPOINT: ${MINIO__ENDPOINT:-minio:9000}
+      MINIO__ACCESS_KEY: ${MINIO__ACCESS_KEY:-minioadmin}
+      MINIO__SECRET_KEY: ${MINIO__SECRET_KEY:-minioadmin}
+      MINIO__BUCKET_NAME: ${MINIO__BUCKET_NAME:-documents}
+      MINIO__SECURE: "${MINIO__SECURE:-false}"
       BFF_TO_CORE_PUBLIC_KEY_PATH: /app/keys/bff-to-core.pub.pem
       BFF_TO_CORE_JWT_ISSUER: web-bff
       BFF_TO_CORE_JWT_AUDIENCE: core-api
@@ -363,10 +247,17 @@ services:
       LTI_PLATFORM_URL: ${LTI_PLATFORM_URL:-http://local.edly.io}
       LTI_TOKEN_URL: ${LTI_TOKEN_URL:-}
       LTI_PRIVATE_KEY_PATH: /lti-keys/lti.pem
+      # Địa chỉ công khai của tool: AGS dựng URL trang xem bài làm gửi cho
+      # SpeedGrader từ origin của biến này (bài nộp basic_lti_launch). Thiếu thì
+      # điểm vẫn đẩy được, chỉ không kèm bài nộp.
+      LTI_REDIRECT_URI: ${LTI_REDIRECT_URI:-http://localhost:3000/lti/launch}
       AGS_ENABLED: ${AGS_ENABLED:-}
       AGS_POLL_INTERVAL_MS: ${AGS_POLL_INTERVAL_MS:-15000}
       # Đồng bộ đề cương từ trang Chương trình học của Canvas (REST API).
       CANVAS_API_URL: ${CANVAS_API_URL:-${CANVAS_PUBLIC_URL:-}}
+      # Để core-api đổi link Canvas mang tên miền công khai về CANVAS_API_URL
+      # khi CANVAS_API_URL là địa chỉ nội bộ (canvas-api.client.ts).
+      CANVAS_PUBLIC_URL: ${CANVAS_PUBLIC_URL:-}
       CANVAS_API_TOKEN: ${CANVAS_API_TOKEN:-}
       CANVAS_AUTO_SYNC_ENABLED: ${CANVAS_AUTO_SYNC_ENABLED:-true}
       CANVAS_SYNC_INTERVAL_MS: ${CANVAS_SYNC_INTERVAL_MS:-900000}
@@ -374,22 +265,29 @@ services:
       CI: "true"
     volumes:
       - "./core-api:/app"
-      # core_api.proto không còn nằm trong repo core-api — nó là contract
-      # giữa core-api và web nên sống ở contracts/proto/. Mount vào
-      # /app/proto vì grpc-server.service.ts đọc process.cwd()/proto/.
+      # llm_model_catalog.json dùng chung giữa ai-sdk và core-api, nằm ở
+      # contracts/proto/. Mount vào /app/proto vì model-catalog.ts đọc
+      # process.cwd()/proto/llm_model_catalog.json.
       - "./contracts/proto:/app/proto:ro"
       - core_api_node_modules:/app/node_modules
       - "./core-api/keys:/app/keys:ro"
       - "./web/keys:/lti-keys:ro"
+    # Canvas chạy trên máy host (cổng 3000). CANVAS_API_URL=http://canvas.docker:3000
+    # cho core-api gọi thẳng, không vòng qua tunnel. Dùng tên canvas.docker vì
+    # Canvas dev chấp nhận *.canvas.docker (VIRTUAL_HOST) còn host.docker.internal
+    # bị Rails chặn (403 Blocked hosts). Máy không đặt CANVAS_API_URL thì không dùng.
+    extra_hosts:
+      - "canvas.docker:host-gateway"
     ports:
       - "4000:4000"
-      - "50052:50051"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
     networks:
       default: {}
 
@@ -424,7 +322,7 @@ services:
       API__DIMENSIONS: ${EMBEDDING_API_DIMENSIONS:-}
       HF_HOME: /root/.cache/huggingface
     ports:
-      - "50061:50051"
+      - "${EMBEDDING_SERVICE_PORT:-50061}:50051"
       - "9095:9095"
     volumes:
       - hf_cache:/root/.cache/huggingface
@@ -441,6 +339,8 @@ services:
       retries: 30
       start_period: 120s
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
     networks:
       default: {}
 
@@ -477,6 +377,8 @@ services:
       embedding-service:
         condition: service_healthy
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
 
   enrichment-worker:
     build:
@@ -500,6 +402,8 @@ services:
       redis:
         condition: service_healthy
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
 
   content-generation-worker:
     build:
@@ -520,7 +424,7 @@ services:
       WORKER_CONCURRENCY: "2"
       # Ba vai trò trong sinh quiz, ba profile độc lập — cùng một process vẫn
       # gọi được hai model khác nhau. Để trống thì lấy TASK_DEFAULTS của catalog
-      # (viết câu: deepseek-chat, chấm: gemini-flash — judge phải khác model
+      # (viết câu: deepseek-chat, chấm: gemini-flash-lite — judge phải khác model
       # vừa viết câu, xem docs/quiz-generation-redesign.md §7.8).
       LLM_PROFILE__QUIZ_GENERATION: ${LLM_PROFILE__QUIZ_GENERATION:-}
       LLM_PROFILE__QUIZ_VERIFICATION: ${LLM_PROFILE__QUIZ_VERIFICATION:-}
@@ -543,6 +447,8 @@ services:
       mcp-service:
         condition: service_healthy
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
 
   # Chấm tự luận ngắn (hàng đợi answer_grading). Tách khỏi content-generation
   # worker để người học chờ điểm không phải xếp sau các lần sinh quiz hàng phút.
@@ -577,6 +483,43 @@ services:
       redis:
         condition: service_healthy
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+
+  # Worker sinh video AI cho Micro Content (hàng đợi micro_content_video: slide + TTS + ffmpeg)
+  micro-content-video-worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    entrypoint: *worker-entrypoint
+    command:
+      [
+        "dev_reload",
+        "worker.runners.micro_content_video_worker",
+        "/app/worker/worker",
+        "/app/packages-ai/src",
+        "/app/ai-sdk/src",
+      ]
+    environment:
+      <<: *common-env
+      WORKER_TYPE: micro_content_video
+      WORKER_CONCURRENCY: "1"
+      HEALTH_PORT: "8086"
+      METRICS__PORT: "9097"
+    ports:
+      - "8086:8086"
+      - "9097:9097"
+    volumes: *worker-volumes
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
 
   outbox-worker:
     build:
@@ -604,6 +547,8 @@ services:
       neo4j:
         condition: service_healthy
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
 
   # ─────────────────────────────────────────────────────────
   # mcp-service — split từ packages-ai/delivery/mcp. Không dùng Neo4j (đã
@@ -651,6 +596,51 @@ services:
       embedding-service:
         condition: service_healthy
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+    networks:
+      default: {}
+
+  # ─────────────────────────────────────────────────────────
+  # ai-tutor — chatbot bám tài liệu khóa học, ba chế độ truy xuất (vector, tools,
+  # graph; docs/chatbot-ba-che-do-ke-hoach.md). Không có DB: mọi dữ liệu đi qua
+  # công cụ của mcp-service. Chế độ do web truyền vào từng yêu cầu.
+  # Mặc định dùng Gemini 3.1 Flash-Lite cho các chế độ vector/tools/graph; đổi bằng
+  # LLM_PROFILE__TUTOR. Mã được mount và uvicorn --reload để sửa không phải build lại.
+  # ─────────────────────────────────────────────────────────
+  ai-tutor:
+    build:
+      context: .
+      dockerfile: ai-tutor/Dockerfile
+    command:
+      [
+        "python", "-m", "uvicorn", "ai_tutor.api:app",
+        "--host", "0.0.0.0", "--port", "8010",
+        "--reload", "--reload-dir", "/app/ai-tutor/src",
+      ]
+    environment:
+      PYTHONPATH: /app/ai-tutor/src
+      LEARNING_CONTEXT_MCP_URL: http://mcp-service:8001/mcp
+      LEARNING_CONTEXT_MCP_TIMEOUT_SECONDS: "30"
+      LLM_PROFILE__TUTOR: ${LLM_PROFILE__TUTOR:-gemini-flash-lite}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      TUTOR_MAX_TOOL_CALLS_TOOLS: ${TUTOR_MAX_TOOL_CALLS_TOOLS:-5}
+      TUTOR_MAX_TOOL_CALLS_GRAPH: ${TUTOR_MAX_TOOL_CALLS_GRAPH:-6}
+    volumes:
+      - ./ai-tutor/src:/app/ai-tutor/src
+    ports:
+      - "8010:8010"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8010/health').read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    depends_on:
+      mcp-service:
+        condition: service_healthy
+    restart: unless-stopped
     networks:
       default: {}
 
@@ -674,6 +664,8 @@ services:
       retries: 5
     profiles: ["tools"]
     restart: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
     networks:
       default: {}
 

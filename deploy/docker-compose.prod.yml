@@ -1,0 +1,572 @@
+# ─────────────────────────────────────────────────────────
+# da-platform — stack production trên một VM (docs/ke-hoach-deploy-cloud.md).
+#
+# Khác docker-compose.yml (dev) ở chỗ:
+#   - Image dựng sẵn từ CI, kéo từ GHCR theo ${IMAGE_TAG}; không build, không
+#     bind mount source, không dev_reload.
+#   - Không service nào publish port. Ra ngoài chỉ có cloudflared. (Port do
+#     Docker publish đi vòng qua UFW, nên không publish gì cả.)
+#   - Postgres/Redis/Qdrant/Neo4j chạy trong stack. Object storage là
+#     Cloudflare R2 (MINIO__* trỏ vào R2), không có MinIO.
+#   - Mỗi service nối Postgres bằng role riêng (deploy/postgres/roles.sql),
+#     không dùng tài khoản quản trị. Chỉ `migrate` và `db-roles` mới có nó.
+#   - Mọi mật khẩu/khóa đều bắt buộc đặt (`:?`): thiếu là compose báo lỗi.
+#
+# Chạy (từ thư mục gốc repo trên VM, thường /opt/da-platform):
+#   docker compose -f deploy/docker-compose.prod.yml --env-file .env.prod <lệnh>
+# Triển khai đầy đủ: deploy/deploy.sh <image-tag>. Danh sách biến:
+# deploy/.env.prod.example.
+#
+# Đường dẫn bind mount tính từ thư mục chứa file này (deploy/), nên ../keys là
+# <repo>/keys. Đổi bằng KEYS_DIR.
+# ─────────────────────────────────────────────────────────
+
+name: da-platform
+
+x-app: &app
+  restart: unless-stopped
+  # Giống dev: tắt IPv6 trong container để các lời gọi ra ngoài (Voyage, Gemini,
+  # R2, Canvas) không treo chờ AAAA không có đường đi.
+  sysctls:
+    net.ipv6.conf.all.disable_ipv6: 1
+
+x-storage-env: &storage-env
+  # Tên biến giữ MINIO__* vì code đọc tên đó; giá trị trỏ vào R2 (docs: R2 là S3).
+  MINIO__ENDPOINT: ${MINIO__ENDPOINT:?set MINIO__ENDPOINT, e.g. <account-id>.r2.cloudflarestorage.com}
+  MINIO__ACCESS_KEY: ${MINIO__ACCESS_KEY:?set MINIO__ACCESS_KEY}
+  MINIO__SECRET_KEY: ${MINIO__SECRET_KEY:?set MINIO__SECRET_KEY}
+  MINIO__BUCKET_NAME: ${MINIO__BUCKET_NAME:-documents}
+  MINIO__SECURE: "${MINIO__SECURE:-true}"
+  MINIO__REGION: ${MINIO__REGION:-auto}
+
+x-llm-env: &llm-env
+  # Model chọn bằng tên profile trong catalog của ai-sdk; để trống thì dùng mặc
+  # định của catalog. Đổi bằng trang /manage/models, không cần restart.
+  LLM_PROFILE: ${LLM_PROFILE:-}
+  LLM_PROFILE__ENRICHMENT: ${LLM_PROFILE__ENRICHMENT:-}
+  GEMINI_API_KEY: ${GEMINI_API_KEY:?set GEMINI_API_KEY (key riêng cho prod, không dùng free tier)}
+  DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+
+x-worker-env: &worker-env
+  APP__ENV: production
+  APP__LOG_LEVEL: INFO
+  APP__JSON_LOGS: "true"
+  QDRANT__HOST: qdrant
+  QDRANT__PORT: "6333"
+  QDRANT__API_KEY: ${QDRANT_API_KEY:?set QDRANT_API_KEY}
+  QDRANT__COLLECTION_NAME: documents
+  QDRANT__VECTOR_SIZE: "1024"
+  <<: [*storage-env, *llm-env]
+  SQL__ENABLED: "true"
+  SQL__DSN: postgresql://lms_ai_worker:${LMS_AI_WORKER_PASSWORD:?set LMS_AI_WORKER_PASSWORD}@postgres:5432/${POSTGRES_DB:?set POSTGRES_DB}
+  SQL__POOL_SIZE: "5"
+  NEO4J__ENABLED: "true"
+  NEO4J__URI: bolt://neo4j:7687
+  NEO4J__USERNAME: neo4j
+  NEO4J__PASSWORD: ${NEO4J_PASSWORD:?set NEO4J_PASSWORD}
+  NEO4J__DATABASE: neo4j
+  REDIS__HOST: redis
+  REDIS__PORT: "6379"
+  REDIS__PASSWORD: ${REDIS_PASSWORD:?set REDIS_PASSWORD}
+  EMBEDDER__PROVIDER: bge
+  EMBEDDER__BGE_MODEL: BAAI/bge-m3
+  EMBEDDER__BGE_USE_FP16: "true"
+  TRACING__ENABLED: "false"
+  METRICS__ENABLED: "true"
+
+# Cả 6 worker dùng chung MỘT image (da-worker), chỉ khác command.
+# entrypoint là `python -m`, không phải `uv run --frozen python -m` của
+# Dockerfile: uv run đồng bộ lại cả nhóm dev (pytest...) mỗi lần khởi động, nên
+# chậm, phải có mạng, và đưa pytest lên prod. PATH của image đã chứa .venv/bin.
+x-worker: &worker
+  <<: *app
+  image: ghcr.io/252-da/da-worker:${IMAGE_TAG:?set IMAGE_TAG}
+  entrypoint: ["python", "-m"]
+  volumes:
+    - worker_cache:/root/.cache
+
+services:
+  # ─────────────────────────────────────────────────────────
+  # Kho dữ liệu — chỉ nằm trong mạng nội bộ của stack
+  # ─────────────────────────────────────────────────────────
+  postgres:
+    # Cần PG18: schema dùng uuidv7() (core-api/prisma/migrations/0_init).
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB}
+    volumes:
+      - pgdata18:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # BullMQ không được để mất key: noeviction, và AOF để sống qua restart.
+    command:
+      - redis-server
+      - --requirepass
+      - ${REDIS_PASSWORD:?set REDIS_PASSWORD}
+      - --appendonly
+      - "yes"
+      - --maxmemory-policy
+      - noeviction
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a '${REDIS_PASSWORD}' --no-auth-warning ping | grep -q PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  qdrant:
+    # Snapshot ở GĐ4 chỉ nạp được khi phiên bản trùng với bên fedoralap.
+    image: qdrant/qdrant:v1.12.1
+    restart: unless-stopped
+    environment:
+      QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY:?set QDRANT_API_KEY}
+    volumes:
+      - qdrantdata:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "bash -lc 'echo > /dev/tcp/localhost/6333'"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  neo4j:
+    image: neo4j:5-community
+    restart: unless-stopped
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:?set NEO4J_PASSWORD}
+      # Mặc định Neo4j chiếm rất nhiều RAM; VM còn phải chạy Docling.
+      NEO4J_server_memory_heap_initial__size: 512m
+      NEO4J_server_memory_heap_max__size: 512m
+      NEO4J_server_memory_pagecache_size: 256m
+    volumes:
+      - neo4jdata:/data
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p '${NEO4J_PASSWORD}' 'RETURN 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  # ─────────────────────────────────────────────────────────
+  # Cổng ra Internet — Cloudflare Tunnel quản lý trên dashboard (Zero Trust →
+  # Networks → Tunnels). Hostname → service cấu hình ở đó, không có file config.
+  # ─────────────────────────────────────────────────────────
+  cloudflared:
+    <<: *app
+    image: cloudflare/cloudflared:2026.7.3
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?set TUNNEL_TOKEN}
+    depends_on:
+      web:
+        condition: service_healthy
+
+  # ─────────────────────────────────────────────────────────
+  # Ứng dụng
+  # ─────────────────────────────────────────────────────────
+  web:
+    <<: *app
+    image: ghcr.io/252-da/da-web:${IMAGE_TAG:?set IMAGE_TAG}
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      REDIS_URL: redis://default:${REDIS_PASSWORD:?set REDIS_PASSWORD}@redis:6379
+      CORE_API_INTERNAL_URL: http://core-api:4000
+      TUTOR_URL: http://ai-tutor:8010
+      BFF_TO_CORE_PRIVATE_KEY_PATH: /keys/bff-to-core.pem
+      BFF_TO_CORE_KEY_ID: bff-2026-05
+      LTI_LMS_TYPE: ${LTI_LMS_TYPE:?set LTI_LMS_TYPE}
+      LTI_PLATFORM_URL: ${LTI_PLATFORM_URL:?set LTI_PLATFORM_URL}
+      LTI_ISSUER_URL: ${LTI_ISSUER_URL:-}
+      LTI_AUTH_URL: ${LTI_AUTH_URL:-}
+      LTI_JWKS_URL: ${LTI_JWKS_URL:-}
+      LTI_TOKEN_URL: ${LTI_TOKEN_URL:-}
+      LTI_DEPLOYMENT_ID: ${LTI_DEPLOYMENT_ID:?set LTI_DEPLOYMENT_ID}
+      LTI_REDIRECT_URI: ${LTI_REDIRECT_URI:?set LTI_REDIRECT_URI}
+      LTI_KEY_ID: ${LTI_KEY_ID:?set LTI_KEY_ID}
+      LTI_CLIENT_ID: ${LTI_CLIENT_ID:?set LTI_CLIENT_ID}
+      LTI_EXTRA_CLIENT_IDS: ${LTI_EXTRA_CLIENT_IDS:-}
+      LTI_EXTRA_DEPLOYMENT_IDS: ${LTI_EXTRA_DEPLOYMENT_IDS:-}
+      LTI_PRIVATE_KEY_PATH: /keys/lti.pem
+      LTI_PUBLIC_KEY_PATH: /keys/lti.pub.pem
+      LTI_COOKIE_SAMESITE: ${LTI_COOKIE_SAMESITE:-lax}
+      LTI_COOKIE_SECURE: ${LTI_COOKIE_SECURE:-true}
+      # Ở production web từ chối khóa RSA dưới 2048 bit của Canvas (id_token ký
+      # bằng khóa mẫu 512 bit của Canvas dev). Chỉ đặt true tạm thời, trong lúc
+      # Canvas chưa thay khóa; true nghĩa là chấp nhận id_token giả mạo được.
+      LTI_ALLOW_WEAK_RSA_VERIFICATION: ${LTI_ALLOW_WEAK_RSA_VERIFICATION:-false}
+    volumes:
+      - ${KEYS_DIR:-../keys}:/keys:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('net').connect(3000,'127.0.0.1').on('connect',()=>process.exit(0)).on('error',()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    depends_on:
+      core-api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  core-api:
+    <<: *app
+    image: ghcr.io/252-da/da-core-api:${IMAGE_TAG:?set IMAGE_TAG}
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      DATABASE_URL: postgresql://lms_core_app:${LMS_CORE_APP_PASSWORD:?set LMS_CORE_APP_PASSWORD}@postgres:5432/${POSTGRES_DB:?set POSTGRES_DB}
+      REDIS_URL: redis://default:${REDIS_PASSWORD:?set REDIS_PASSWORD}@redis:6379
+      <<: *storage-env
+      BFF_TO_CORE_PUBLIC_KEY_PATH: /keys/bff-to-core.pub.pem
+      BFF_TO_CORE_JWT_ISSUER: web-bff
+      BFF_TO_CORE_JWT_AUDIENCE: core-api
+      # AGS đẩy điểm lên Canvas: cùng LTI identity với web (web verify id_token và
+      # phục vụ JWKS, core-api ký client assertion), nên cùng giá trị.
+      LTI_CLIENT_ID: ${LTI_CLIENT_ID:?set LTI_CLIENT_ID}
+      LTI_KEY_ID: ${LTI_KEY_ID:?set LTI_KEY_ID}
+      LTI_LMS_TYPE: ${LTI_LMS_TYPE:?set LTI_LMS_TYPE}
+      LTI_PLATFORM_URL: ${LTI_PLATFORM_URL:?set LTI_PLATFORM_URL}
+      LTI_TOKEN_URL: ${LTI_TOKEN_URL:-}
+      LTI_PRIVATE_KEY_PATH: /keys/lti.pem
+      LTI_REDIRECT_URI: ${LTI_REDIRECT_URI:?set LTI_REDIRECT_URI}
+      # Prod là nơi duy nhất bật hai tác vụ nền này (xem .env.team.example).
+      AGS_ENABLED: ${AGS_ENABLED:-true}
+      AGS_POLL_INTERVAL_MS: ${AGS_POLL_INTERVAL_MS:-15000}
+      CANVAS_API_URL: ${CANVAS_API_URL:-${CANVAS_PUBLIC_URL:-}}
+      CANVAS_PUBLIC_URL: ${CANVAS_PUBLIC_URL:-}
+      CANVAS_API_TOKEN: ${CANVAS_API_TOKEN:-}
+      CANVAS_AUTO_SYNC_ENABLED: ${CANVAS_AUTO_SYNC_ENABLED:-true}
+      CANVAS_SYNC_INTERVAL_MS: ${CANVAS_SYNC_INTERVAL_MS:-900000}
+      CANVAS_SYNC_LAUNCH_COOLDOWN_MS: ${CANVAS_SYNC_LAUNCH_COOLDOWN_MS:-120000}
+    volumes:
+      - ${KEYS_DIR:-../keys}:/keys:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('net').connect(4000,'127.0.0.1').on('connect',()=>process.exit(0)).on('error',()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  embedding-service:
+    <<: *app
+    image: ghcr.io/252-da/da-embedding-service:${IMAGE_TAG:?set IMAGE_TAG}
+    environment:
+      APP__ENV: production
+      APP__LOG_LEVEL: INFO
+      GRPC__HOST: "0.0.0.0"
+      GRPC__PORT: "50051"
+      GRPC__MAX_WORKERS: "4"
+      METRICS__ENABLED: "true"
+      METRICS__PORT: "9095"
+      MODEL__BGE_MODEL: BAAI/bge-m3
+      MODEL__BGE_USE_FP16: "true"
+      MODEL__DIMENSION: "1024"
+      MODEL__ENCODE_BATCH_SIZE: "4"
+      MODEL__MAX_LENGTH: "1024"
+      MODEL__MAX_RPC_BATCH_SIZE: "32"
+      # openai = gọi API embeddings (Voyage), không nạp model; bge = nạp ~3 GB vào
+      # RAM. Phải khớp bản đã index Qdrant, nếu không vector khác không gian.
+      MODEL__BACKEND: ${EMBEDDING_BACKEND:?set EMBEDDING_BACKEND (openai = Voyage, phải giống dev)}
+      API__BASE_URL: ${EMBEDDING_API_BASE_URL:-}
+      API__KEY: ${EMBEDDING_API_KEY:-}
+      API__MODEL: ${EMBEDDING_API_MODEL:-BAAI/bge-m3}
+      API__DIMENSIONS: ${EMBEDDING_API_DIMENSIONS:-}
+      HF_HOME: /root/.cache/huggingface
+    volumes:
+      - hf_cache:/root/.cache/huggingface
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import grpc; from grpc_health.v1 import health_pb2, health_pb2_grpc; ch = grpc.insecure_channel('localhost:50051'); resp = health_pb2_grpc.HealthStub(ch).Check(health_pb2.HealthCheckRequest(service='da_platform.embedding.v1.EmbeddingService'), timeout=5); exit(0 if resp.status == health_pb2.HealthCheckResponse.SERVING else 1)",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 120s
+
+  mcp-service:
+    <<: *app
+    image: ghcr.io/252-da/da-mcp-service:${IMAGE_TAG:?set IMAGE_TAG}
+    environment:
+      APP__ENV: production
+      APP__LOG_LEVEL: INFO
+      APP__JSON_LOGS: "true"
+      SQL__ENABLED: "true"
+      SQL__DSN: postgresql://lms_mcp_reader:${LMS_MCP_READER_PASSWORD:?set LMS_MCP_READER_PASSWORD}@postgres:5432/${POSTGRES_DB:?set POSTGRES_DB}
+      QDRANT__HOST: qdrant
+      QDRANT__PORT: "6333"
+      QDRANT__API_KEY: ${QDRANT_API_KEY:?set QDRANT_API_KEY}
+      QDRANT__COLLECTION_NAME: documents
+      QDRANT__VECTOR_SIZE: "1024"
+      EMBEDDER__PROVIDER: grpc
+      EMBEDDER__GRPC_TARGET: embedding-service:50051
+      MCP__HOST: "0.0.0.0"
+      MCP__PORT: "8001"
+      MCP__PATH: /mcp
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.create_connection(('127.0.0.1',8001),2); s.close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      embedding-service:
+        condition: service_healthy
+
+  ai-tutor:
+    <<: *app
+    image: ghcr.io/252-da/da-ai-tutor:${IMAGE_TAG:?set IMAGE_TAG}
+    environment:
+      LEARNING_CONTEXT_MCP_URL: http://mcp-service:8001/mcp
+      LEARNING_CONTEXT_MCP_TIMEOUT_SECONDS: "30"
+      LLM_PROFILE__TUTOR: ${LLM_PROFILE__TUTOR:-gemini-flash-lite}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:?set GEMINI_API_KEY}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      TUTOR_MAX_TOOL_CALLS_TOOLS: ${TUTOR_MAX_TOOL_CALLS_TOOLS:-5}
+      TUTOR_MAX_TOOL_CALLS_GRAPH: ${TUTOR_MAX_TOOL_CALLS_GRAPH:-6}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8010/health').read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    depends_on:
+      mcp-service:
+        condition: service_healthy
+
+  # ─────────────────────────────────────────────────────────
+  # Workers
+  # ─────────────────────────────────────────────────────────
+  document-worker:
+    <<: *worker
+    command: ["worker.runners.document_worker"]
+    # Docling vọt tới ~2,5 GB khi OCR (đo 2026-10-28); chặn để OOM chỉ giết worker.
+    mem_limit: 3g
+    environment:
+      <<: *worker-env
+      WORKER_TYPE: document
+      WORKER_CONCURRENCY: "1"
+      HEALTH_PORT: "8081"
+      METRICS__PORT: "9091"
+      EMBEDDER__PROVIDER: grpc
+      EMBEDDER__GRPC_TARGET: embedding-service:50051
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8081/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      embedding-service:
+        condition: service_healthy
+
+  enrichment-worker:
+    <<: *worker
+    command: ["worker.runners.enrichment_worker"]
+    environment:
+      <<: *worker-env
+      WORKER_TYPE: enrichment
+      WORKER_CONCURRENCY: "4"
+      HEALTH_PORT: "8082"
+      METRICS__PORT: "9092"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8082/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  content-generation-worker:
+    <<: *worker
+    command: ["worker.runners.content_generation_worker"]
+    environment:
+      <<: *worker-env
+      WORKER_TYPE: content_generation
+      WORKER_CONCURRENCY: "2"
+      # Ba vai trò trong sinh quiz, ba profile độc lập; để trống thì lấy
+      # TASK_DEFAULTS của catalog (docs/quiz-generation-redesign.md §7.8).
+      LLM_PROFILE__QUIZ_GENERATION: ${LLM_PROFILE__QUIZ_GENERATION:-}
+      LLM_PROFILE__QUIZ_VERIFICATION: ${LLM_PROFILE__QUIZ_VERIFICATION:-}
+      LLM_PROFILE__QUIZ_REGENERATION: ${LLM_PROFILE__QUIZ_REGENERATION:-}
+      HEALTH_PORT: "8084"
+      METRICS__PORT: "9094"
+      LEARNING_CONTEXT_MCP_ENABLED: "true"
+      LEARNING_CONTEXT_MCP_URL: http://mcp-service:8001/mcp
+      LEARNING_CONTEXT_MCP_TIMEOUT_SECONDS: "30"
+      LEARNING_CONTEXT_MCP_FALLBACK_TO_LOCAL: "true"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8084/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mcp-service:
+        condition: service_healthy
+
+  # Chấm tự luận ngắn (hàng đợi answer_grading), tách khỏi content-generation để
+  # người học chờ điểm không phải xếp sau các lần sinh quiz hàng phút.
+  answer-grading-worker:
+    <<: *worker
+    command: ["worker.runners.answer_grading_worker"]
+    environment:
+      <<: *worker-env
+      WORKER_TYPE: answer_grading
+      WORKER_CONCURRENCY: "2"
+      LLM_PROFILE__QUIZ_VERIFICATION: ${LLM_PROFILE__QUIZ_VERIFICATION:-}
+      HEALTH_PORT: "8085"
+      METRICS__PORT: "9096"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8085/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Sinh video AI cho Micro Content (slide + TTS + ffmpeg). Web gọi vào cổng
+  # health 8086 của worker này (MICRO_CONTENT_WORKER_URL) cho nghe thử giọng đọc
+  # và trích kịch bản từ PDF, nên giữ nguyên 8086.
+  micro-content-video-worker:
+    <<: *worker
+    command: ["worker.runners.micro_content_video_worker"]
+    environment:
+      <<: *worker-env
+      WORKER_TYPE: micro_content_video
+      WORKER_CONCURRENCY: "1"
+      HEALTH_PORT: "8086"
+      METRICS__PORT: "9097"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8086/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  outbox-worker:
+    <<: *worker
+    command: ["worker.runners.outbox_worker"]
+    environment:
+      <<: *worker-env
+      WORKER_TYPE: outbox
+      WORKER_CONCURRENCY: "1"
+      HEALTH_PORT: "8083"
+      METRICS__PORT: "9093"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8083/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+
+  # ─────────────────────────────────────────────────────────
+  # Việc chạy một lần (profile "ops"): deploy/deploy.sh gọi lần lượt
+  #   run --rm migrate  →  run --rm db-roles
+  # ─────────────────────────────────────────────────────────
+  migrate:
+    profiles: ["ops"]
+    image: ghcr.io/252-da/da-core-api-migrate:${IMAGE_TAG:?set IMAGE_TAG}
+    environment:
+      # Tài khoản quản trị chỉ có ở đây, không nằm trong env của core-api
+      # (core-api/prisma.config.ts ưu tiên MIGRATION_DATABASE_URL).
+      MIGRATION_DATABASE_URL: postgresql://${POSTGRES_USER:?set POSTGRES_USER}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:?set POSTGRES_DB}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Tạo/cập nhật 3 role đăng nhập và grant theo bảng phân loại. PHẢI chạy sau mỗi
+  # lần migrate (bảng mới chưa phân loại bị coi là bảng nghiệp vụ và in WARNING).
+  # Chạy lại được, một transaction. Kiểm chứng: deploy/postgres/roles_check.sql.
+  db-roles:
+    profiles: ["ops"]
+    image: postgres:18-alpine
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - ./postgres/roles.sql:/roles.sql:ro
+    command:
+      - psql
+      - -h
+      - postgres
+      - -U
+      - ${POSTGRES_USER}
+      - -d
+      - ${POSTGRES_DB}
+      - -X
+      - -v
+      - ON_ERROR_STOP=1
+      - -v
+      - core_password=${LMS_CORE_APP_PASSWORD:?set LMS_CORE_APP_PASSWORD}
+      - -v
+      - worker_password=${LMS_AI_WORKER_PASSWORD:?set LMS_AI_WORKER_PASSWORD}
+      - -v
+      - mcp_password=${LMS_MCP_READER_PASSWORD:?set LMS_MCP_READER_PASSWORD}
+      - -f
+      - /roles.sql
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata18:
+  redisdata:
+  qdrantdata:
+  neo4jdata:
+  hf_cache:
+  worker_cache:

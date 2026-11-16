@@ -34,3 +34,9 @@ dist/
 .coverage.*
 htmlcov/
 coverage.xml
+
+# Generated CodeWiki output
+codewiki-docs/
+
+# ===== Deploy prod (trên VM) =====
+backups/

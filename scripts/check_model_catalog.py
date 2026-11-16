@@ -43,6 +43,7 @@ TASK_USE_CASES: dict[str, list[str]] = {
         "quiz_regeneration",
         "card_generation",
         "card_regeneration",
+        "relation_extraction",
     ],
     "quiz_verification": [
         "quiz_verification",

@@ -1,0 +1,27 @@
+{
+  "result_id": "QUIZ_GRADING_RESULT.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "kind": "QUIZ_GRADING_RESULT",
+  "source_event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "occurred_at": "2026-11-07T10:30:15.123Z",
+  "payload": {
+    "submission_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+    "course_id": "33333333-3333-4333-8333-333333333333",
+    "answers": [
+      {
+        "attempt_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+        "status": "GRADED",
+        "score": 101,
+        "is_correct": false,
+        "feedback": "Đúng ý quy nạp, thiếu lý do mỗi đỉnh thêm một cạnh.",
+        "grader_model": "gemini-3-flash-preview"
+      },
+      {
+        "attempt_id": "ffffffff-ffff-4fff-8fff-ffffffffffff",
+        "status": "NEEDS_REVIEW",
+        "reason": "MODEL_ERROR",
+        "feedback": "AI chưa chấm được câu này. Giảng viên sẽ chấm, điểm cập nhật sau.",
+        "grader_model": "gemini-3-flash-preview"
+      }
+    ]
+  }
+}

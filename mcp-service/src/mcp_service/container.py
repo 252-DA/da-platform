@@ -1,7 +1,8 @@
 """Composition root for mcp-service. Same BaseWorkerContainer-style pattern
 as worker/worker/container.py (build_* + a container tracking closables for
 duck-typed shutdown), but wires only what the two MCP tools need: Postgres
-(metadata), Qdrant (vector search) and GrpcEmbedder (remote embedding).
+(metadata, course tools, relation graph), Qdrant (vector search) and
+GrpcEmbedder (remote embedding).
 
 Deliberately absent, unlike packages-ai's old infrastructure/container.py:
   - graph_store / Neo4j — verified neither search_chunks nor
@@ -17,6 +18,7 @@ channel; the container tracks it so shutdown closes that channel.
 from document_chunk.adapters.embedders.grpc_embedder import GrpcEmbedder
 from document_chunk.adapters.metadata.postgres_metadata_store import PostgresMetadataStore
 from document_chunk.adapters.vector_db.qdrant_adapter import QdrantAdapter
+from document_chunk.application.use_cases.course_tools import CourseToolsUseCase
 from document_chunk.application.use_cases.retrieve_quiz_context import RetrieveQuizContextUseCase
 from document_chunk.application.use_cases.search_chunks import SearchChunksUseCase
 from document_chunk.domain.ports.embedder import IEmbedder
@@ -45,13 +47,23 @@ class McpServiceContainer:
             GrpcEmbedder(settings.embedder, expected_dimension=settings.qdrant.vector_size),
         )
 
+        # metadata_store cũng là ICourseKnowledgeStore: search_course_chunks (chatbot)
+        # dùng nó để tra tài liệu bị ẩn ở LMS hoặc đã xoá. retrieve_quiz_context dùng chung
+        # use case này nhưng không bật cờ exclude_hidden nên vẫn thấy tài liệu chưa publish.
         self.search_chunks_use_case = SearchChunksUseCase(
             embedder=self.embedder,
             vector_store=self.vector_store,
+            knowledge_store=self.metadata_store,
         )
         self.retrieve_quiz_context_use_case = RetrieveQuizContextUseCase(
             metadata_store=self.metadata_store,
             semantic_search=self.search_chunks_use_case,
+        )
+        # PostgresMetadataStore cũng là ICourseKnowledgeStore (đọc trang, láng
+        # giềng, đồ thị quan hệ), nên cùng một đối tượng làm hai việc.
+        self.course_tools_use_case = CourseToolsUseCase(
+            knowledge_store=self.metadata_store,
+            metadata_store=self.metadata_store,
         )
 
     def _track(self, name: str, component):

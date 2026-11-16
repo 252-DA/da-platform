@@ -1,0 +1,15 @@
+{
+  "result_id": "DOCUMENT_PROCESSING_RESULT.019fdbaa-c096-78e5-a91a-982998d5b5b0.chapter-6f1c2d3e4b5a4c6d8e7f9a0b1c2d3e4f",
+  "kind": "DOCUMENT_PROCESSING_RESULT",
+  "source_event_id": null,
+  "occurred_at": "2026-11-07T10:30:15.123Z",
+  "payload": {
+    "document_id": "019fdbaa-c096-78e5-a91a-982998d5b5b0",
+    "chapter": {
+      "chapter_code": "2",
+      "provenance": "content",
+      "confidence": 1.5,
+      "reason": "Khớp nội dung với chương 2 (điểm 0.83, hơn chương 3 0.12)"
+    }
+  }
+}
