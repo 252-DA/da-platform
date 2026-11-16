@@ -15,7 +15,7 @@ Luồng chính:
 ```
 Canvas (LMS) --LTI 1.3 launch--> web (Next.js BFF, port 3001->3000)
   web: verify id_token, tạo session Redis, ký JWT (bff-jwt, key web/keys/)
-  --gRPC + JWT--> core-api:50051 (host 50052)  [contract: contracts/proto/core_api.proto]
+  --HTTP + JWT--> core-api:4000 (CORE_API_INTERNAL_URL)
 core-api (NestJS, port 4000): Prisma -> Postgres 18 (uuidv7!), BullMQ -> Redis
   --enqueue--> worker (Python, BullMQ) --kết quả--> queue worker_results --> core-api ghi DB
   --outbox_events (PG LISTEN/NOTIFY)--> queue outbox_relay --> outbox-worker
@@ -35,8 +35,8 @@ thay `docker compose`. Dev reload: `scripts/dev_reload.py` mount source nóng.
 ### core-api/ (NestJS 11 + Fastify, Prisma 7, BullMQ) — nhánh master
 - Trung tâm nghiệp vụ, nơi DUY NHẤT ghi các bảng domain ("worker tính,
   core-api ghi"). 54 model trong `prisma/schema.prisma` (cần PG18 vì uuidv7).
-- `src/grpc/grpc-server.service.ts`: gRPC server ~75 RPC, mọi RPC đều qua
-  `BffJwtService` (verify JWT từ web) rồi dispatch sang domain service.
+- HTTP REST API (`/api/*`, Fastify + `ValidationPipe`), mọi route nội bộ đều qua
+  `BffJwtGuard` (verify JWT từ web) rồi dispatch sang domain service.
 - Modules: `auth` (authz theo `course_memberships` + role `administrator`
   trong `lms_user_mappings`), `lti` (LaunchSync, assignment settings),
   `course`, `curriculum` (import đề cương Canvas, `curriculum-writer`,
@@ -67,15 +67,15 @@ thay `docker compose`. Dev reload: `scripts/dev_reload.py` mount source nóng.
 - Canvas REST client: `canvas/canvas-api.client.ts`; rewrite public URL ->
   internal khi CANVAS_API_URL nội bộ; compose map `canvas.docker:host-gateway`
   (Canvas chặn host.docker.internal bằng Blocked hosts).
-- Test: `pnpm test` (jest). Env dev: PORT=4000, GRPC_PORT=50051.
+- Test: `pnpm test` (jest). Env dev: PORT=4000.
 
 ### web/ (Next.js 16, React 19, pnpm) — nhánh main
 - **CẢNH BÁO (web/AGENTS.md): Next.js này có breaking change so với kiến
   thức sẵn có — đọc `node_modules/next/dist/docs/` trước khi viết code.**
 - BFF thuần: không DB riêng; session LTI trong Redis (`lib/session.ts`,
   sliding TTL + trần SESSION_MAX_AGE, cookie httpOnly + fallback `sid`).
-- `lib/core-api.ts`: gRPC client tới core-api, mỗi call ký JWT
-  (`lib/bff-jwt.ts`, key `web/keys/bff-to-core.pem`, kid `bff-2026-05`).
+- `lib/core-api.ts`: HTTP client (`fetch`, `no-store`) tới `CORE_API_INTERNAL_URL`,
+  mỗi call ký JWT (`lib/bff-jwt.ts`, key `web/keys/bff-to-core.pem`, kid `bff-2026-05`).
 - `lib/tutor.ts`: HTTP/SSE tới ai-tutor `/v1/tutor/messages`, timeout 120s.
 - Routes: `/lti/login` + `/lti/launch` (OIDC+launch), `/lti/deep-link`
   (composer chọn bài), `/lti/asset-processor` + `/lti/essay-report`,
@@ -159,13 +159,12 @@ thay `docker compose`. Dev reload: `scripts/dev_reload.py` mount source nóng.
 - Dev-only: soi parse/chunk document, không DB/embedding.
 
 ### contracts/ (root, không phải submodule)
-- `proto/core_api.proto`: contract DUY NHẤT giữa web và core-api (mount vào
-  cả hai: /app/proto). `proto/llm_model_catalog.json`: danh mục profile.
+- `proto/llm_model_catalog.json`: danh mục profile model AI (mount vào `/app/proto` của `core-api`).
 - `integration-events/v1/*.json`: JSON schema mọi event qua queue
   (envelope, document-processing-*, content-generation-*,
   *-grading-requested/result, micro-content-*, curriculum-import-result...).
-- `artifacts/v1/`, `fixtures/v1/valid/`. Kiểm: `scripts/check_grpc_contract.py`,
-  `scripts/check_content_schema.py`, `scripts/check_model_catalog.py`.
+- `artifacts/v1/`, `fixtures/v1/valid/`. Kiểm: `scripts/check_content_schema.py`,
+  `scripts/check_model_catalog.py`.
 
 ### worker kết quả & event flow (tóm tắt)
 core-api enqueue (BullMQ) -> worker xử lý -> publish `worker_results`
@@ -208,9 +207,9 @@ outbox-worker project Qdrant/Neo4j.
 ## 5. Quy ước khi sửa code
 
 - Code comment/log chủ yếu tiếng Việt — giữ nguyên phong cách đó.
-- Proto thay đổi: sửa `contracts/proto/core_api.proto` (không sửa bản copy
-  trong core-api/web — đã mount chung), thêm method vào `web/src/lib/
-  core-api.ts` type CoreMethod + handler trong grpc-server.service.ts.
+- API giữa `web` và `core-api`: tạo HTTP endpoint + DTO (`class-validator`)
+  trong controller `core-api` (bảo vệ qua `BffJwtGuard`), rồi thêm method vào
+  `web/src/lib/core-api.ts`.
 - Event mới qua queue: thêm JSON schema vào contracts/integration-events/v1
   + fixture valid, handler đăng ký `@WorkerResultHandler` trong module domain.
 - Model mới: chỉ thêm profile vào ai-sdk catalog.py + llm_model_catalog.json,

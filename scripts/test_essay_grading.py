@@ -169,12 +169,8 @@ main().then(out => console.log('ESSAY_SMOKE_JSON='+JSON.stringify(out))).catch(e
 WEB = r'''
 const fs = require('node:fs');
 const crypto = require('node:crypto');
-const grpc = require('@grpc/grpc-js');
-const loader = require('@grpc/proto-loader');
 const d = JSON.parse(process.env.ESSAY_SMOKE_DATA);
-const definition = loader.loadSync('/app/proto/core_api.proto', {keepCase:false,defaults:true});
-const Api = grpc.loadPackageDefinition(definition).ai_lms.v1.CoreApiService;
-const client = new Api(process.env.CORE_API_GRPC_HOST || 'core-api:50051',grpc.credentials.createInsecure());
+const baseUrl = (process.env.CORE_API_INTERNAL_URL || 'http://core-api:4000').replace(/\/+$/, '');
 const now = Math.floor(Date.now()/1000);
 const encode = v => Buffer.from(JSON.stringify(v)).toString('base64url');
 const header = encode({alg:'EdDSA',kid:process.env.BFF_TO_CORE_KEY_ID});
@@ -183,13 +179,22 @@ const payload = encode({iss:process.env.BFF_TO_CORE_JWT_ISSUER || 'web-bff',
   courseId:d.courseId,roles:['instructor'],jti:crypto.randomUUID(),iat:now,exp:now+60});
 const signed = header+'.'+payload;
 const signature = crypto.sign(null,Buffer.from(signed),fs.readFileSync(process.env.BFF_TO_CORE_PRIVATE_KEY_PATH)).toString('base64url');
-const metadata = new grpc.Metadata();
-metadata.set('authorization','Bearer '+signed+'.'+signature);
-client[d.method]({json:JSON.stringify(d.body)},metadata,{deadline:Date.now()+60000},(err,res) => {
-  client.close();
-  if (err) {console.error(err.message);process.exitCode=1;return;}
-  console.log('ESSAY_SMOKE_JSON='+JSON.stringify(JSON.parse(res.json)));
-});
+const qs = d.query ? '?' + new URLSearchParams(d.query).toString() : '';
+(async () => {
+  const hasBody = d.body !== undefined;
+  const res = await fetch(baseUrl + d.path + qs, {
+    method: d.httpMethod || 'GET',
+    headers: {
+      authorization: 'Bearer ' + signed + '.' + signature,
+      ...(hasBody ? {'content-type': 'application/json'} : {}),
+    },
+    body: hasBody ? JSON.stringify(d.body) : undefined,
+    signal: AbortSignal.timeout(60000),
+  });
+  const text = await res.text();
+  if (!res.ok) throw new Error('HTTP ' + res.status + ': ' + text);
+  console.log('ESSAY_SMOKE_JSON=' + text);
+})().catch(e => {console.error(e.message);process.exitCode=1});
 '''
 
 
@@ -212,7 +217,7 @@ def main():
         data.update(canvas("seed"))
         data.update(core("seed"))
         print(f"Created isolated test course: {data['runId']}", flush=True)
-        processor = run("da-platform-web-1", ["node"], WEB, {**data, "method": "CreateEssayProcessor", "body": {
+        processor = run("da-platform-web-1", ["node"], WEB, {**data, "httpMethod": "POST", "path": "/api/essay-processors", "body": {
             "courseId": data["courseId"], "title": "Essay smoke: Lambda architecture",
             "instructions": "Explain the batch, speed and serving layers of Lambda architecture and one tradeoff.",
             "rubric": [
@@ -264,7 +269,7 @@ def main():
                     raise AssertionError(f"Criterion scores do not sum to total: {result}")
                 if received["progress"] != "Processed" or received["result"] != f"{result['score']:g}/10":
                     raise AssertionError(f"Canvas report differs from worker result: {report}")
-                detail = run("da-platform-web-1", ["node"], WEB, {**data, "method": "GetEssayReport", "body": {
+                detail = run("da-platform-web-1", ["node"], WEB, {**data, "httpMethod": "GET", "path": "/api/essay-processors/report", "query": {
                     "submissionId": data["submissionLtiId"], "userSub": data["studentSub"],
                 }})
                 if len(detail) != 1 or detail[0]["result"] != result or not detail[0]["is_teacher"]:
