@@ -228,6 +228,8 @@ services:
     environment:
       NODE_ENV: development
       PORT: "4000"
+      APP__LOG_LEVEL: INFO
+      APP__JSON_LOGS: "true"
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/chunking
       REDIS_URL: redis://redis:6379
       MINIO__ENDPOINT: ${MINIO__ENDPOINT:-minio:9000}
