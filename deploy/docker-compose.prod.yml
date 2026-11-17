@@ -225,6 +225,8 @@ services:
     environment:
       NODE_ENV: production
       PORT: "4000"
+      APP__LOG_LEVEL: INFO
+      APP__JSON_LOGS: "true"
       DATABASE_URL: postgresql://lms_core_app:${LMS_CORE_APP_PASSWORD:?set LMS_CORE_APP_PASSWORD}@postgres:5432/${POSTGRES_DB:?set POSTGRES_DB}
       REDIS_URL: redis://default:${REDIS_PASSWORD:?set REDIS_PASSWORD}@redis:6379
       <<: *storage-env

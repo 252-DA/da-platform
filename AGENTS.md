@@ -40,10 +40,12 @@ thay `docker compose`. Dev reload: `scripts/dev_reload.py` mount source nóng.
 - Modules: `auth` (authz theo `course_memberships` + role `administrator`
   trong `lms_user_mappings`), `lti` (LaunchSync, assignment settings),
   `course`, `curriculum` (import đề cương Canvas, `curriculum-writer`,
-  stable-uuid), `document` (upload session MinIO, canvas sync:
-  `canvas-document-sync`, `canvas-sync-jobs`, queue `canvas_sync`),
-  `lesson`, `review` (duyệt card/quiz draft), `quiz` (quiz-set service 841
-  dòng — làm bài, chấm; `answer-grading.ts` queue riêng), `ags` (LTI
+  stable-uuid), `storage` (`DocumentStorageService`), `document` (upload
+  session, tài liệu, xử lý kết quả), `canvas-sync` (đồng bộ file/module
+  Canvas: `canvas-document-sync`, `canvas-sync-jobs`, queue `canvas_sync`),
+  `lesson`, `review` (duyệt card/quiz draft), `question` (`question-types.ts`,
+  `answer-grading.ts` dùng chung cho quiz/micro-content/content-gen/review/
+  learning-agent/outbox), `quiz` (quiz-set service 841 dòng — làm bài, chấm), `ags` (LTI
   Assignment&Grades: đẩy điểm về Canvas, token service, recovery POSTING),
   `roster` (NRPS sync), `essay-processor` (LTI Asset Processor chấm bài
   luận file), `micro-content` (lớn nhất, 1116 dòng service: CRUD, video,
@@ -67,6 +69,21 @@ thay `docker compose`. Dev reload: `scripts/dev_reload.py` mount source nóng.
 - Canvas REST client: `canvas/canvas-api.client.ts`; rewrite public URL ->
   internal khi CANVAS_API_URL nội bộ; compose map `canvas.docker:host-gateway`
   (Canvas chặn host.docker.internal bằng Blocked hosts).
+- Logger (`src/logging/`): dùng `nestjs-pino` (`LoggerModule.forRoot`,
+  `createBootstrapLogger` ngay từ `NestFactory.create` — không dùng
+  `bufferLogs`, nên log khởi động và lỗi DI/constructor xuất JSON ngay từ
+  dòng đầu) cấu hình qua `APP__LOG_LEVEL` (mức kiểu Python, mặc định
+  `INFO`) và `APP__JSON_LOGS` (`true` -> JSON một dòng, ngược lại `pino-pretty`);
+  các khóa JSON khớp structlog (`event`, `timestamp`, `level`, `logger`,
+  `service: "core-api"`, `request_id`, kèm `user_id`/`course_id` gắn tại
+  `BffJwtGuard`), access log mang `logger: "HttpAccess"`;
+  `BullMqErrorLogger` gắn listener `error` cho các `Queue`/`Worker` sau
+  `onApplicationBootstrap`; `HttpExceptionLoggingFilter` bắt toàn cục
+  (`@Catch()`), đổi lỗi DB mã `22P02`, `22021` (`src/prisma/invalid-input-error.ts`)
+  thành 400 `"Tham số không hợp lệ."` kèm `db_code`/`model`, và ghi
+  `warning` cho 4xx (trừ `GET /metrics`). Quy ước: không bao giờ ghi
+  `authorization`, `cookie`, `roles`, body request/response hay giá trị đầu
+  vào sai vào log.
 - Test: `pnpm test` (jest). Env dev: PORT=4000.
 
 ### web/ (Next.js 16, React 19, pnpm) — nhánh main
