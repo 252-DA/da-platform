@@ -70,13 +70,20 @@ thay `docker compose`. Dev reload: `scripts/dev_reload.py` mount source nóng.
   internal khi CANVAS_API_URL nội bộ; compose map `canvas.docker:host-gateway`
   (Canvas chặn host.docker.internal bằng Blocked hosts).
 - Logger (`src/logging/`): dùng `nestjs-pino` (`LoggerModule.forRoot`,
-  `app.useLogger`) cấu hình qua `APP__LOG_LEVEL` (mức kiểu Python, mặc định
+  `createBootstrapLogger` ngay từ `NestFactory.create` — không dùng
+  `bufferLogs`, nên log khởi động và lỗi DI/constructor xuất JSON ngay từ
+  dòng đầu) cấu hình qua `APP__LOG_LEVEL` (mức kiểu Python, mặc định
   `INFO`) và `APP__JSON_LOGS` (`true` -> JSON một dòng, ngược lại `pino-pretty`);
   các khóa JSON khớp structlog (`event`, `timestamp`, `level`, `logger`,
   `service: "core-api"`, `request_id`, kèm `user_id`/`course_id` gắn tại
-  `BffJwtGuard`); `HttpExceptionLoggingFilter` ghi `warning` cho 4xx (trừ
-  `GET /metrics`). Quy ước: không bao giờ ghi `authorization`, `cookie`,
-  `roles`, hay body request/response vào log.
+  `BffJwtGuard`), access log mang `logger: "HttpAccess"`;
+  `BullMqErrorLogger` gắn listener `error` cho các `Queue`/`Worker` sau
+  `onApplicationBootstrap`; `HttpExceptionLoggingFilter` bắt toàn cục
+  (`@Catch()`), đổi lỗi DB mã `22P02`, `22021` (`src/prisma/invalid-input-error.ts`)
+  thành 400 `"Tham số không hợp lệ."` kèm `db_code`/`model`, và ghi
+  `warning` cho 4xx (trừ `GET /metrics`). Quy ước: không bao giờ ghi
+  `authorization`, `cookie`, `roles`, body request/response hay giá trị đầu
+  vào sai vào log.
 - Test: `pnpm test` (jest). Env dev: PORT=4000.
 
 ### web/ (Next.js 16, React 19, pnpm) — nhánh main
