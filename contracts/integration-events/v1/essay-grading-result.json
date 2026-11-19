@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://da-platform.dev/contracts/integration-events/v1/essay-grading-result.json",
   "title": "ESSAY_GRADING_RESULT",
-  "description": "Kết quả chấm một bài luận nộp file (ESSAY_GRADING_REQUESTED): worker chấm (worker/runners/answer_grading_worker.py) → core-api (core-api/src/essay-processor/essay-grading-result.handler.ts), hàng đợi worker_results. GRADED kèm result (điểm gợi ý theo rubric, ghi vào essay_submissions.result), hoặc FAILED kèm mã lỗi khi file không đọc được hoặc lượt thử cuối vẫn lỗi. result_id = ESSAY_GRADING_RESULT.<event_id của lệnh>. core-api chỉ áp dụng khi bài còn QUEUED; vòng EssayReportPublisherService sau đó gửi báo cáo điểm gợi ý (GRADED) hoặc báo lỗi (FAILED) về SpeedGrader.",
+  "description": "Kết quả chấm một bài luận nộp file (ESSAY_GRADING_REQUESTED): worker chấm (worker/runners/answer_grading_worker.py) → core-api (core-api/src/modules/essay-processor/handlers/essay-grading-result.handler.ts), hàng đợi worker_results. GRADED kèm result (điểm gợi ý theo rubric, ghi vào essay_submissions.result), hoặc FAILED kèm mã lỗi khi file không đọc được hoặc lượt thử cuối vẫn lỗi. result_id = ESSAY_GRADING_RESULT.<event_id của lệnh>. core-api chỉ áp dụng khi bài còn QUEUED; vòng EssayReportPublisherService sau đó gửi báo cáo điểm gợi ý (GRADED) hoặc báo lỗi (FAILED) về SpeedGrader.",
   "type": "object",
   "allOf": [{ "$ref": "worker-result-envelope.json" }],
   "properties": {

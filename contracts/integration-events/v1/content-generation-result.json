@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://da-platform.dev/contracts/integration-events/v1/content-generation-result.json",
   "title": "CONTENT_GENERATION_RESULT",
-  "description": "Vòng đời một yêu cầu sinh học liệu (content_generation_requests): content-generation worker (worker/runners/content_generation_worker.py) → core-api (core-api/src/content-generation/content-generation-result.handler.ts), hàng đợi worker_results. Mỗi lệnh CONTENT_GENERATION_REQUESTED có tối đa ba kết quả, theo status đích của request: RUNNING khi worker bắt đầu chạy, rồi đúng một trong SUCCEEDED (kèm câu/card đã qua vòng kiểm chứng) hoặc FAILED (lệnh sai, hoặc lần thử cuối vẫn lỗi; giữa các lần thử request vẫn RUNNING). result_id = CONTENT_GENERATION_RESULT.<event_id của lệnh>.<RUNNING|SUCCEEDED|FAILED>, source_event_id = event_id của lệnh. core-api chỉ áp dụng khi request còn QUEUED/RUNNING (không bao giờ đè SUCCEEDED/FAILED/CANCELLED), và áp dụng SUCCEEDED trong một transaction: giữ/tạo lessons theo (course_id, lo_id), upsert quiz_items hoặc lesson_cards theo id (chỉ ghi đè bản còn GENERATED_DRAFT, kể cả verification_status/verification_evidence), cập nhật request. LO không còn hiện hành thì request FAILED và không ghi gì. Thay cho CONTENT_GENERATION_STARTED/COMPLETED/FAILED (thiết kế cũ, chưa từng có producer).",
+  "description": "Vòng đời một yêu cầu sinh học liệu (content_generation_requests): content-generation worker (worker/runners/content_generation_worker.py) → core-api (core-api/src/modules/content-generation/handlers/content-generation-result.handler.ts), hàng đợi worker_results. Mỗi lệnh CONTENT_GENERATION_REQUESTED có tối đa ba kết quả, theo status đích của request: RUNNING khi worker bắt đầu chạy, rồi đúng một trong SUCCEEDED (kèm câu/card đã qua vòng kiểm chứng) hoặc FAILED (lệnh sai, hoặc lần thử cuối vẫn lỗi; giữa các lần thử request vẫn RUNNING). result_id = CONTENT_GENERATION_RESULT.<event_id của lệnh>.<RUNNING|SUCCEEDED|FAILED>, source_event_id = event_id của lệnh. core-api chỉ áp dụng khi request còn QUEUED/RUNNING (không bao giờ đè SUCCEEDED/FAILED/CANCELLED), và áp dụng SUCCEEDED trong một transaction: giữ/tạo lessons theo (course_id, lo_id), upsert quiz_items hoặc lesson_cards theo id (chỉ ghi đè bản còn GENERATED_DRAFT, kể cả verification_status/verification_evidence), cập nhật request. LO không còn hiện hành thì request FAILED và không ghi gì. Thay cho CONTENT_GENERATION_STARTED/COMPLETED/FAILED (thiết kế cũ, chưa từng có producer).",
   "type": "object",
   "allOf": [{ "$ref": "worker-result-envelope.json" }],
   "properties": {
@@ -309,7 +309,7 @@
     "nonEmptyText": { "type": "string", "pattern": "\\S" },
     "quizItem": {
       "type": "object",
-      "description": "Một dòng quiz_items ở dạng cột. quiz_id tất định theo (LO, kiểu câu, lời câu hỏi) nên áp lại không nhân bản. Dạng options/correct_answer theo kiểu câu: core-api/src/quiz/question-types.ts (normalizeAnswerKey) và CHECK quiz_items_correct_answer_shape_check.",
+      "description": "Một dòng quiz_items ở dạng cột. quiz_id tất định theo (LO, kiểu câu, lời câu hỏi) nên áp lại không nhân bản. Dạng options/correct_answer theo kiểu câu: core-api/src/modules/question/question-types.ts (normalizeAnswerKey) và CHECK quiz_items_correct_answer_shape_check.",
       "properties": {
         "quiz_id": { "$ref": "content-generation-result.json#/definitions/uuid" },
         "type": { "enum": ["MCQ_SINGLE", "MCQ_MULTI", "TRUE_FALSE", "FILL_BLANK", "SHORT_ANSWER"] },
