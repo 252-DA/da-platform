@@ -88,6 +88,13 @@ Hybrid: package có version SemVer, phân phối bằng source pin theo commit. 
 | CI pin | SHA 40 ký tự trong `uses: 252-DA/<repo>/.github/actions/materialize@<sha>` | workflow YAML của **từng** consumer repo |
 | Runtime install | `uv sync --no-editable` → package thật trong `.venv`, không giữ source | Dockerfile builder stage |
 
+> **Đã thay thế (2026-11-19).** Cơ chế CI pin `materialize@<sha>` ở §5.1–5.3
+> và §7 không còn dùng: không ai cập nhật pin nên CI worker/packages-ai đỏ từ
+> 09/2026. CI giờ tập trung ở meta-repo (`.github/workflows/ci.yaml` +
+> `component.yaml`, lệnh ở `scripts/ci/test-component.sh`); repo con gọi
+> `component.yaml@dev`, tức là luôn test với repo anh em ở nhánh `dev`.
+> `scripts/check_materialize_pins.py` đã xóa. Phần dưới giữ làm lịch sử.
+
 ### 5.1 Hai pin độc lập — không tự đồng bộ
 
 Đã verify: `worker.yaml` **không** dùng git submodule của `da-platform` để lấy `packages-ai`/`ai-sdk` trong CI. Nó dùng composite action pin theo SHA ngay trong YAML của chính `worker`:
