@@ -248,6 +248,25 @@ outbox-worker project Qdrant/Neo4j.
   port nào (chỉ cloudflared ra ngoài), object storage = Cloudflare R2 (vẫn
   biến MINIO__*), mỗi service một PG role riêng (deploy/postgres/roles.sql),
   mọi secret bắt buộc (`:?`). `deploy.sh <tag>` triển khai.
+- CI/CD (viết lại 19/11/2026), tập trung ở meta-repo:
+  - `.github/workflows/ci.yaml`: PR + push `dev`/`master` → matrix 12 thành
+    phần (contracts, core-api, web, worker, packages-ai, ai-sdk, ai-tutor,
+    mcp-service, embedding-service, service-sdk, document-inspector,
+    video-mcp), mỗi cái gọi `component.yaml`; push mà test xanh → gọi
+    `images.yaml` build + đẩy 7 image lên `ghcr.io/252-da/da-*` với tag
+    `:<sha meta-repo>` và `:<nhánh>`. Deploy vẫn chạy tay `deploy.sh <sha>`.
+  - Lệnh kiểm tra của mọi thành phần nằm ở MỘT chỗ:
+    `scripts/ci/test-component.sh <thành-phần>` (chạy local được, `--list`).
+    Submodule kéo bằng `scripts/ci/init-submodules.sh` (luôn bỏ `report`).
+  - Repo con (worker, packages-ai, ai-tutor, core-api, web) chỉ có workflow
+    mỏng gọi `252-DA/da-platform/.github/workflows/component.yaml@dev`: lấy
+    da-platform `dev` làm nền rồi đặt commit của repo con vào. Không còn SHA
+    repo anh em ghim cứng (cơ chế `materialize@<sha>` cũ đã bỏ). ai-sdk giữ CI
+    riêng vì tự đứng được.
+  - ESLint core-api trong CI chặn luật phân tầng, prettier (đã format toàn
+    bộ 19/11; lỗi định dạng thì `pnpm format`, kiểm bằng `pnpm format:check`)
+    + mọi luật khác, trừ danh sách luật nợ cũ (`no-unsafe-*`...) liệt kê
+    trong script.
 - Observability: deploy/docker-compose.observability.yml (Prometheus +
   Grafana + Loki + Alloy); metrics port 909x per service; tracing OTLP off
   mặc định.
@@ -264,7 +283,9 @@ outbox-worker project Qdrant/Neo4j.
   + fixture valid, handler đăng ký `@WorkerResultHandler` trong module domain.
 - Model mới: chỉ thêm profile vào ai-sdk catalog.py + llm_model_catalog.json,
   KHÔNG hardcode provider/model ở nơi khác.
-- Test: core-api `pnpm test`; web `pnpm test:lti`; python repos `uv run
+- Test: chạy y như CI bằng `scripts/ci/test-component.sh <thành-phần>`
+  (đặt `UV_PROJECT_ENVIRONMENT` nếu không muốn đụng .venv của mình). Lẻ:
+  core-api `pnpm test`; web `pnpm test:lti`; python repos `uv run
   pytest` (mỗi repo có .venv riêng); video-mcp `go test ./...`. Kiểm web đầy
   đủ (tsc + test client coreApi so route hai chiều với controller core-api +
   test LTI, chạy trong container): `scripts/test-web-core-api.sh`.

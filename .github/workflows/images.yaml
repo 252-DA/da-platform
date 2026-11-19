@@ -3,30 +3,31 @@ name: images
 # Build image prod và đẩy lên GHCR (docs/ke-hoach-deploy-cloud.md GĐ2).
 # VM chỉ `pull`: deploy/deploy.sh <sha>.
 #
-# Tag :<sha> là SHA của meta-repo. SHA này đã cố định commit của mọi submodule,
-# nên một tag ứng với đúng một bộ code. Tag :master chỉ gắn khi build từ master.
+# Chạy tự động từ ci.yaml sau khi test xanh trên push vào dev/master, hoặc tay
+# qua workflow_dispatch (build từ một nhánh bất kỳ, kể cả khi test đang đỏ).
 #
-# Lần push đầu tiên mỗi package được tạo ở chế độ private. Muốn VM pull không
-# cần đăng nhập thì đổi sang Public: Org 252-DA → Packages → <package> → Package
-# settings → Change visibility. Image không chứa secret (.dockerignore loại .env
-# và web/keys; core-api/keys chỉ có public key).
+# Tag :<sha> là SHA của meta-repo. SHA này đã cố định commit của mọi submodule,
+# nên một tag ứng với đúng một bộ code. Thêm tag theo tên nhánh (:dev, :master)
+# để biết bản mới nhất của mỗi nhánh.
+#
+# Repo public nên package mới tạo cũng nên để Public (Org 252-DA → Packages →
+# <package> → Package settings → Change visibility) để VM pull không cần đăng
+# nhập. Image không chứa secret (.dockerignore loại .env và web/keys;
+# core-api/keys chỉ có public key).
 
 on:
-  push:
-    branches: [master]
-  workflow_dispatch:   # build từ nhánh khác master (vd. lần deploy đầu)
+  workflow_call:
+  workflow_dispatch:
 
 permissions:
   contents: read
   packages: write
 
-concurrency:
-  group: images-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   build:
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -41,7 +42,7 @@ jobs:
           - { name: ai-tutor,          file: ai-tutor/Dockerfile,          target: "" }
     steps:
       # Image worker và embedding-service nặng vài GB (torch); runner chỉ có ~14 GB trống.
-      - name: Free disk space
+      - name: Dọn đĩa
         if: matrix.name == 'worker' || matrix.name == 'embedding-service'
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
@@ -49,7 +50,10 @@ jobs:
 
       - uses: actions/checkout@v4
         with:
-          submodules: true
+          persist-credentials: false
+
+      - name: Submodule (trừ report)
+        run: bash scripts/ci/init-submodules.sh
 
       - uses: docker/setup-buildx-action@v3
 
@@ -65,7 +69,7 @@ jobs:
           images: ghcr.io/252-da/da-${{ matrix.name }}
           tags: |
             type=raw,value=${{ github.sha }}
-            type=raw,value=master,enable=${{ github.ref == 'refs/heads/master' }}
+            type=ref,event=branch
 
       - uses: docker/build-push-action@v6
         with:
@@ -75,5 +79,15 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+      - name: Tóm tắt
+        run: |
+          {
+            echo "### ${{ matrix.name }}"
+            echo '```'
+            echo "${{ steps.meta.outputs.tags }}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
