@@ -1,0 +1,887 @@
+#!/usr/bin/env bash
+# canvas-doctor: kiểm tra sức khỏe phần tích hợp giữa DA Platform (core-api, web)
+# và Canvas LMS chạy cục bộ trong Docker. Gộp các lỗi triển khai im lặng
+# (migration chưa áp dụng, thiếu biến môi trường trong container, thiếu placement
+# LTI trong Canvas...) vào một lệnh.
+#
+# CHỈ ĐỌC, không sửa gì:
+#   - DB của DA: chạy node trong container core-api với
+#     `SET default_transaction_read_only = on`, chỉ SELECT.
+#   - DB của Canvas: psql với default_transaction_read_only=on, chỉ SELECT.
+#   - Canvas API: chỉ GET /api/v1/users/self. Redis: chỉ GET.
+#   - Không migrate/generate, không docker compose up/down/restart.
+#   - Không in giá trị bí mật: token, khóa, DATABASE_URL chỉ báo "có/thiếu".
+#
+# Danh sách placement, scope và custom field mong đợi được đọc lúc chạy từ
+# scripts/setup_canvas_lti.rb (tool chính) và scripts/setup_canvas_chat_lti.rb
+# (tool chat), nên không cần sửa file này khi hai script đó đổi.
+#
+# Cách dùng: scripts/canvas-doctor [--quiet]
+#   --quiet   chỉ in dòng WARN/FAIL và dòng tổng kết
+# Thoát 1 nếu có FAIL, ngược lại 0.
+#
+# Đổi tên container khi cần: DA_DOCTOR_CORE_API, DA_DOCTOR_WEB,
+# DA_DOCTOR_CANVAS_WEB, DA_DOCTOR_CANVAS_JOBS, DA_DOCTOR_CANVAS_PG.
+# Chạy được với bash 3.2 của macOS; chỉ cần docker, grep, sed, awk.
+
+set -u
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+CORE_API=${DA_DOCTOR_CORE_API:-da-platform-core-api-1}
+WEB=${DA_DOCTOR_WEB:-da-platform-web-1}
+CANVAS_WEB=${DA_DOCTOR_CANVAS_WEB:-canvas-lms-web-1}
+CANVAS_JOBS=${DA_DOCTOR_CANVAS_JOBS:-canvas-lms-jobs-1}
+CANVAS_PG=${DA_DOCTOR_CANVAS_PG:-canvas-lms-postgres-1}
+CANVAS_DB=canvas_development
+SHARD_BASE=10000000000000   # id toàn cục của developer key = shard * 10^13 + id cục bộ
+TAB=$(printf '\t')
+ESC=$(printf '\033')
+
+QUIET=0
+case "${1:-}" in
+  --quiet|-q) QUIET=1 ;;
+  "") ;;
+  *)
+    echo "Cách dùng: scripts/canvas-doctor [--quiet]" >&2
+    exit 2
+    ;;
+esac
+
+# ---------------------------------------------------------------- in kết quả
+
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+  C_OK=$(printf '\033[32m'); C_WARN=$(printf '\033[33m'); C_FAIL=$(printf '\033[31m'); C_OFF=$(printf '\033[0m')
+else
+  C_OK=""; C_WARN=""; C_FAIL=""; C_OFF=""
+fi
+
+N_OK=0; N_WARN=0; N_FAIL=0
+HEAD=""; HEAD_SHOWN=0
+
+section() { HEAD=$1; HEAD_SHOWN=0; }
+
+redact() { sed -E 's#(://[^:/@ ]+:)[^@ ]+@#\1***@#g'; }
+
+# emit MỨC NHÃN CHI_TIẾT
+emit() {
+  local level=$1 label=$2 detail=$3 color
+  case $level in
+    OK)   N_OK=$((N_OK + 1));     color=$C_OK ;;
+    WARN) N_WARN=$((N_WARN + 1)); color=$C_WARN ;;
+    *)    N_FAIL=$((N_FAIL + 1)); color=$C_FAIL ;;
+  esac
+  if [ "$QUIET" = 1 ] && [ "$level" = OK ]; then return; fi
+  if [ "$HEAD_SHOWN" = 0 ]; then
+    printf '\n== %s ==\n' "$HEAD"
+    HEAD_SHOWN=1
+  fi
+  detail=$(printf '%s' "$detail" | redact)
+  printf '  %s%-4s%s %s: %s\n' "$color" "$level" "$C_OFF" "$label" "$detail"
+}
+ok()   { emit OK "$1" "$2"; }
+warn() { emit WARN "$1" "$2"; }
+fail() { emit FAIL "$1" "$2"; }
+
+# fmt_age GIÂY: "5 phút", "3 giờ", "43 ngày"
+fmt_age() {
+  local s=$1
+  case $s in ''|*[!0-9]*) s=0 ;; esac
+  if [ "$s" -lt 120 ]; then printf '%s giây' "$s"
+  elif [ "$s" -lt 7200 ]; then printf '%s phút' $((s / 60))
+  elif [ "$s" -lt 172800 ]; then printf '%s giờ' $((s / 3600))
+  else printf '%s ngày' $((s / 86400)); fi
+}
+
+first_line() { printf '%s\n' "$1" | sed -n '1p' | cut -c1-240; }
+
+# ------------------------------------------------- chương trình awk / node
+# Lưu trong biến (read -d '') để được dùng cả dấu nháy đơn mà không phải thoát.
+
+# Đọc setup_canvas*.rb: in P<TAB>placement, S<TAB>scope, CF<TAB>tên<TAB>giá trị
+# (custom field cấp tool có tên trần, cấp placement có tên "placement.tên").
+IFS= read -r -d '' AWK_RB <<'EOF'
+function kv(s,   p, k, v) {
+  sub(/^[ \t]+/, "", s); sub(/,?[ \t]*$/, "", s)
+  p = index(s, ":"); if (p == 0) return ""
+  k = substr(s, 1, p - 1); v = substr(s, p + 1)
+  sub(/^[ \t]+/, "", v); gsub(/^"|"$/, "", v)
+  return k "\t" v
+}
+/^[ \t]*#/ { next }
+/^configuration_params = [{]/ { conf = 1; next }
+/^[}]\.with_indifferent_access/ { conf = 0 }
+!conf { next }
+cf { if ($0 ~ /^  [}],?[ \t]*$/) cf = 0; else { r = kv($0); if (r != "") print "CF\t" r }; next }
+sc { if ($0 ~ /^  []],?[ \t]*$/) sc = 0; else if (match($0, /"[^"]+"/)) print "S\t" substr($0, RSTART + 1, RLENGTH - 2); next }
+/^  custom_fields: [{][ \t]*$/ { cf = 1; next }
+/^  scopes: [[][ \t]*$/ { sc = 1; next }
+/^    [{][ \t]*$/ { item = 1; pname = ""; pcf = ""; next }
+item && /^    [}],?[ \t]*$/ {
+  if (pname != "") {
+    print "P\t" pname
+    n = split(pcf, parts, "\n")
+    for (i = 1; i <= n; i++) if (parts[i] != "") print "CF\t" pname "." parts[i]
+  }
+  item = 0; next
+}
+item && /^      placement: / { s = $0; sub(/^      placement: */, "", s); sub(/,?[ \t]*$/, "", s); gsub(/"/, "", s); pname = s; next }
+item && /^      custom_fields: [{]/ {
+  s = $0; sub(/^      custom_fields: *[{] */, "", s); sub(/ *[}],?[ \t]*$/, "", s)
+  n = split(s, parts, / *, */)
+  for (i = 1; i <= n; i++) { r = kv(parts[i]); if (r != "") pcf = pcf r "\n" }
+  next
+}
+EOF
+
+# Đọc cột settings (YAML của Canvas) và in CF<TAB>tên<TAB>giá trị cùng dạng như trên.
+# Có xử lý anchor/alias (&1, *1) mà Psych dùng khi hai chỗ chia sẻ một hash.
+IFS= read -r -d '' AWK_YAML <<'EOF'
+function ind(s) { match(s, /^ */); return RLENGTH }
+function entry(s,   p, k, v) {
+  sub(/^ +/, "", s); p = index(s, ":"); if (p == 0) return ""
+  k = substr(s, 1, p - 1); v = substr(s, p + 1)
+  sub(/^ +/, "", v); sub(/ +$/, "", v)
+  if (v ~ /^".*"$/ || v ~ /^\047.*\047$/) v = substr(v, 2, length(v) - 2)
+  return k "\t" v
+}
+function idof(s)    { if (match(s, /&[A-Za-z0-9_]+/)) return substr(s, RSTART + 1, RLENGTH - 1); return "" }
+function aliasof(s) { if (match(s, /[*][A-Za-z0-9_]+/)) return substr(s, RSTART + 1, RLENGTH - 1); return "" }
+function closecf(   n, j, a) {
+  if (cfopen < 0) return
+  if (cfid != "") anch[cfid] = cfbuf
+  if (cfowner == "item") pcf = cfbuf
+  else if (cfowner == "top") {
+    n = split(cfbuf, a, "\n")
+    for (j = 1; j <= n; j++) if (a[j] != "") print "CF\t" a[j]
+  }
+  cfopen = -1
+}
+function flushitem(   n, j, a) {
+  if (inItem && pname != "") {
+    n = split(pcf, a, "\n")
+    for (j = 1; j <= n; j++) if (a[j] != "") print "CF\t" pname "." a[j]
+  }
+  inItem = 0; pname = ""; pcf = ""
+}
+BEGIN { cfopen = -1; inItem = 0; sec = "" }
+/^[ ]*$/ || /^[ ]*#/ || /^---/ { next }
+{
+  i = ind($0)
+  if (cfopen >= 0 && i <= cfopen) closecf()
+  if (i == 0) {
+    if ($0 ~ /^- / && sec == "placements") { flushitem(); inItem = 1; next }
+    if ($0 ~ /^[^ -][^:]*:/) {
+      flushitem()
+      sec = $0; sub(/:.*/, "", sec)
+      if (sec == "custom_fields") {
+        cfopen = 0; cfowner = "top"; cfid = idof($0); cfbuf = ""
+        aid = aliasof($0); if (aid != "") cfbuf = anch[aid]
+      }
+    }
+    next
+  }
+  if (cfopen >= 0) { r = entry($0); if (r != "" && i == cfopen + 2) cfbuf = cfbuf r "\n"; next }
+  if ($0 ~ /^ *custom_fields:/) {
+    owner = (inItem && i == 2) ? "item" : "other"
+    aid = aliasof($0)
+    if (aid != "") { if (owner == "item") pcf = anch[aid]; next }
+    if ($0 ~ /[{][}]/) next
+    cfopen = i; cfowner = owner; cfid = idof($0); cfbuf = ""
+    next
+  }
+  if (inItem && i == 2 && $0 ~ /^  placement:/) { s = $0; sub(/^  placement: */, "", s); sub(/ +$/, "", s); pname = s }
+}
+END { closecf(); flushitem() }
+EOF
+
+# So khớp hai danh sách CF: dòng E (mong đợi) rồi dòng A (thực tế) -> MISS / DIFF.
+IFS= read -r -d '' AWK_CMP <<'EOF'
+BEGIN { FS = "\t" }
+$1 == "E" { want[$2] = $3; order[++n] = $2; next }
+$1 == "A" { have[$2] = 1; got[$2] = $3; next }
+END {
+  for (i = 1; i <= n; i++) {
+    k = order[i]
+    if (!(k in have)) print "MISS\t" k
+    else if (got[k] != want[k]) print "DIFF\t" k "\t" want[k] "\t" got[k]
+  }
+}
+EOF
+
+# Chạy trong container core-api: một lần node, mỗi mục tự bắt lỗi riêng.
+# Dòng ra: TIÊU_ĐỀ<TAB>trường...; trường rỗng thành "-"; kết thúc bằng dòng END.
+IFS= read -r -d '' NODE_JS <<'EOF'
+const out = (...f) =>
+  console.log(f.map((x) => String(x ?? '').replace(/[\t\r\n]+/g, ' ').trim() || '-').join('\t'));
+const scrub = (m) =>
+  String(m).replace(/(:\/\/[^\/\s:@]*:)[^@\s]*@/g, '$1***@').slice(0, 300);
+const why = (e) => scrub((e && (e.message || e.code)) || e);
+
+(async () => {
+  let db = null;
+  let dbErr = '';
+  try {
+    const { Client } = require('pg');
+    const c = new Client({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 8000 });
+    await c.connect();
+    await c.query('SET default_transaction_read_only = on');
+    await c.query("SET statement_timeout = '15s'");
+    db = c;
+  } catch (e) {
+    dbErr = why(e);
+    out('ERR', 'db', dbErr);
+  }
+  const q = async (name, sql, fn) => {
+    if (!db) return out('ERR', name, 'không có kết nối DB: ' + dbErr);
+    try {
+      fn((await db.query(sql)).rows);
+    } catch (e) {
+      out('ERR', name, why(e));
+    }
+  };
+
+  await q(
+    'migrations',
+    `SELECT migration_name,
+            CASE WHEN rolled_back_at IS NOT NULL THEN 'rolled_back'
+                 WHEN finished_at IS NULL THEN 'unfinished' ELSE 'ok' END AS state
+       FROM _prisma_migrations`,
+    (rows) => rows.forEach((r) => out('MIG', r.migration_name, r.state)),
+  );
+
+  await q(
+    'sync',
+    `SELECT c.code,
+            COALESCE((SELECT r.lms_platform_course_id FROM lms_course_ref r
+                       WHERE r.course_id = c.course_id AND r.deleted_at IS NULL
+                       ORDER BY r.synced_at DESC NULLS LAST LIMIT 1), '?') AS canvas_id,
+            k.kind,
+            EXISTS (SELECT 1 FROM lms_course_ref r
+                     WHERE r.course_id = c.course_id AND r.deleted_at IS NULL
+                       AND r.nrps_context_memberships_url IS NOT NULL) AS has_nrps,
+            s.status, s.trigger, s.error,
+            EXTRACT(EPOCH FROM (now() - COALESCE(s.finished_at, s.started_at)))::int AS age_s
+       FROM courses c
+      CROSS JOIN (VALUES ('documents'), ('roster')) AS k(kind)
+       LEFT JOIN LATERAL (
+              SELECT * FROM canvas_sync_runs x
+               WHERE x.course_id = c.course_id AND x.kind = k.kind
+               ORDER BY x.started_at DESC LIMIT 1) s ON true
+      WHERE c.deleted_at IS NULL
+        AND c.course_id IN (SELECT course_id FROM lms_course_ref WHERE deleted_at IS NULL)
+      ORDER BY c.code, k.kind`,
+    (rows) =>
+      rows.forEach((r) =>
+        out('SYNC', r.code, r.canvas_id, r.kind, r.status ?? 'none', r.trigger ?? '-',
+            r.age_s ?? 0, r.has_nrps ? 1 : 0, String(r.error ?? '').slice(0, 240)),
+      ),
+  );
+
+  await q(
+    'ags',
+    `SELECT ags_status, count(*)::int AS n,
+            count(*) FILTER (WHERE ags_status = 'PENDING'
+                               AND attempted_at < now() - interval '15 minutes')::int AS pending_old
+       FROM quiz_attempts
+      WHERE resource_link_id IS NOT NULL AND deleted_at IS NULL
+      GROUP BY ags_status ORDER BY ags_status`,
+    (rows) => rows.forEach((r) => out('AGS', r.ags_status, r.n, r.pending_old)),
+  );
+  await q(
+    'agslast',
+    `SELECT to_char(max(ags_posted_at) AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI') AS ts,
+            extract(epoch FROM now() - max(ags_posted_at))::bigint AS age_s
+       FROM quiz_attempts
+      WHERE resource_link_id IS NOT NULL AND deleted_at IS NULL AND ags_status = 'POSTED'`,
+    (rows) => out('AGSLAST', rows[0]?.ts, rows[0]?.age_s),
+  );
+
+  await q(
+    'assignment',
+    // seed_pending: bài kiểm tra có giới hạn lần làm đã launch từ Assignment
+    // (canvas_assignment_id đã ghi) mà chưa chốt được: lần đẩy số lần làm sang
+    // Canvas ở launch gần nhất bị lỗi (LtiService.seedAttempts).
+    `SELECT count(*)::int AS total, count(l.assignment_synced_at)::int AS synced,
+            count(*) FILTER (WHERE l.assignment_synced_at IS NULL
+                               AND l.canvas_assignment_id IS NOT NULL
+                               AND q.mode = 'exam' AND q.max_attempts IS NOT NULL)::int AS seed_pending
+       FROM lti_resource_links l
+       LEFT JOIN quiz_sets q ON q.quiz_set_id = l.target_id
+      WHERE l.target_kind = 'quiz_set' AND l.deleted_at IS NULL`,
+    (rows) => out('ASG', rows[0].total, rows[0].synced, rows[0].seed_pending),
+  );
+
+  await q(
+    'roster',
+    `SELECT count(*) FILTER (WHERE lms_platform_user_id IS NOT NULL)::int AS with_id,
+            count(*) FILTER (WHERE lms_platform_user_id IS NULL)::int AS without_id
+       FROM lms_user_mappings WHERE deleted_at IS NULL`,
+    (rows) => out('RID', rows[0].with_id, rows[0].without_id),
+  );
+
+  // Token Canvas: một GET thật, chỉ in mã HTTP (giống CanvasApiClient.checkToken).
+  try {
+    const base = (process.env.CANVAS_API_URL || process.env.LTI_PLATFORM_URL || '').replace(/\/+$/, '');
+    if (!base || !process.env.CANVAS_API_TOKEN) {
+      out('TOKEN', 'nocfg');
+    } else {
+      const res = await fetch(base + '/api/v1/users/self', {
+        method: 'GET',
+        headers: { Authorization: 'Bearer ' + process.env.CANVAS_API_TOKEN, Accept: 'application/json' },
+        redirect: 'manual',
+        signal: AbortSignal.timeout(15000),
+      });
+      out('TOKEN', 'http', res.status);
+    }
+  } catch (e) {
+    out('TOKEN', 'neterr', why(e.cause || e));
+  }
+
+  // Kết quả check_token hằng ngày mà core-api cất ở Redis.
+  try {
+    const Redis = require('ioredis');
+    const r = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+      lazyConnect: true,
+      connectTimeout: 5000,
+      maxRetriesPerRequest: 1,
+      retryStrategy: () => null,
+      enableOfflineQueue: false,
+    });
+    r.on('error', () => {});
+    await r.connect();
+    const raw = await r.get('canvas:token-status');
+    r.disconnect();
+    if (!raw) {
+      out('CACHE', 'none');
+    } else {
+      const j = JSON.parse(raw);
+      const t = Date.parse(j.checked_at);
+      out('CACHE', 'val', Number.isNaN(t) ? '-' : Math.max(0, Math.round((Date.now() - t) / 1000)),
+          j.ok ? 1 : 0, j.http_status ?? '-', String(j.message ?? '').slice(0, 160));
+    }
+  } catch (e) {
+    out('ERR', 'redis', why(e));
+  }
+
+  try { if (db) await db.end(); } catch (e) { /* bỏ qua */ }
+})()
+  .catch((e) => out('ERR', 'fatal', why(e)))
+  .finally(() => process.stdout.write('END\n', () => process.exit(0)));
+EOF
+
+# Dò biến môi trường trong container. Giá trị bí mật chỉ báo <set>.
+IFS= read -r -d '' ENV_PROBE_CORE <<'EOF'
+for v in LTI_REDIRECT_URI LTI_TOOL_URL CANVAS_API_URL LTI_PLATFORM_URL LTI_CLIENT_ID CANVAS_SYNC_INTERVAL_MS CANVAS_AUTO_SYNC_ENABLED; do
+  printf '%s=%s\n' "$v" "$(printenv "$v")"
+done
+for v in CANVAS_API_TOKEN DATABASE_URL REDIS_URL; do
+  if [ -n "$(printenv "$v")" ]; then echo "$v=<set>"; else echo "$v="; fi
+done
+EOF
+IFS= read -r -d '' ENV_PROBE_WEB <<'EOF'
+for v in LTI_REDIRECT_URI LTI_CLIENT_ID LTI_EXTRA_CLIENT_IDS; do
+  printf '%s=%s\n' "$v" "$(printenv "$v")"
+done
+EOF
+
+envv() { printf '%s\n' "$1" | sed -n "s/^$2=//p" | head -1; }
+# dòng TIÊU_ĐỀ của kết quả node
+nrows() { printf '%s\n' "$NODE_OUT" | awk -F'\t' -v p="$1" '$1 == p'; }
+# lỗi của một mục trong node (rỗng nếu không lỗi); nếu không thì lỗi chung của DB
+nerr() { printf '%s\n' "$NODE_OUT" | awk -F'\t' -v p="$1" '$1 == "ERR" && $2 == p { print $3; exit }'; }
+
+# ============================================================ 1. Container
+
+section "Container"
+DOCKER_OK=1
+if ! command -v docker >/dev/null 2>&1; then
+  DOCKER_OK=0
+  fail "Docker" "không tìm thấy lệnh docker"
+elif ! docker ps -q >/dev/null 2>&1; then
+  DOCKER_OK=0
+  fail "Docker" "daemon không trả lời"
+fi
+
+UP_CORE=0; UP_WEB=0; UP_CWEB=0; UP_CJOBS=0; UP_PG=0
+chk_container() { # nhãn tên -> đặt LAST_UP
+  local st=""
+  LAST_UP=0
+  [ "$DOCKER_OK" = 1 ] || { fail "$1" "$2: bỏ qua vì Docker không dùng được"; return; }
+  st=$(docker inspect -f '{{.State.Status}}{{if .State.Health}} ({{.State.Health.Status}}){{end}}' "$2" 2>/dev/null)
+  case $st in
+    running*unhealthy*) warn "$1" "$2 đang chạy nhưng healthcheck báo unhealthy"; LAST_UP=1 ;;
+    running*) ok "$1" "$2 đang chạy"; LAST_UP=1 ;;
+    "") fail "$1" "$2 không tồn tại" ;;
+    *) fail "$1" "$2 ở trạng thái $st" ;;
+  esac
+}
+chk_container "core-api" "$CORE_API"; UP_CORE=$LAST_UP
+chk_container "web" "$WEB"; UP_WEB=$LAST_UP
+chk_container "Canvas web" "$CANVAS_WEB"; UP_CWEB=$LAST_UP
+chk_container "Canvas jobs" "$CANVAS_JOBS"; UP_CJOBS=$LAST_UP
+chk_container "Canvas postgres" "$CANVAS_PG"; UP_PG=$LAST_UP
+
+# --------------------------------------------- thu thập dữ liệu từ core-api
+NODE_OUT=""; NODE_OK=0; NODE_WHY="core-api không chạy"
+ENV_CORE=""; ENV_CORE_OK=0; ENV_CORE_WHY="core-api không chạy"
+ENV_WEB=""; ENV_WEB_OK=0; ENV_WEB_WHY="web không chạy"
+
+if [ "$UP_CORE" = 1 ]; then
+  NODE_OUT=$(printf '%s\n' "$NODE_JS" | docker exec -i -w /app "$CORE_API" node - 2>&1)
+  if [ "$(printf '%s\n' "$NODE_OUT" | tail -1)" = "END" ]; then
+    NODE_OK=1
+  else
+    # Chuỗi lỗi hữu ích thường là dòng "Error: ..."; nếu không có thì lấy dòng cuối.
+    NODE_WHY="node trong core-api không chạy xong: $(first_line "$(printf '%s\n' "$NODE_OUT" | grep -m1 -i 'error' || printf '%s\n' "$NODE_OUT" | tail -1)")"
+  fi
+  if ENV_CORE=$(docker exec "$CORE_API" sh -c "$ENV_PROBE_CORE" 2>&1); then
+    ENV_CORE_OK=1
+  else
+    ENV_CORE_WHY="docker exec lỗi: $(first_line "$ENV_CORE")"
+  fi
+fi
+if [ "$UP_WEB" = 1 ]; then
+  if ENV_WEB=$(docker exec "$WEB" sh -c "$ENV_PROBE_WEB" 2>&1); then
+    ENV_WEB_OK=1
+  else
+    ENV_WEB_WHY="docker exec lỗi: $(first_line "$ENV_WEB")"
+  fi
+fi
+
+# node_check_ready MỤC NHÃN: trả 0 nếu có dữ liệu dùng được, ngược lại in FAIL và trả 1
+node_ready() {
+  local why
+  if [ "$NODE_OK" != 1 ]; then fail "$2" "$NODE_WHY"; return 1; fi
+  why=$(nerr "$1")
+  if [ -n "$why" ]; then fail "$2" "không đọc được: $why"; return 1; fi
+  return 0
+}
+
+# ============================================================ 2. Migration
+
+section "Migration DB (core-api)"
+MIG_DIR="$ROOT/core-api/prisma/migrations"
+if node_ready migrations "Migration"; then
+  if [ ! -d "$MIG_DIR" ]; then
+    fail "Migration" "không thấy thư mục $MIG_DIR"
+  else
+    ON_DISK=""
+    for d in "$MIG_DIR"/*/; do
+      [ -d "$d" ] && ON_DISK="$ON_DISK$(basename "$d")
+"
+    done
+    APPLIED=$(nrows MIG | awk -F'\t' '$3 == "ok" { print $2 }')
+    NOT_OK=$(nrows MIG | awk -F'\t' '$3 != "ok" { print $2 " (" $3 ")" }')
+    MISSING=""; N_DISK=0; N_MISSING=0
+    while IFS= read -r m; do
+      [ -z "$m" ] && continue
+      N_DISK=$((N_DISK + 1))
+      if ! printf '%s\n' "$APPLIED" | grep -Fxq -- "$m"; then
+        N_MISSING=$((N_MISSING + 1))
+        state=$(printf '%s\n' "$NOT_OK" | grep -F -- "$m (" | head -1 | sed -E 's/.*\((.*)\)/\1/')
+        if [ -n "$state" ]; then MISSING="$MISSING $m[$state]"; else MISSING="$MISSING $m"; fi
+      fi
+    done <<EOF
+$ON_DISK
+EOF
+    EXTRA=""
+    while IFS= read -r m; do
+      [ -z "$m" ] && continue
+      printf '%s\n' "$ON_DISK" | grep -Fxq -- "$m" || EXTRA="$EXTRA $m"
+    done <<EOF
+$APPLIED
+EOF
+    if [ "$N_MISSING" -gt 0 ]; then
+      fail "Migration" "chưa áp dụng $N_MISSING/$N_DISK:$MISSING"
+    else
+      ok "Migration" "đã áp dụng $N_DISK/$N_DISK thư mục trong core-api/prisma/migrations"
+    fi
+    [ -n "$EXTRA" ] && warn "Migration lạ" "DB có migration không còn trên đĩa:$EXTRA"
+  fi
+fi
+
+# ======================================================= 3. Build core-api
+
+section "Build core-api"
+if [ "$UP_CORE" != 1 ]; then
+  fail "Build" "core-api không chạy"
+else
+  # Chỉ lấy dòng trạng thái watch và lỗi TS; dòng "Found N errors" cuối cùng quyết định.
+  LOGSEL=$(docker logs "$CORE_API" 2>&1 | grep -a -E 'Found [0-9]+ errors?|error TS' | sed "s/${ESC}\[[0-9;]*[A-Za-z]//g")
+  LAST_FOUND=$(printf '%s\n' "$LOGSEL" | grep -a 'Found [0-9]' | tail -1)
+  if [ -z "$LAST_FOUND" ]; then
+    warn "Build" "không thấy dòng 'Found N errors' trong log (container mới tạo lại, log bị xoay, hoặc không chạy watch)"
+  else
+    B_N=$(printf '%s' "$LAST_FOUND" | sed -E 's/.*Found ([0-9]+) error.*/\1/')
+    B_TS=$(printf '%s' "$LAST_FOUND" | sed -E -n 's/^\[([^]]*)\].*/\1/p')
+    if [ "$B_N" = 0 ]; then
+      ok "Build" "0 lỗi biên dịch, lần gần nhất ${B_TS:-?}"
+    else
+      B_ERR=$(printf '%s\n' "$LOGSEL" | grep -a 'error TS' | tail -1 | cut -c1-200)
+      fail "Build" "$B_N lỗi biên dịch lúc ${B_TS:-?}, code đang chạy là bản cũ. Lỗi gần nhất: ${B_ERR:-không rõ}"
+    fi
+  fi
+fi
+
+# ================================================== 4. Biến môi trường
+
+section "Biến môi trường trong container"
+CORE_CLIENT=""; WEB_EXTRA=""; TOOL_URL=""
+if [ "$ENV_CORE_OK" != 1 ]; then
+  fail "core-api" "không đọc được biến môi trường: $ENV_CORE_WHY"
+else
+  v_redir=$(envv "$ENV_CORE" LTI_REDIRECT_URI)
+  v_tool=$(envv "$ENV_CORE" LTI_TOOL_URL)
+  v_api=$(envv "$ENV_CORE" CANVAS_API_URL)
+  v_tok=$(envv "$ENV_CORE" CANVAS_API_TOKEN)
+  CORE_CLIENT=$(envv "$ENV_CORE" LTI_CLIENT_ID)
+  TOOL_URL=${v_tool:-$v_redir}
+  if [ -n "$v_redir" ] || [ -n "$v_tool" ]; then
+    if [ -n "$v_tool" ]; then ok "core-api LTI_TOOL_URL/LTI_REDIRECT_URI" "LTI_TOOL_URL=$v_tool"
+    else ok "core-api LTI_TOOL_URL/LTI_REDIRECT_URI" "LTI_REDIRECT_URI=$v_redir"; fi
+  else
+    fail "core-api LTI_TOOL_URL/LTI_REDIRECT_URI" "thiếu cả hai: điểm sẽ được đẩy về mà không kèm bài nộp để SpeedGrader hiện"
+  fi
+  if [ -n "$v_api" ]; then ok "core-api CANVAS_API_URL" "$v_api"; else fail "core-api CANVAS_API_URL" "thiếu"; fi
+  if [ -n "$v_tok" ]; then ok "core-api CANVAS_API_TOKEN" "có (không in giá trị)"; else fail "core-api CANVAS_API_TOKEN" "thiếu"; fi
+  if [ -n "$CORE_CLIENT" ]; then ok "core-api LTI_CLIENT_ID" "có"; else fail "core-api LTI_CLIENT_ID" "thiếu"; fi
+fi
+if [ "$ENV_WEB_OK" != 1 ]; then
+  fail "web" "không đọc được biến môi trường: $ENV_WEB_WHY"
+else
+  w_redir=$(envv "$ENV_WEB" LTI_REDIRECT_URI)
+  w_client=$(envv "$ENV_WEB" LTI_CLIENT_ID)
+  WEB_EXTRA=$(envv "$ENV_WEB" LTI_EXTRA_CLIENT_IDS)
+  if [ -n "$w_redir" ]; then ok "web LTI_REDIRECT_URI" "$w_redir"; else fail "web LTI_REDIRECT_URI" "thiếu"; fi
+  if [ -z "$w_client" ]; then
+    fail "web LTI_CLIENT_ID" "thiếu"
+  elif [ -n "$CORE_CLIENT" ] && [ "$w_client" != "$CORE_CLIENT" ]; then
+    warn "web LTI_CLIENT_ID" "khác LTI_CLIENT_ID của core-api"
+  else
+    ok "web LTI_CLIENT_ID" "có${CORE_CLIENT:+, khớp core-api}"
+  fi
+  if [ -n "$WEB_EXTRA" ]; then ok "web LTI_EXTRA_CLIENT_IDS" "$WEB_EXTRA"
+  else warn "web LTI_EXTRA_CLIENT_IDS" "trống: không có tool phụ (nút chat khóa học) nào được web chấp nhận"; fi
+fi
+
+# ================================================= 5. Đăng ký tool trong Canvas
+
+section "Đăng ký tool trong Canvas"
+
+# cq_stdin: chạy SQL (từ stdin) bằng psql chỉ đọc trong container Postgres của Canvas
+cq_stdin() {
+  docker exec -i -e PGOPTIONS="-c default_transaction_read_only=on" "$CANVAS_PG" \
+    psql -U postgres -d "$CANVAS_DB" -At -F "$TAB" -f - 2>&1
+}
+# phần giữa hai dấu @@NAME
+psec() { printf '%s\n' "$1" | awk -v m="@@$2" '$0 == m { f = 1; next } /^@@/ { f = 0 } f'; }
+
+check_tool() { # vai trò (chính|chat)  client_id_toàn_cục  file_setup  main|extra
+  local label=$1 gid=$2 script=$3 kind=$4 tag
+  local lid tid tname tws kws tdomain nctl avail sql res row exp exp_pl exp_sc exp_cf act_cf
+  local missing p s cmp host_core act_pl act_sc diffs n_exp
+  case $gid in ''|*[!0-9]*) fail "Tool $label" "client id không hợp lệ: '$gid'"; return ;; esac
+  lid=$((10#$gid % SHARD_BASE))
+  if [ "$UP_PG" != 1 ]; then fail "Tool $label" "Canvas postgres không chạy"; return; fi
+
+  exp=$(awk "$AWK_RB" "$script" 2>/dev/null)
+  exp_pl=$(printf '%s\n' "$exp" | awk -F'\t' '$1 == "P" { print $2 }')
+  exp_sc=$(printf '%s\n' "$exp" | awk -F'\t' '$1 == "S" { print $2 }')
+  exp_cf=$(printf '%s\n' "$exp" | awk -F'\t' '$1 == "CF"')
+
+  local TID="(SELECT id FROM context_external_tools WHERE developer_key_id = $lid AND workflow_state <> 'deleted' ORDER BY id LIMIT 1)"
+  sql="SELECT '@@TOOL';
+SELECT t.id, t.name, t.workflow_state, coalesce(k.workflow_state, '-'), coalesce(t.domain, '-'),
+  (SELECT count(*) FROM lti_context_controls c WHERE c.deployment_id = t.id AND c.course_id IS NULL AND c.workflow_state = 'active'),
+  (SELECT coalesce(bool_and(c.available), false) FROM lti_context_controls c WHERE c.deployment_id = t.id AND c.course_id IS NULL AND c.workflow_state = 'active')
+FROM context_external_tools t LEFT JOIN developer_keys k ON k.id = t.developer_key_id WHERE t.id = $TID;
+SELECT '@@PLC';
+SELECT placement_type FROM context_external_tool_placements WHERE context_external_tool_id = $TID ORDER BY 1;
+SELECT '@@SCOPES';
+SELECT coalesce(scopes, '') FROM developer_keys WHERE id = $lid;
+SELECT '@@SETTINGS';
+SELECT coalesce(settings, '') FROM context_external_tools WHERE id = $TID;
+SELECT '@@END';"
+  if ! res=$(printf '%s\n' "$sql" | cq_stdin) || printf '%s\n' "$res" | grep -q '^ERROR:'; then
+    fail "Tool $label" "truy vấn Canvas DB lỗi: $(first_line "$(printf '%s\n' "$res" | grep -m1 -E 'ERROR|psql:|Error')")"
+    return
+  fi
+  row=$(psec "$res" TOOL | head -1)
+  if [ -z "$row" ]; then
+    fail "Tool $label" "không có tool nào (chưa deleted) dùng developer key $lid: chưa chạy $(basename "$script") hoặc đã bị xóa"
+    return
+  fi
+  IFS=$TAB read -r tid tname tws kws tdomain nctl avail <<EOF
+$row
+EOF
+  tag="\"$tname\" (key $lid)"
+
+  # Tool đang bật?
+  if [ "$kws" != active ]; then
+    fail "Tool $label" "$tag: developer key ở trạng thái '$kws', không phải active"
+  elif [ "$tws" = disabled ]; then
+    fail "Tool $label" "$tag: tool ở trạng thái disabled"
+  elif [ "$nctl" = 0 ]; then
+    warn "Tool $label" "$tag: tool đang bật nhưng không có context control ở cấp account (id tool $tid)"
+  elif [ "$avail" != t ]; then
+    fail "Tool $label" "$tag: context control ở account có available=false: tool không hiện ra"
+  else
+    ok "Tool $label" "$tag: đang bật (id tool $tid, trạng thái $tws)"
+  fi
+
+  # Placement khai báo trong script có đủ trong Canvas?
+  if [ ! -r "$script" ]; then
+    fail "Placement $label" "$tag: không đọc được $script"
+  elif [ -z "$exp_pl" ]; then
+    fail "Placement $label" "$tag: không tìm thấy placement nào trong $(basename "$script") (file đổi cấu trúc?)"
+  else
+    act_pl=$(psec "$res" PLC)
+    missing=""; n_exp=0
+    while IFS= read -r p; do
+      [ -z "$p" ] && continue
+      n_exp=$((n_exp + 1))
+      printf '%s\n' "$act_pl" | grep -Fxq -- "$p" || missing="$missing $p"
+    done <<EOF
+$exp_pl
+EOF
+    if [ -n "$missing" ]; then
+      fail "Placement $label" "$tag: thiếu trong Canvas:$missing (đã có: $(printf '%s' "$act_pl" | tr '\n' ' ' | sed 's/ *$//'))"
+    else
+      ok "Placement $label" "$tag: đủ $n_exp placement khai báo trong $(basename "$script")"
+    fi
+  fi
+
+  # Scope của developer key
+  if [ -z "$exp_sc" ]; then
+    ok "Scope $label" "$tag: script không khai báo scope nào"
+  else
+    act_sc=$(psec "$res" SCOPES)
+    missing=""; n_exp=0
+    while IFS= read -r s; do
+      [ -z "$s" ] && continue
+      n_exp=$((n_exp + 1))
+      printf '%s\n' "$act_sc" | grep -Fxq -- "- $s" || missing="$missing ${s#https://purl.imsglobal.org/spec/}"
+    done <<EOF
+$exp_sc
+EOF
+    if [ -n "$missing" ]; then
+      fail "Scope $label" "$tag: key thiếu scope:$missing"
+    else
+      ok "Scope $label" "$tag: đủ $n_exp scope (gồm AGS score và NRPS contextmembership nếu script khai báo)"
+    fi
+  fi
+
+  # Custom field trong settings của tool
+  if [ -z "$exp_cf" ]; then
+    ok "Custom field $label" "$tag: script không khai báo custom field"
+  else
+    act_cf=$(psec "$res" SETTINGS | awk "$AWK_YAML")
+    cmp=$({
+      printf '%s\n' "$exp_cf" | awk -F'\t' '{ print "E\t" $2 "\t" $3 }'
+      printf '%s\n' "$act_cf" | awk -F'\t' '$1 == "CF" { print "A\t" $2 "\t" $3 }'
+    } | awk "$AWK_CMP")
+    n_exp=$(printf '%s\n' "$exp_cf" | grep -c .)
+    missing=$(printf '%s\n' "$cmp" | awk -F'\t' '$1 == "MISS" { printf " %s", $2 }')
+    diffs=$(printf '%s\n' "$cmp" | awk -F'\t' '$1 == "DIFF" { printf " %s (script \"%s\", Canvas \"%s\")", $2, $3, $4 }')
+    if [ -n "$missing" ]; then
+      fail "Custom field $label" "$tag: thiếu trong settings của tool:$missing"
+    fi
+    if [ -n "$diffs" ]; then
+      warn "Custom field $label" "$tag: có nhưng khác giá trị trong script:$diffs"
+    fi
+    if [ -z "$missing" ] && [ -z "$diffs" ]; then
+      ok "Custom field $label" "$tag: đủ $n_exp custom field khai báo trong $(basename "$script")"
+    fi
+  fi
+
+  # Tên miền: Canvas tìm tool của bài nộp theo tên miền của URL tool mà core-api dùng
+  if [ "$kind" = main ] && [ -n "$TOOL_URL" ]; then
+    host_core=$(printf '%s' "$TOOL_URL" | sed -E 's#^[A-Za-z]+://([^/:]+).*#\1#')
+    if [ "$host_core" = "$tdomain" ]; then
+      ok "Tên miền $label" "$tag: core-api và Canvas cùng dùng $tdomain"
+    else
+      warn "Tên miền $label" "$tag: core-api dùng $host_core nhưng tool trong Canvas có domain $tdomain"
+    fi
+  fi
+}
+
+if [ -z "$CORE_CLIENT" ]; then
+  fail "Tool chính" "không biết LTI_CLIENT_ID của core-api, không tra được developer key"
+else
+  check_tool "chính" "$CORE_CLIENT" "$ROOT/scripts/setup_canvas_lti.rb" main
+fi
+if [ -n "$WEB_EXTRA" ]; then
+  for xid in $(printf '%s' "$WEB_EXTRA" | tr ',' ' '); do
+    check_tool "chat" "$xid" "$ROOT/scripts/setup_canvas_chat_lti.rb" extra
+  done
+elif [ "$ENV_WEB_OK" != 1 ]; then
+  fail "Tool chat" "không đọc được LTI_EXTRA_CLIENT_IDS từ web nên bỏ qua kiểm tra: $ENV_WEB_WHY"
+else
+  warn "Tool chat" "web không khai báo LTI_EXTRA_CLIENT_IDS nên không có gì để kiểm tra"
+fi
+
+# ====================================================== 6. Token Canvas API
+
+section "Token Canvas API"
+if [ "$NODE_OK" != 1 ]; then
+  fail "Token (kiểm tra trực tiếp)" "$NODE_WHY"
+  fail "Token (cache canvas:token-status)" "$NODE_WHY"
+else
+  t_row=$(nrows TOKEN | head -1)
+  IFS=$TAB read -r _ t_kind t_val <<EOF
+$t_row
+EOF
+  case ${t_kind:-} in
+    http)
+      if [ "$t_val" = 200 ]; then ok "Token (kiểm tra trực tiếp)" "GET /api/v1/users/self trả HTTP 200"
+      else fail "Token (kiểm tra trực tiếp)" "GET /api/v1/users/self trả HTTP $t_val"; fi ;;
+    nocfg) fail "Token (kiểm tra trực tiếp)" "thiếu CANVAS_API_URL/LTI_PLATFORM_URL hoặc CANVAS_API_TOKEN" ;;
+    neterr) fail "Token (kiểm tra trực tiếp)" "không kết nối được Canvas (${t_val:--})" ;;
+    *) fail "Token (kiểm tra trực tiếp)" "không có kết quả từ core-api" ;;
+  esac
+  r_err=$(nerr redis)
+  if [ -n "$r_err" ]; then
+    fail "Token (cache canvas:token-status)" "không đọc được Redis: $r_err"
+  else
+    c_row=$(nrows CACHE | head -1)
+    IFS=$TAB read -r _ c_kind c_age c_ok c_http c_msg <<EOF
+$c_row
+EOF
+    case ${c_kind:-} in
+      none) warn "Token (cache canvas:token-status)" "chưa có khóa canvas:token-status (job check_token chưa chạy lần nào?)" ;;
+      val)
+        age_txt=$(fmt_age "$c_age")
+        if [ "$c_ok" != 1 ]; then
+          warn "Token (cache canvas:token-status)" "lần kiểm tra cuối ($age_txt trước) báo lỗi, HTTP $c_http: $c_msg"
+        elif [ "$c_age" != "-" ] && [ "$c_age" -gt 90000 ]; then
+          warn "Token (cache canvas:token-status)" "kết quả OK nhưng đã $age_txt (job chạy mỗi 24 giờ)"
+        else
+          ok "Token (cache canvas:token-status)" "OK, HTTP $c_http, kiểm tra cách đây $age_txt"
+        fi ;;
+      *) fail "Token (cache canvas:token-status)" "không có kết quả từ core-api" ;;
+    esac
+  fi
+fi
+
+# ========================================================= 7. Đồng bộ
+
+section "Đồng bộ từ Canvas"
+if node_ready sync "Đồng bộ"; then
+  interval_ms=$(envv "$ENV_CORE" CANVAS_SYNC_INTERVAL_MS)
+  case $interval_ms in
+    ''|*[!0-9]*|0) [ -n "$interval_ms" ] && warn "Chu kỳ sweep" "CANVAS_SYNC_INTERVAL_MS='$interval_ms' không hợp lệ, dùng mặc định 900000"; interval_ms=900000 ;;
+  esac
+  auto_flag=$(envv "$ENV_CORE" CANVAS_AUTO_SYNC_ENABLED)
+  auto_on=1
+  [ "$auto_flag" = false ] && auto_on=0
+  [ -z "$(envv "$ENV_CORE" CANVAS_API_TOKEN)" ] && auto_on=0
+  [ -z "$(envv "$ENV_CORE" CANVAS_API_URL)$(envv "$ENV_CORE" LTI_PLATFORM_URL)" ] && auto_on=0
+  thr_s=$((3 * interval_ms / 1000))
+  if [ "$ENV_CORE_OK" != 1 ]; then
+    warn "Chu kỳ sweep" "không đọc được env của core-api nên giả định mặc định 15 phút, tự động bật"
+  elif [ "$auto_on" = 1 ]; then
+    ok "Cấu hình sweep" "tự động đồng bộ BẬT, chu kỳ $(fmt_age $((interval_ms / 1000)))"
+  else
+    warn "Cấu hình sweep" "tự động đồng bộ TẮT (CANVAS_AUTO_SYNC_ENABLED=false hoặc thiếu token/URL Canvas)"
+  fi
+  if [ -z "$(nrows SYNC)" ]; then
+    warn "Đồng bộ" "không có khóa học nào trong lms_course_ref (chưa launch lần nào?)"
+  fi
+  while IFS=$TAB read -r _ code cid kind status trigger age has_nrps err; do
+    [ -z "$code" ] && continue
+    lab="Sync $code (Canvas $cid) $kind"
+    case $status in
+      none)
+        if [ "$kind" = roster ] && [ "$has_nrps" != 1 ]; then
+          warn "$lab" "chưa có lần chạy nào và khóa chưa có URL NRPS (cần một lần launch từ Canvas sau khi bật scope)"
+        else
+          warn "$lab" "chưa có lần chạy nào"
+        fi ;;
+      error) fail "$lab" "lần cuối lỗi ($(fmt_age "$age") trước, $trigger): $err" ;;
+      running)
+        if [ "$age" -gt 1800 ]; then
+          fail "$lab" "bắt đầu $(fmt_age "$age") trước vẫn ở trạng thái running: bị gián đoạn"
+        else
+          ok "$lab" "đang chạy ($trigger, $(fmt_age "$age") trước)"
+        fi ;;
+      success)
+        if [ "$auto_on" = 1 ] && [ "$age" -gt "$thr_s" ]; then
+          warn "$lab" "lần thành công cuối $(fmt_age "$age") trước, quá 3 chu kỳ sweep ($(fmt_age "$thr_s"))"
+        else
+          ok "$lab" "thành công $(fmt_age "$age") trước ($trigger)"
+        fi ;;
+      *) warn "$lab" "trạng thái lạ '$status'" ;;
+    esac
+  done <<EOF
+$(nrows SYNC)
+EOF
+fi
+
+# ================================================== 8. Đẩy điểm (AGS)
+
+section "Đẩy điểm về Canvas (AGS)"
+if node_ready ags "Điểm AGS"; then
+  rows=$(nrows AGS)
+  if [ -z "$rows" ]; then
+    ok "Điểm AGS" "chưa có attempt nào gắn resource link"
+  else
+    counts=""; n_failed=0; n_pend_old=0; unknown=""
+    while IFS=$TAB read -r _ st n pold; do
+      [ -z "$st" ] && continue
+      counts="$counts${counts:+, }$st $n"
+      case $st in
+        FAILED|REJECTED) n_failed=$((n_failed + n)) ;;
+        PENDING) n_pend_old=$((n_pend_old + pold)) ;;
+        NOT_REQUIRED|AWAITING_GRADE|POSTING|POSTED) ;;
+        *) unknown="$unknown $st" ;;
+      esac
+    done <<EOF
+$rows
+EOF
+    last_row=$(nrows AGSLAST | head -1)
+    IFS=$TAB read -r _ last_ts last_age <<EOF
+$last_row
+EOF
+    if [ "${last_ts:--}" = "-" ]; then last_txt="chưa có attempt nào POSTED"
+    else last_txt="POSTED gần nhất $last_ts UTC ($(fmt_age "$last_age") trước)"; fi
+    if [ "$n_failed" -gt 0 ]; then
+      fail "Điểm AGS" "$n_failed attempt ở trạng thái FAILED/REJECTED; $counts; $last_txt"
+    elif [ "$n_pend_old" -gt 0 ]; then
+      warn "Điểm AGS" "$n_pend_old attempt PENDING quá 15 phút chưa được đẩy; $counts; $last_txt"
+    elif [ -n "$unknown" ]; then
+      warn "Điểm AGS" "có trạng thái lạ:$unknown; $counts; $last_txt"
+    else
+      ok "Điểm AGS" "$counts; $last_txt"
+    fi
+  fi
+fi
+
+# ================================================= 9. Cài đặt Assignment
+
+section "Cài đặt Assignment"
+if node_ready assignment "Assignment"; then
+  IFS=$TAB read -r _ a_total a_synced a_pending <<EOF
+$(nrows ASG | head -1)
+EOF
+  a_pending=${a_pending:-0}
+  if [ "$a_pending" -gt 0 ] 2>/dev/null; then
+    warn "Assignment" "$a_pending bài kiểm tra đã launch từ Assignment nhưng chưa đẩy được số lần làm sang Canvas (giới hạn của DA vẫn áp dụng, launch sau thử lại; xem log core-api \"Không đẩy được số lần làm\"); $a_synced/$a_total link đã đọc cài đặt Assignment"
+  else
+    ok "Assignment" "$a_synced/$a_total quiz resource link đã đọc cài đặt Assignment (assignment_synced_at); $((a_total - a_synced)) chưa chốt (chưa từng launch từ Assignment)"
+  fi
+fi
+
+# =================================================== 10. Id người dùng
+
+section "Id người dùng Canvas (roster)"
+if node_ready roster "Roster"; then
+  IFS=$TAB read -r _ r_with r_without <<EOF
+$(nrows RID | head -1)
+EOF
+  ok "Roster" "$r_with user mapping đang hoạt động có lms_platform_user_id, $r_without chưa có"
+fi
+
+# =============================================================== tổng kết
+
+printf '\nTổng kết: %s OK, %s WARN, %s FAIL\n' "$N_OK" "$N_WARN" "$N_FAIL"
+[ "$N_FAIL" -eq 0 ]

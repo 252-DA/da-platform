@@ -1,0 +1,30 @@
+{
+  "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaac1",
+  "event_type": "MICRO_CONTENT_RENDER_REQUESTED",
+  "aggregate_type": "micro_content",
+  "aggregate_id": "22222222-2222-4222-8222-222222222222",
+  "payload": {
+    "micro_content_id": "22222222-2222-4222-8222-222222222222",
+    "course_id": "33333333-3333-4333-8333-333333333333",
+    "asset_id": "55555555-5555-4555-8555-555555555555",
+    "render_id": "66666666-6666-4666-8666-666666666666",
+    "script": {
+      "language": "vi",
+      "topic": "Đệ quy",
+      "voice": "vi-VN-HoaiMyNeural",
+      "scenes": [
+        {
+          "title": "Giới thiệu",
+          "bullets": ["Đệ quy là gì"],
+          "narration": "Chào các bạn."
+        },
+        {
+          "title": "Ví dụ",
+          "bullets": ["Giai thừa"],
+          "narration": "Ta xét hàm giai thừa.",
+          "voice": "vi-VN-NamMinhNeural"
+        }
+      ]
+    }
+  }
+}

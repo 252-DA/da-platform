@@ -1,0 +1,58 @@
+{
+  "result_id": "CONTENT_GENERATION_RESULT.0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c01.SUCCEEDED",
+  "kind": "CONTENT_GENERATION_RESULT",
+  "source_event_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c01",
+  "occurred_at": "2026-11-07T10:30:15.123Z",
+  "payload": {
+    "request_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c02",
+    "course_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c03",
+    "content_type": "card",
+    "status": "SUCCEEDED",
+    "lo_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c04",
+    "generated_count": 1,
+    "lesson_cards": [
+      {
+        "card_id": "5f1a2b3c-4d5e-5f60-8a7b-9c0d1e2f3a41",
+        "title": "Điều kiện của Dijkstra",
+        "content": {
+          "key_insight": "Dijkstra chỉ đúng khi mọi trọng số cạnh không âm.",
+          "bullets": [
+            "Chọn đỉnh gần nhất chưa xét",
+            "Cập nhật khoảng cách láng giềng"
+          ],
+          "example": null,
+          "misconception": "Dijkstra chạy được với trọng số âm.",
+          "check_question": "Dijkstra cần điều kiện gì về trọng số?",
+          "check_answer": "Mọi trọng số không âm.",
+          "model_id": "deepseek-chat"
+        },
+        "source_chunk_ids": [
+          "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c05"
+        ],
+        "verification_status": "VERIFIED",
+        "verification_evidence": {
+          "criterion": "source_grounding",
+          "judge_verdict": "supported",
+          "judge_reason": "Khớp slide 12.",
+          "inconclusive_reason": null,
+          "regeneration_attempts": 0,
+          "regenerations_applied": 0,
+          "history": [
+            {
+              "round": 0,
+              "verdict": "supported",
+              "reason": "Khớp slide 12."
+            }
+          ],
+          "writer_model": "deepseek-chat",
+          "judge_model": "gemini-3-flash-preview",
+          "judge_is_writer": false,
+          "source_chunk_ids": [
+            "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c05"
+          ]
+        }
+      }
+    ],
+    "rejected": []
+  }
+}

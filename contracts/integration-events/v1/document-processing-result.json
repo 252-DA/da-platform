@@ -1,0 +1,153 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/document-processing-result.json",
+  "title": "DOCUMENT_PROCESSING_RESULT",
+  "description": "Trạng thái xử lý hoặc chương suy luận của một tài liệu: worker (document/enrichment/outbox worker) → core-api (core-api/src/modules/document/handlers/document-processing-result.handler.ts), hàng đợi worker_results. Worker không UPDATE bảng documents nữa. status: một chuyển trạng thái của lượt xử lý processing_generation (core-api cấp khi đưa tài liệu vào hàng đợi, job process_document mang theo); core-api chỉ áp dụng khi processing_generation = documents.processing_generation và thứ tự (stage, attempt, value) lớn hơn kết quả đã áp dụng (documents.processing_seq), nên kết quả đến trễ hay retry không làm lùi trạng thái, còn lần chạy lại của job (attempt lớn hơn) thắng ERROR của lần trước. result_id = DOCUMENT_PROCESSING_RESULT.<document_id>.g<generation>-<stage><attempt>-<value>. chapter: chương suy ra từ nội dung (MapChunksToLosUseCase); core-api chỉ ghi khi tài liệu chưa có chương hoặc chương hiện tại cũng do suy luận nội dung — không đè 'confirmed', 'module', 'file_name'. result_id = DOCUMENT_PROCESSING_RESULT.<document_id>.chapter-<uuid hex>. Tài liệu đã xoá: kết quả bị bỏ qua.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "worker-result-envelope.json"
+    }
+  ],
+  "properties": {
+    "kind": {
+      "const": "DOCUMENT_PROCESSING_RESULT"
+    },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "document_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "status": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "enum": [
+                "PARSING",
+                "CHUNKING",
+                "EMBEDDING",
+                "INDEXED",
+                "ERROR",
+                "ENRICHING",
+                "GENERATED_DRAFT"
+              ]
+            },
+            "stage": {
+              "enum": [
+                "processing",
+                "enrichment"
+              ],
+              "description": "processing = job process_document; enrichment = job enrichment và bước chiếu concept graph sau nó (GENERATED_DRAFT). Enrichment lỗi thì lùi về INDEXED, không ERROR."
+            },
+            "processing_generation": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647,
+              "description": "Lượt xử lý; 0 = job cũ chưa mang trường này."
+            },
+            "attempt": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647,
+              "description": "Lần chạy thứ mấy của job BullMQ (attemptsStarted, tính cả chạy lại sau stall)."
+            },
+            "error": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000,
+              "description": "Lỗi gây ra ERROR hoặc lùi về INDEXED; worker cắt còn 1000 ký tự. documents chưa có cột lỗi: core-api chỉ ghi log."
+            }
+          },
+          "required": [
+            "value",
+            "stage",
+            "processing_generation",
+            "attempt"
+          ],
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "properties": {
+                "stage": {
+                  "const": "processing"
+                },
+                "value": {
+                  "enum": [
+                    "PARSING",
+                    "CHUNKING",
+                    "EMBEDDING",
+                    "INDEXED",
+                    "ERROR"
+                  ]
+                }
+              }
+            },
+            {
+              "properties": {
+                "stage": {
+                  "const": "enrichment"
+                },
+                "value": {
+                  "enum": [
+                    "ENRICHING",
+                    "INDEXED",
+                    "GENERATED_DRAFT"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "chapter": {
+          "type": "object",
+          "properties": {
+            "chapter_code": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 20
+            },
+            "provenance": {
+              "const": "content",
+              "description": "Chỉ suy luận theo nội dung đi qua đây; module/file_name do core-api tự xác định khi đồng bộ, confirmed do giảng viên chọn."
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          },
+          "required": [
+            "chapter_code",
+            "provenance",
+            "confidence",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "document_id"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "status"
+          ]
+        },
+        {
+          "required": [
+            "chapter"
+          ]
+        }
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/essay-grading-result.json",
+  "title": "ESSAY_GRADING_RESULT",
+  "description": "Kết quả chấm một bài luận nộp file (ESSAY_GRADING_REQUESTED): worker chấm (worker/runners/answer_grading_worker.py) → core-api (core-api/src/modules/essay-processor/handlers/essay-grading-result.handler.ts), hàng đợi worker_results. GRADED kèm result (điểm gợi ý theo rubric, ghi vào essay_submissions.result), hoặc FAILED kèm mã lỗi khi file không đọc được hoặc lượt thử cuối vẫn lỗi. result_id = ESSAY_GRADING_RESULT.<event_id của lệnh>. core-api chỉ áp dụng khi bài còn QUEUED; vòng EssayReportPublisherService sau đó gửi báo cáo điểm gợi ý (GRADED) hoặc báo lỗi (FAILED) về SpeedGrader.",
+  "type": "object",
+  "allOf": [{ "$ref": "worker-result-envelope.json" }],
+  "properties": {
+    "kind": { "const": "ESSAY_GRADING_RESULT" },
+    "payload": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "essay_submission_id": { "type": "string", "format": "uuid" },
+            "status": { "const": "GRADED" },
+            "result": {
+              "type": "object",
+              "properties": {
+                "score": { "type": "number", "minimum": 0, "description": "Tổng điểm các tiêu chí, không vượt max_score." },
+                "max_score": { "type": "number", "exclusiveMinimum": 0 },
+                "criteria": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "criterion": { "type": "string" },
+                      "points": { "type": "number", "minimum": 0, "description": "Không vượt max_points." },
+                      "max_points": { "type": "number", "minimum": 0 },
+                      "comment": { "type": "string", "maxLength": 4000 }
+                    },
+                    "required": ["criterion", "points", "max_points", "comment"],
+                    "additionalProperties": false
+                  }
+                },
+                "feedback": { "type": "string", "maxLength": 8000 },
+                "truncated": { "type": "boolean", "description": "Bài quá dài, AI chỉ đọc phần đầu." },
+                "model": { "type": ["string", "null"], "maxLength": 200 }
+              },
+              "required": ["score", "max_score", "criteria", "feedback", "truncated", "model"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["essay_submission_id", "status", "result"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "essay_submission_id": { "type": "string", "format": "uuid" },
+            "status": { "const": "FAILED" },
+            "error_code": {
+              "enum": ["UNSUPPORTED_ASSET_TYPE", "PROCESSING_FAILED"],
+              "description": "Mã chuẩn của Asset Report Service, gửi nguyên về Canvas."
+            },
+            "error": { "type": "string", "minLength": 1, "maxLength": 2000, "description": "Lý do, giảng viên thấy trong báo cáo lỗi." }
+          },
+          "required": ["essay_submission_id", "status", "error_code", "error"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

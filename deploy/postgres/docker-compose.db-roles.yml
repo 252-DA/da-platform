@@ -1,0 +1,41 @@
+# ─────────────────────────────────────────────────────────
+# Override: mỗi service nối PostgreSQL bằng role riêng (deploy/postgres/roles.sql)
+# thay cho tài khoản quản trị. Hướng dẫn: docs/phan-quyen-postgres.md.
+#
+# Đặt SAU các file khác trong COMPOSE_FILE để DSN ở đây thắng, ví dụ:
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.remote-db.yml:deploy/postgres/docker-compose.db-roles.yml
+# Rollback: bỏ file này khỏi COMPOSE_FILE rồi `scripts/dc up -d <service>`.
+#
+# Biến bắt buộc (Infisical hoặc .env, mật khẩu hex cho URL-safe):
+#   LMS_CORE_APP_PASSWORD, LMS_AI_WORKER_PASSWORD, LMS_MCP_READER_PASSWORD
+# Host/DB: DB_HOST, POSTGRES_DB như docker-compose.remote-db.yml; không đặt thì
+# là container `postgres`, DB `chunking` của docker-compose.yml.
+#
+# MIGRATION_DATABASE_URL không đặt ở đây: chỉ truyền lúc chạy migrate
+# (docker compose exec -e ...), để tài khoản quản trị không nằm trong env core-api.
+# ─────────────────────────────────────────────────────────
+
+x-worker-db: &worker-db
+  SQL__DSN: postgresql://lms_ai_worker:${LMS_AI_WORKER_PASSWORD:?set LMS_AI_WORKER_PASSWORD}@${DB_HOST:-postgres}:5432/${POSTGRES_DB:-chunking}
+
+services:
+  core-api:
+    environment:
+      DATABASE_URL: postgresql://lms_core_app:${LMS_CORE_APP_PASSWORD:?set LMS_CORE_APP_PASSWORD}@${DB_HOST:-postgres}:5432/${POSTGRES_DB:-chunking}
+
+  document-worker:
+    environment: *worker-db
+  enrichment-worker:
+    environment: *worker-db
+  content-generation-worker:
+    environment: *worker-db
+  answer-grading-worker:
+    environment: *worker-db
+  micro-content-video-worker:
+    environment: *worker-db
+  outbox-worker:
+    environment: *worker-db
+
+  mcp-service:
+    environment:
+      SQL__DSN: postgresql://lms_mcp_reader:${LMS_MCP_READER_PASSWORD:?set LMS_MCP_READER_PASSWORD}@${DB_HOST:-postgres}:5432/${POSTGRES_DB:-chunking}

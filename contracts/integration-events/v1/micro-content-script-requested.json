@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/micro-content-script-requested.json",
+  "title": "MICRO_CONTENT_SCRIPT_REQUESTED",
+  "description": "Core command → worker video (queue: micro_content_video). Phát khi giảng viên yêu cầu sinh kịch bản video (core-api micro-content.service.ts generateScript). Hiện core-api tự ghi kịch bản mặc định vào micro_contents.ai_script trong cùng transaction; worker chỉ nhận job và bỏ qua (không ghi gì, không gửi kết quả). Giữ schema để lệnh không trôi khỏi hợp đồng khi worker bắt đầu xử lý nó.",
+  "type": "object",
+  "allOf": [{ "$ref": "envelope.json" }],
+  "properties": {
+    "event_type": { "const": "MICRO_CONTENT_SCRIPT_REQUESTED" },
+    "aggregate_type": { "const": "micro_content" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "micro_content_id": { "type": "string", "format": "uuid" },
+        "course_id": { "type": "string", "format": "uuid" },
+        "prompt": { "type": "string", "minLength": 1 },
+        "options": {
+          "type": ["object", "null"],
+          "description": "Tuỳ chọn web gửi khi sinh kịch bản (ví dụ voice, language); null khi không có."
+        }
+      },
+      "required": ["micro_content_id", "course_id", "prompt", "options"],
+      "additionalProperties": false
+    }
+  }
+}

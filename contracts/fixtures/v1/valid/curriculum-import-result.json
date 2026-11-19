@@ -1,0 +1,1618 @@
+{
+  "result_id": "CURRICULUM_IMPORT_RESULT.01900000-0000-7000-8000-0000000000aa",
+  "kind": "CURRICULUM_IMPORT_RESULT",
+  "source_event_id": null,
+  "occurred_at": "2026-11-07T10:30:15.123Z",
+  "payload": {
+    "import_id": "01900000-0000-7000-8000-0000000000aa",
+    "status": "READY",
+    "preview": {
+      "course": {
+        "code": "CO3011",
+        "title_vi": "Quản lý Dự án Phần mềm",
+        "title_en": "Software Project Management",
+        "credits": 3,
+        "semester": "HK261",
+        "syllabus_version": "DCMH.CO3011.9.1"
+      },
+      "counts": {
+        "chapters": 12,
+        "learning_outcomes": 9,
+        "assessments": 3,
+        "sessions": 15,
+        "goals": 2,
+        "chapter_lo_links": 12,
+        "lo_assessment_links": 38
+      },
+      "chapters": [
+        {
+          "code": "1",
+          "title": "Giới thiệu về quản lý dự án phần mềm",
+          "title_en": "lntroduction to software project management",
+          "lo_codes": [
+            "L.O.1.1"
+          ]
+        },
+        {
+          "code": "2",
+          "title": "Đánh giá dự án và quản lý chương trình",
+          "title_en": "Project evaluation and program management",
+          "lo_codes": [
+            "L.O.1.2"
+          ]
+        },
+        {
+          "code": "3",
+          "title": "Tổng quan về lập kế hoạch dự án",
+          "title_en": "An overview of project planning",
+          "lo_codes": [
+            "L.O.1.2"
+          ]
+        },
+        {
+          "code": "4",
+          "title": "Lựa chọn phương pháp tiếp cận dự án phù hợp",
+          "title_en": "Selection of an appropriate project approach",
+          "lo_codes": [
+            "L.O.2.2"
+          ]
+        },
+        {
+          "code": "5",
+          "title": "Ước lượng công xây dựng phần mềm",
+          "title_en": "Software effort estimation",
+          "lo_codes": [
+            "L.O.2.2"
+          ]
+        },
+        {
+          "code": "6",
+          "title": "Lập kế hoạch hoạt động",
+          "title_en": "Activity planning",
+          "lo_codes": [
+            "L.O.2.1"
+          ]
+        },
+        {
+          "code": "7",
+          "title": "Quản lý rủi ro",
+          "title_en": "Risk management",
+          "lo_codes": [
+            "L.O.2.2"
+          ]
+        },
+        {
+          "code": "8",
+          "title": "Phân bổ tài nguyên",
+          "title_en": null,
+          "lo_codes": [
+            "L.O.2.1"
+          ]
+        },
+        {
+          "code": "9",
+          "title": "Giám sát và kiểm soát",
+          "title_en": "Monitoring and control",
+          "lo_codes": [
+            "L.O.2.1"
+          ]
+        },
+        {
+          "code": "10",
+          "title": "Quản lý nhân sự trong môi trường phần mềm",
+          "title_en": "Managing people in software environments",
+          "lo_codes": [
+            "L.O.3"
+          ]
+        },
+        {
+          "code": "11",
+          "title": "Làm việc trong nhóm",
+          "title_en": "Working in teams",
+          "lo_codes": [
+            "L.O.3"
+          ]
+        },
+        {
+          "code": "12",
+          "title": "Chất lượng phần mềm",
+          "title_en": "Software quality",
+          "lo_codes": [
+            "L.O.2.2"
+          ]
+        }
+      ],
+      "learning_outcomes": [
+        {
+          "code": "L.O.1",
+          "parent_code": null,
+          "statement_vi": "Hiểu rõ để áp dụng được các hoạt động cần thực hiện trong quản lý dự án phần mềm.",
+          "statement_en": "Understand clearly to be able to apply the required activities in software project management",
+          "bloom_level": "understand",
+          "bloom_provenance": "inferred",
+          "cdio_level": null
+        },
+        {
+          "code": "L.O.1.1",
+          "parent_code": "L.O.1",
+          "statement_vi": "Hiểu và áp dụng thực hiện được các hoạt động quản lý dự án phần mềm",
+          "statement_en": "Demonstrate an understanding of, and the ability to apply, software project management activities in practice",
+          "bloom_level": "understand",
+          "bloom_provenance": "inferred",
+          "cdio_level": null
+        },
+        {
+          "code": "L.O.1.2",
+          "parent_code": "L.O.1",
+          "statement_vi": "Nhận diện được các vấn đề phát sinh ảnh hưởng đến hiệu quả của hoạt động quản lý dự án phần mềm",
+          "statement_en": "Identify and analyze issues that arise and impact the effectiveness of software project management activities.",
+          "bloom_level": "understand",
+          "bloom_provenance": "inferred",
+          "cdio_level": null
+        },
+        {
+          "code": "L.O.2",
+          "parent_code": null,
+          "statement_vi": "Tổng hợp thông tin, dữ liệu dự án để phân tích, đánh giá được các thông tin, dữ liệu dự án để cải tiến công tác quản lý dự án phần mềm và sử dụng được các công cụ chuyên dụng để quản lý dự án phần mềm",
+          "statement_en": "Be able to synthesize project's information and data to analyze, and evaluate project information and data to improve software project management, and effectively use specialized tools for software project management.",
+          "bloom_level": "create",
+          "bloom_provenance": "inferred",
+          "cdio_level": null
+        },
+        {
+          "code": "L.O.2.1",
+          "parent_code": "L.O.2",
+          "statement_vi": "Sử dụng được các công cụ tiên tiến áp dụng quản lý dự án phần mềm, quản lý cấu hình phần mềm, quản lý chất lượng phần mềm",
+          "statement_en": "Effectively utilize advanced tools for software project management, software configuration management, and software quality management",
+          "bloom_level": "apply",
+          "bloom_provenance": "inferred",
+          "cdio_level": null
+        },
+        {
+          "code": "L.O.2.2",
+          "parent_code": "L.O.2",
+          "statement_vi": "Tổng hợp, phân tích, đánh giá, nhận diện vấn đề, tìm nguyên nhân, đề xuất giải pháp cải tiến hiệu quả quản lý dự án phần mềm.",
+          "statement_en": "Synthesize, analyze, and evaluate information to identify issues, determine root causes, and propose solutions to improve the effectiveness of software project management.",
+          "bloom_level": "create",
+          "bloom_provenance": "inferred",
+          "cdio_level": null
+        },
+        {
+          "code": "L.O.3",
+          "parent_code": null,
+          "statement_vi": "Giao tiếp hiệu quả trong nhóm, quản lý nguồn lực trong nhóm dự án phù hợp với nhóm dự án phát triển phân mềm với đầy đủ vai trò của đội dự án phần mềm",
+          "statement_en": "Communicate effectively within a team, and manage team resources appropriately for a software development project team with all required software project roles.",
+          "bloom_level": "apply",
+          "bloom_provenance": "inferred",
+          "cdio_level": null
+        },
+        {
+          "code": "L.O.3.1",
+          "parent_code": "L.O.3",
+          "statement_vi": "Giao tiếp hiệu quả trong nhóm",
+          "statement_en": "Communicate effectively within a team",
+          "bloom_level": "apply",
+          "bloom_provenance": "inferred",
+          "cdio_level": null
+        },
+        {
+          "code": "L.O.3.2",
+          "parent_code": "L.O.3",
+          "statement_vi": "Giao tiếp, quản lý nguồn lực trong nhóm dự án phù hợp với nhóm dự án phát triển phân mềm với đầy đủ vai trò của đội dự án phần mềm",
+          "statement_en": "Communicate, manage team resources appropriately for a software development project team with all required software project roles",
+          "bloom_level": "apply",
+          "bloom_provenance": "inferred",
+          "cdio_level": null
+        }
+      ],
+      "assessments": [
+        {
+          "code": "A.O.1",
+          "name_vi": "Các kỹ năng quản lý dự án phần mềm",
+          "parent_code": null,
+          "category": "group_quiz",
+          "weight": null
+        },
+        {
+          "code": "A.O.1.1",
+          "name_vi": "Đánh giá kết quả thực hiện và các số liệu thống kê",
+          "parent_code": "A.O.1",
+          "category": "group_quiz",
+          "weight": null
+        },
+        {
+          "code": "A.O.2",
+          "name_vi": "Kiểm tra kiến thức liên quan đến các kỹ năng quản lý dự án phần mềm",
+          "parent_code": null,
+          "category": "final",
+          "weight": null
+        }
+      ],
+      "sessions": [
+        {
+          "order_index": 1,
+          "session_no": 1,
+          "chapter_code": "1",
+          "title_vi": "Giới thiệu về quản lý dự án phần mềm"
+        },
+        {
+          "order_index": 2,
+          "session_no": 2,
+          "chapter_code": "2",
+          "title_vi": "Đánh giá dự án và quản lý chương trình"
+        },
+        {
+          "order_index": 3,
+          "session_no": 3,
+          "chapter_code": "3",
+          "title_vi": "Tổng quan về lập kế hoạch dự án"
+        },
+        {
+          "order_index": 4,
+          "session_no": 4,
+          "chapter_code": "4",
+          "title_vi": "Lựa chọn phương pháp tiếp cận dự án phù hợp"
+        },
+        {
+          "order_index": 5,
+          "session_no": 5,
+          "chapter_code": "5",
+          "title_vi": "Ước lượng công xây dựng phần mềm"
+        },
+        {
+          "order_index": 6,
+          "session_no": 6,
+          "chapter_code": "6",
+          "title_vi": "Lập kế hoạch hoạt động"
+        },
+        {
+          "order_index": 7,
+          "session_no": 7,
+          "chapter_code": null,
+          "title_vi": "Ôn bài và nghỉ giữa kỳ"
+        },
+        {
+          "order_index": 8,
+          "session_no": 8,
+          "chapter_code": "7",
+          "title_vi": "Quản lý rủi ro"
+        },
+        {
+          "order_index": 9,
+          "session_no": 9,
+          "chapter_code": "8",
+          "title_vi": "Phân bổ tài nguyên"
+        },
+        {
+          "order_index": 10,
+          "session_no": 10,
+          "chapter_code": "9",
+          "title_vi": "Giám sát và kiểm soát"
+        },
+        {
+          "order_index": 11,
+          "session_no": 11,
+          "chapter_code": "10",
+          "title_vi": "Quản lý nhân sự trong môi trường phần mềm"
+        },
+        {
+          "order_index": 12,
+          "session_no": 12,
+          "chapter_code": "11",
+          "title_vi": "Làm việc trong nhóm"
+        },
+        {
+          "order_index": 13,
+          "session_no": 13,
+          "chapter_code": "12",
+          "title_vi": "Chất lượng phần mềm"
+        },
+        {
+          "order_index": 14,
+          "session_no": 14,
+          "chapter_code": null,
+          "title_vi": "Sinh viên trình bày dự án"
+        },
+        {
+          "order_index": 15,
+          "session_no": 15,
+          "chapter_code": null,
+          "title_vi": "Ôn bài hoặc bài giảng mời (từ công nghiệp)"
+        }
+      ],
+      "issues": [
+        {
+          "code": "lo.not_taught",
+          "severity": "warning",
+          "message": "L.O.3.1 được định nghĩa ở mục 4.2 nhưng không hàng nào của mục 6 nhắc tới.",
+          "source": {
+            "section": "4.2",
+            "page": 4
+          }
+        },
+        {
+          "code": "lo.not_assessed",
+          "severity": "warning",
+          "message": "L.O.3.1 không gắn với hoạt động đánh giá nào.",
+          "source": {
+            "section": "4.2",
+            "page": 4
+          }
+        },
+        {
+          "code": "lo.not_taught",
+          "severity": "warning",
+          "message": "L.O.3.2 được định nghĩa ở mục 4.2 nhưng không hàng nào của mục 6 nhắc tới.",
+          "source": {
+            "section": "4.2",
+            "page": 4
+          }
+        },
+        {
+          "code": "lo.not_assessed",
+          "severity": "warning",
+          "message": "L.O.3.2 không gắn với hoạt động đánh giá nào.",
+          "source": {
+            "section": "4.2",
+            "page": 4
+          }
+        },
+        {
+          "code": "goal.code_collision",
+          "severity": "info",
+          "message": "L.O.1 ở mục 4.1 (mục tiêu) khác nội dung L.O.1 ở mục 4.2 (chuẩn đầu ra); lưu tách riêng.",
+          "source": {
+            "section": "4.1",
+            "page": 3
+          }
+        },
+        {
+          "code": "goal.code_collision",
+          "severity": "info",
+          "message": "L.O.2 ở mục 4.1 (mục tiêu) khác nội dung L.O.2 ở mục 4.2 (chuẩn đầu ra); lưu tách riêng.",
+          "source": {
+            "section": "4.1",
+            "page": 3
+          }
+        },
+        {
+          "code": "lo.bloom_inferred",
+          "severity": "info",
+          "message": "Mục 4.2 không ghi Bloom/CDIO. Bloom là đề xuất của hệ thống, CDIO để trống; cả hai cần giảng viên xác nhận.",
+          "source": null
+        }
+      ],
+      "blocking": false
+    },
+    "curriculum": {
+      "course": {
+        "code": "CO3011",
+        "title_vi": "Quản lý Dự án Phần mềm",
+        "title_en": "Software Project Management",
+        "credits": 3,
+        "semester": "HK261",
+        "syllabus_version": "DCMH.CO3011.9.1",
+        "lo_year": "2026"
+      },
+      "source_document_id": "01900000-0000-7000-8000-0000000000dd",
+      "chapters": [
+        {
+          "code": "1",
+          "title": "Giới thiệu về quản lý dự án phần mềm",
+          "title_en": "lntroduction to software project management",
+          "order_index": 1,
+          "topics": [
+            "Giới thiệu",
+            "Tại sao quản lý dự án phần mềm lại quan trọng?",
+            "Dự án là gì?",
+            "Dự án phần mềm so với các loại dự án khác",
+            "Quản lý hợp đồng và quản lý dự án kỹ thuật",
+            "Các hoạt động thuộc quản lý dự án phần mềm",
+            "Kế hoạch, phương pháp và phương pháp luận",
+            "Một số cách phân loại dự án phần mềm",
+            "Các bên liên quan",
+            "Đặt mục tiêu",
+            "Tình huống kinh doanh",
+            "Sự thành công và thất bại của dự án",
+            "Quản lý là gì?",
+            "Kiểm soát quản lý",
+            "Kết luận",
+            "lntroduction",
+            "Why is software project management important?",
+            "What is a project?",
+            "Software projects versus other types of project",
+            "Contract management and technical project",
+            "Activities covered by software project",
+            "Plans, methods and methodologies",
+            "Some ways of categorizing software projects",
+            "Stakeholders",
+            "Setting objectives",
+            "The business case",
+            "Project success and failure",
+            "What is management?",
+            "Management control",
+            "Conclusion"
+          ],
+          "source_section": "6",
+          "source_page": 6
+        },
+        {
+          "code": "2",
+          "title": "Đánh giá dự án và quản lý chương trình",
+          "title_en": "Project evaluation and program management",
+          "order_index": 2,
+          "topics": [
+            "Giới thiệu",
+            "Một trường hợp kinh doanh",
+            "Quản lý danh mục dự án",
+            "Đánh giá từng dự án",
+            "Kỹ thuật đánh giá chi phí-lợi ích",
+            "Đánh giá rủi ro",
+            "Quản lý chương trình",
+            "Quản lý việc phân bổ nguồn lực trong các",
+            "Quản lý chương trình chiến lược",
+            "Tạo chương trình",
+            "Hỗ trợ quản lý chương trình",
+            "Một số quan ngại về quản lý chương trình",
+            "Quản lý lợi ích",
+            "Kết luận",
+            "Introduction",
+            "A business case",
+            "Project portfolio management",
+            "Evaluation of individual projects",
+            "Cost-benefit evaluation techniques",
+            "Risk evaluation",
+            "Program management",
+            "Managing the allocation of resources within",
+            "Strategic program management",
+            "Creating a program",
+            "Aids to program management",
+            "Some reservations about program management",
+            "Benefits management",
+            "Conclusion"
+          ],
+          "source_section": "6",
+          "source_page": 7
+        },
+        {
+          "code": "3",
+          "title": "Tổng quan về lập kế hoạch dự án",
+          "title_en": "An overview of project planning",
+          "order_index": 3,
+          "topics": [
+            "Giới thiệu về các bước lập kế hoạch dự án",
+            "Bước 0: Chọn dự án",
+            "Bước1: Xác định phạm vi và mục tiêu dự án",
+            "Bước2: Xác định cơ sở hạ tầng dự án",
+            "Bước3: Phân tích đặc điểm dự án",
+            "Bước4: Xác định các sản phẩm và hoạt động của",
+            "Bước 5: Ước tính nỗ lực cho từng hoạt động",
+            "Bước 6: Xác định rủi ro hoạt động",
+            "Bước 7: Phân bổ nguồn lực",
+            "Bước 8: Đánh giá/công bố nhà máy",
+            "Bước 9 và10: Thực hiện kế hoạch/cấp quy",
+            "Kết luận",
+            "Introduction to Step Wise project planning",
+            "Step 0: Select project",
+            "Step1: Identify project scope and objectives",
+            "Step2: Identify project infrastructure",
+            "Step3: Analyze project characteristics",
+            "Step4: Identify project products and activities",
+            "Step 5: Estimate effort for each activity",
+            "Step 6: Identify activity risks",
+            "Step 7: Allocate resources",
+            "Step 8: Review/publicize plant",
+            "Steps 9 and 10: Execute plan/lower levels of",
+            "Conclusion"
+          ],
+          "source_section": "6",
+          "source_page": 7
+        },
+        {
+          "code": "4",
+          "title": "Lựa chọn phương pháp tiếp cận dự án phù hợp",
+          "title_en": "Selection of an appropriate project approach",
+          "order_index": 4,
+          "topics": [
+            "Giới thiệu",
+            "Xây dựng hay mua?",
+            "Lựa chọn phương pháp và công nghệ",
+            "Lựa chọn mô hình quy trình",
+            "Cấu trúc so với tốc độ phân phối",
+            "Mô hình thác nước",
+            "Mô hình xoắn ốc",
+            "Tạo nguyên mẫu phần mềm",
+            "Các cách phân loại nguyên mẫu khác",
+            "Phân phối gia tăng",
+            "Các phương pháp linh hoạt",
+            "Phương pháp phát triển hệ thống",
+            "Lập trình cực đoan (XP",
+            "Quản lý các quy trình lặp",
+            "Lựa chọn mô hình quy trình phù hợp nhất",
+            "Kết luận",
+            "Introduction",
+            "Build or buy?",
+            "Choosing methodologies and technologies",
+            "Choice of process models",
+            "Structure versus speed of delivery",
+            "The waterfall model",
+            "The spiral model",
+            "Software prototyping",
+            "Other ways of categorizing prototypes",
+            "Incremental delivery",
+            "Agile methods",
+            "Atern/Dynamic Systems Development Method",
+            "Extreme programming (XP",
+            "Managing iterative processes",
+            "Selecting the most appropriate process model",
+            "Conclusion"
+          ],
+          "source_section": "6",
+          "source_page": 8
+        },
+        {
+          "code": "5",
+          "title": "Ước lượng công xây dựng phần mềm",
+          "title_en": "Software effort estimation",
+          "order_index": 5,
+          "topics": [
+            "Giới thiệu",
+            "Nơi thực hiện ước lượng?",
+            "Vấn đề với ước lượng quá cao và quá thấp",
+            "Cơ sở cho ước lượng phần mềm",
+            "Các kỹ thuật ước lượng công sức phần mềm",
+            "Ước lượng từ dưới lên",
+            "Phương pháp từ trên xuống và mô hình tham số",
+            "Đánh giá chuyên gia",
+            "Ước lượng bằng phương pháp tương tự",
+            "Phân tích điểm chức năng Albrecht",
+            "Điểm chức năng Mark II",
+            "Điểm chức năng đầy đủ COSMIC",
+            "COCOMO13: một mô hình năng suất dựa trên",
+            "Kết luận",
+            "Introduction",
+            "Where are estimates done?",
+            "Problems with over- and under- estimates",
+            "The basis for software estimation",
+            "Software effort estimation techniques",
+            "Bottom-up estimating",
+            "The top-down approach and parametric models",
+            "Expert judgement",
+            "Estimating by analogy",
+            "Albrecht function point analysis",
+            "Function points Mark II",
+            "COSMIC full function points",
+            "COCOMO13: a parametric productivity model",
+            "Conclusion"
+          ],
+          "source_section": "6",
+          "source_page": 9
+        },
+        {
+          "code": "6",
+          "title": "Lập kế hoạch hoạt động",
+          "title_en": "Activity planning",
+          "order_index": 6,
+          "topics": [
+            "Giới thiệu",
+            "Mục tiêu của việc lập kế hoạch hoạt động",
+            "Khi nào để lập kế hoạch",
+            "Lịch trình dự án",
+            "Dự án và hoạt động",
+            "Xếp hàng và lập lịch hoạt động",
+            "Mô hình lập kế hoạch mạng",
+            "Xây dựng mô hình mạng",
+            "Thêm yếu tố thời gian",
+            "Quá trình điều khiển về phía trước",
+            "Quá trình điều khiển về phía sau",
+            "Xác định đường đi quan trọng",
+            "Khoảng thời gian hoạt động",
+            "Rút ngắn thời gian dự án",
+            "Xác định các hoạt động quan trọng",
+            "Mạng hoạt động trên mũi tên",
+            "Kết luận",
+            "Introduction",
+            "The objectives of activity planning",
+            "When to plan",
+            "Project schedules",
+            "Projects and activities",
+            "Sequencing and scheduling activities",
+            "Network planning models",
+            "Formulating a network model",
+            "Adding the time dimension",
+            "The forward pass",
+            "The backward pass",
+            "Identifying the critical path",
+            "Activity folat",
+            "Shortening the project duration",
+            "Identifying critical activities",
+            "Activity-on-arrow networks",
+            "Conclusion"
+          ],
+          "source_section": "6",
+          "source_page": 9
+        },
+        {
+          "code": "7",
+          "title": "Quản lý rủi ro",
+          "title_en": "Risk management",
+          "order_index": 7,
+          "topics": [
+            "Giới thiệu",
+            "Rủi ro",
+            "Các loại rủi ro",
+            "Một khung làm việc để đối phó với rủi ro",
+            "Xác định rủi ro",
+            "Đánh giá rủi ro",
+            "Lập kế hoạch rủi ro",
+            "Quản lý rủi ro",
+            "Đánh giá rủi ro cho lịch trình",
+            "Áp dụng kỹ thuật PERT",
+            "Mô phỏng Monte Carlo",
+            "Khái niệm chuỗi quan trọng",
+            "Kết luận",
+            "Introduction",
+            "Risk",
+            "Categories of risk",
+            "A framework for dealing with risk",
+            "Risk identification",
+            "Risk assessment",
+            "Risk planning",
+            "Risk management",
+            "Evaluating risks to the schedule",
+            "Applying the PERT technique",
+            "Monte Carlo simulation",
+            "Critical chain concepts",
+            "Conclusion"
+          ],
+          "source_section": "6",
+          "source_page": 10
+        },
+        {
+          "code": "8",
+          "title": "Phân bổ tài nguyên",
+          "title_en": null,
+          "order_index": 8,
+          "topics": [
+            "Giới thiệu",
+            "Tính chất của tài nguyên",
+            "Xác định yêu cầu tài nguyên",
+            "Lập lịch tài nguyên",
+            "Tạo ra các đường dẫn quan trọng",
+            "Đếm chi phí",
+            "Cụ thể hóa",
+            "Công bố lịch trình tài nguyên",
+            "Lịch trình chi phí",
+            "Thứ tự lập lịch",
+            "Kết luận",
+            "Introduction",
+            "The nature of resources",
+            "Identifying resource requirements",
+            "Scheduling resources",
+            "Creating critical paths",
+            "Counting the cost",
+            "Being specific",
+            "Publishing the resource schedule",
+            "Cost schedules",
+            "The scheduling sequence",
+            "Conclusion"
+          ],
+          "source_section": "6",
+          "source_page": 10
+        },
+        {
+          "code": "9",
+          "title": "Giám sát và kiểm soát",
+          "title_en": "Monitoring and control",
+          "order_index": 9,
+          "topics": [
+            "Giới thiệu",
+            "Xây dựng khung công việc",
+            "Thu thập dữ liệu",
+            "Trực quan hóa tiến độ",
+            "Giám sát chi phí",
+            "Phân tích giá trị đã đạt được",
+            "Ưu tiên giám sát",
+            "Đưa dự án trở lại mục tiêu",
+            "Kiểm soát thay đổi",
+            "Kết luận",
+            "Introduction",
+            "Creating the framework",
+            "Collecting the data",
+            "Visualizing progress",
+            "Cost monitoring",
+            "Earned value analysis",
+            "Prioritizing monitoring",
+            "Getting the project back to target",
+            "Change control",
+            "Conclusion"
+          ],
+          "source_section": "6",
+          "source_page": 11
+        },
+        {
+          "code": "10",
+          "title": "Quản lý nhân sự trong môi trường phần mềm",
+          "title_en": "Managing people in software environments",
+          "order_index": 10,
+          "topics": [
+            "Giới thiệu",
+            "Hiểu hành vi",
+            "Hành vi của tổ chức: một cơ sở nền tảng",
+            "Lựa chọn người phù hợp cho công việc",
+            "Hướng dẫn với những phương pháp tốt nhất",
+            "Động lực",
+            "Mô hình đặc điểm công việc Oldham-Hackman",
+            "Stress",
+            "Sức khỏe và an toàn",
+            "Một số vấn đề đạo đức và chuyên nghiệp",
+            "Kết luận",
+            "Introduction",
+            "Understanding behaviour",
+            "Organization behaviour: a background",
+            "Selecting the right person for the job",
+            "Instruction in the best methods",
+            "Motivation",
+            "The Oldham-Hackman job characteristics",
+            "Health and safety",
+            "Some ethical and professional concerns",
+            "Conclusion"
+          ],
+          "source_section": "6",
+          "source_page": 11
+        },
+        {
+          "code": "11",
+          "title": "Làm việc trong nhóm",
+          "title_en": "Working in teams",
+          "order_index": 11,
+          "topics": [
+            "Giới thiệu",
+            "Trở thành một nhóm",
+            "Đưa ra quyết định",
+            "Cấu trúc tổ chức",
+            "Phụ thuộc phối hợp",
+            "Nhóm phân tán và ảo",
+            "Thể loại giao tiếp",
+            "Kế hoạch giao tiếp",
+            "Lãnh đạo",
+            "Kết luận",
+            "Introduction",
+            "Becoming a team",
+            "Decision making",
+            "Organizational structures",
+            "Coordination dependencies",
+            "Dispersed and virtual teams",
+            "Communication genres",
+            "Communication plans",
+            "Leadership",
+            "Conclusion"
+          ],
+          "source_section": "6",
+          "source_page": 12
+        },
+        {
+          "code": "12",
+          "title": "Chất lượng phần mềm",
+          "title_en": "Software quality",
+          "order_index": 12,
+          "topics": [
+            "Giới thiệu",
+            "Vị trí của chất lượng phần mềm trong kế hoạch",
+            "Tầm quan trọng của chất lượng phần mềm",
+            "Định nghĩa chất lượng phần mềm",
+            "ISO 9126",
+            "Quản lý chất lượng sản phẩm so với quá trình",
+            "Hệ thống quản lý chất lượng",
+            "Mô hình khả năng quy trình",
+            "Các kỹ thuật để nâng cao chất lượng phần mềm",
+            "Kiểm thử",
+            "Kế hoạch chất lượng",
+            "Introduction",
+            "The place of software quality in project",
+            "The importance of software quality",
+            "Defining software quality",
+            "Product versus process quality management",
+            "Quality management systems13.8 Process",
+            "Techniques to help enhance software quality",
+            "Testing",
+            "Quality plans",
+            "Conclusion"
+          ],
+          "source_section": "6",
+          "source_page": 12
+        }
+      ],
+      "learning_outcomes": [
+        {
+          "code": "L.O.1",
+          "parent_code": null,
+          "statement_vi": "Hiểu rõ để áp dụng được các hoạt động cần thực hiện trong quản lý dự án phần mềm.",
+          "statement_en": "Understand clearly to be able to apply the required activities in software project management",
+          "bloom_level": 2,
+          "bloom_provenance": "inferred",
+          "cdio_level": null,
+          "cdio_provenance": "inferred",
+          "source_section": "4.2",
+          "source_page": 3
+        },
+        {
+          "code": "L.O.1.1",
+          "parent_code": "L.O.1",
+          "statement_vi": "Hiểu và áp dụng thực hiện được các hoạt động quản lý dự án phần mềm",
+          "statement_en": "Demonstrate an understanding of, and the ability to apply, software project management activities in practice",
+          "bloom_level": 2,
+          "bloom_provenance": "inferred",
+          "cdio_level": null,
+          "cdio_provenance": "inferred",
+          "source_section": "4.2",
+          "source_page": 3
+        },
+        {
+          "code": "L.O.1.2",
+          "parent_code": "L.O.1",
+          "statement_vi": "Nhận diện được các vấn đề phát sinh ảnh hưởng đến hiệu quả của hoạt động quản lý dự án phần mềm",
+          "statement_en": "Identify and analyze issues that arise and impact the effectiveness of software project management activities.",
+          "bloom_level": 2,
+          "bloom_provenance": "inferred",
+          "cdio_level": null,
+          "cdio_provenance": "inferred",
+          "source_section": "4.2",
+          "source_page": 3
+        },
+        {
+          "code": "L.O.2",
+          "parent_code": null,
+          "statement_vi": "Tổng hợp thông tin, dữ liệu dự án để phân tích, đánh giá được các thông tin, dữ liệu dự án để cải tiến công tác quản lý dự án phần mềm và sử dụng được các công cụ chuyên dụng để quản lý dự án phần mềm",
+          "statement_en": "Be able to synthesize project's information and data to analyze, and evaluate project information and data to improve software project management, and effectively use specialized tools for software project management.",
+          "bloom_level": 6,
+          "bloom_provenance": "inferred",
+          "cdio_level": null,
+          "cdio_provenance": "inferred",
+          "source_section": "4.2",
+          "source_page": 3
+        },
+        {
+          "code": "L.O.2.1",
+          "parent_code": "L.O.2",
+          "statement_vi": "Sử dụng được các công cụ tiên tiến áp dụng quản lý dự án phần mềm, quản lý cấu hình phần mềm, quản lý chất lượng phần mềm",
+          "statement_en": "Effectively utilize advanced tools for software project management, software configuration management, and software quality management",
+          "bloom_level": 3,
+          "bloom_provenance": "inferred",
+          "cdio_level": null,
+          "cdio_provenance": "inferred",
+          "source_section": "4.2",
+          "source_page": 3
+        },
+        {
+          "code": "L.O.2.2",
+          "parent_code": "L.O.2",
+          "statement_vi": "Tổng hợp, phân tích, đánh giá, nhận diện vấn đề, tìm nguyên nhân, đề xuất giải pháp cải tiến hiệu quả quản lý dự án phần mềm.",
+          "statement_en": "Synthesize, analyze, and evaluate information to identify issues, determine root causes, and propose solutions to improve the effectiveness of software project management.",
+          "bloom_level": 6,
+          "bloom_provenance": "inferred",
+          "cdio_level": null,
+          "cdio_provenance": "inferred",
+          "source_section": "4.2",
+          "source_page": 3
+        },
+        {
+          "code": "L.O.3",
+          "parent_code": null,
+          "statement_vi": "Giao tiếp hiệu quả trong nhóm, quản lý nguồn lực trong nhóm dự án phù hợp với nhóm dự án phát triển phân mềm với đầy đủ vai trò của đội dự án phần mềm",
+          "statement_en": "Communicate effectively within a team, and manage team resources appropriately for a software development project team with all required software project roles.",
+          "bloom_level": 3,
+          "bloom_provenance": "inferred",
+          "cdio_level": null,
+          "cdio_provenance": "inferred",
+          "source_section": "4.2",
+          "source_page": 4
+        },
+        {
+          "code": "L.O.3.1",
+          "parent_code": "L.O.3",
+          "statement_vi": "Giao tiếp hiệu quả trong nhóm",
+          "statement_en": "Communicate effectively within a team",
+          "bloom_level": 3,
+          "bloom_provenance": "inferred",
+          "cdio_level": null,
+          "cdio_provenance": "inferred",
+          "source_section": "4.2",
+          "source_page": 4
+        },
+        {
+          "code": "L.O.3.2",
+          "parent_code": "L.O.3",
+          "statement_vi": "Giao tiếp, quản lý nguồn lực trong nhóm dự án phù hợp với nhóm dự án phát triển phân mềm với đầy đủ vai trò của đội dự án phần mềm",
+          "statement_en": "Communicate, manage team resources appropriately for a software development project team with all required software project roles",
+          "bloom_level": 3,
+          "bloom_provenance": "inferred",
+          "cdio_level": null,
+          "cdio_provenance": "inferred",
+          "source_section": "4.2",
+          "source_page": 4
+        }
+      ],
+      "chapter_lo_links": [
+        {
+          "chapter_code": "1",
+          "lo_code": "L.O.1.1",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 6
+        },
+        {
+          "chapter_code": "2",
+          "lo_code": "L.O.1.2",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 7
+        },
+        {
+          "chapter_code": "3",
+          "lo_code": "L.O.1.2",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 7
+        },
+        {
+          "chapter_code": "4",
+          "lo_code": "L.O.2.2",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 8
+        },
+        {
+          "chapter_code": "5",
+          "lo_code": "L.O.2.2",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 9
+        },
+        {
+          "chapter_code": "6",
+          "lo_code": "L.O.2.1",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 9
+        },
+        {
+          "chapter_code": "7",
+          "lo_code": "L.O.2.2",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 10
+        },
+        {
+          "chapter_code": "8",
+          "lo_code": "L.O.2.1",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 10
+        },
+        {
+          "chapter_code": "9",
+          "lo_code": "L.O.2.1",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 11
+        },
+        {
+          "chapter_code": "10",
+          "lo_code": "L.O.3",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 11
+        },
+        {
+          "chapter_code": "11",
+          "lo_code": "L.O.3",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 12
+        },
+        {
+          "chapter_code": "12",
+          "lo_code": "L.O.2.2",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 12
+        }
+      ],
+      "goals": [
+        {
+          "code": "L.O.1",
+          "statement_vi": "Hiểu được các khái niệm cơ bản trong quản lý phần mềm.",
+          "statement_en": "Understand the basic concepts of software management",
+          "source_section": "4.1",
+          "source_page": 3
+        },
+        {
+          "code": "L.O.2",
+          "statement_vi": "Sử dụng được các công cụ chuyên dụng để quản lý phần mềm.",
+          "statement_en": "Use specialized tools to manage software",
+          "source_section": "4.1",
+          "source_page": 3
+        }
+      ],
+      "sessions": [
+        {
+          "order_index": 1,
+          "session_no": 1,
+          "chapter_code": "1",
+          "title_vi": "Giới thiệu về quản lý dự án phần mềm",
+          "title_en": "lntroduction to software project management",
+          "source_section": "6",
+          "source_page": 6
+        },
+        {
+          "order_index": 2,
+          "session_no": 2,
+          "chapter_code": "2",
+          "title_vi": "Đánh giá dự án và quản lý chương trình",
+          "title_en": "Project evaluation and program management",
+          "source_section": "6",
+          "source_page": 7
+        },
+        {
+          "order_index": 3,
+          "session_no": 3,
+          "chapter_code": "3",
+          "title_vi": "Tổng quan về lập kế hoạch dự án",
+          "title_en": "An overview of project planning",
+          "source_section": "6",
+          "source_page": 7
+        },
+        {
+          "order_index": 4,
+          "session_no": 4,
+          "chapter_code": "4",
+          "title_vi": "Lựa chọn phương pháp tiếp cận dự án phù hợp",
+          "title_en": "Selection of an appropriate project approach",
+          "source_section": "6",
+          "source_page": 8
+        },
+        {
+          "order_index": 5,
+          "session_no": 5,
+          "chapter_code": "5",
+          "title_vi": "Ước lượng công xây dựng phần mềm",
+          "title_en": "Software effort estimation",
+          "source_section": "6",
+          "source_page": 9
+        },
+        {
+          "order_index": 6,
+          "session_no": 6,
+          "chapter_code": "6",
+          "title_vi": "Lập kế hoạch hoạt động",
+          "title_en": "Activity planning",
+          "source_section": "6",
+          "source_page": 9
+        },
+        {
+          "order_index": 7,
+          "session_no": 7,
+          "chapter_code": null,
+          "title_vi": "Ôn bài và nghỉ giữa kỳ",
+          "title_en": "Review and recess",
+          "source_section": "6",
+          "source_page": 10
+        },
+        {
+          "order_index": 8,
+          "session_no": 8,
+          "chapter_code": "7",
+          "title_vi": "Quản lý rủi ro",
+          "title_en": "Risk management",
+          "source_section": "6",
+          "source_page": 10
+        },
+        {
+          "order_index": 9,
+          "session_no": 9,
+          "chapter_code": "8",
+          "title_vi": "Phân bổ tài nguyên",
+          "title_en": null,
+          "source_section": "6",
+          "source_page": 10
+        },
+        {
+          "order_index": 10,
+          "session_no": 10,
+          "chapter_code": "9",
+          "title_vi": "Giám sát và kiểm soát",
+          "title_en": "Monitoring and control",
+          "source_section": "6",
+          "source_page": 11
+        },
+        {
+          "order_index": 11,
+          "session_no": 11,
+          "chapter_code": "10",
+          "title_vi": "Quản lý nhân sự trong môi trường phần mềm",
+          "title_en": "Managing people in software environments",
+          "source_section": "6",
+          "source_page": 11
+        },
+        {
+          "order_index": 12,
+          "session_no": 12,
+          "chapter_code": "11",
+          "title_vi": "Làm việc trong nhóm",
+          "title_en": "Working in teams",
+          "source_section": "6",
+          "source_page": 12
+        },
+        {
+          "order_index": 13,
+          "session_no": 13,
+          "chapter_code": "12",
+          "title_vi": "Chất lượng phần mềm",
+          "title_en": "Software quality",
+          "source_section": "6",
+          "source_page": 12
+        },
+        {
+          "order_index": 14,
+          "session_no": 14,
+          "chapter_code": null,
+          "title_vi": "Sinh viên trình bày dự án",
+          "title_en": "Student presentation",
+          "source_section": "6",
+          "source_page": 13
+        },
+        {
+          "order_index": 15,
+          "session_no": 15,
+          "chapter_code": null,
+          "title_vi": "Ôn bài hoặc bài giảng mời (từ công nghiệp)",
+          "title_en": "Review or invite lecture (from industry",
+          "source_section": "6",
+          "source_page": 13
+        }
+      ],
+      "assessments": [
+        {
+          "code": "A.O.1",
+          "parent_code": null,
+          "name_vi": "Các kỹ năng quản lý dự án phần mềm",
+          "name_en": "Software Project Management Skills",
+          "activity_type": "GPJ",
+          "category": "group_quiz",
+          "weight": null,
+          "weight_provenance": "inferred",
+          "source_section": "5.2",
+          "source_page": 4
+        },
+        {
+          "code": "A.O.1.1",
+          "parent_code": "A.O.1",
+          "name_vi": "Đánh giá kết quả thực hiện và các số liệu thống kê",
+          "name_en": "Evaluate results of project development and statistics",
+          "activity_type": "GPJ",
+          "category": "group_quiz",
+          "weight": null,
+          "weight_provenance": "inferred",
+          "source_section": "5.2",
+          "source_page": 4
+        },
+        {
+          "code": "A.O.2",
+          "parent_code": null,
+          "name_vi": "Kiểm tra kiến thức liên quan đến các kỹ năng quản lý dự án phần mềm",
+          "name_en": "Test knowledge related to software project management skills",
+          "activity_type": "EXM",
+          "category": "final",
+          "weight": null,
+          "weight_provenance": "inferred",
+          "source_section": "5.2",
+          "source_page": 4
+        }
+      ],
+      "lo_assessment_links": [
+        {
+          "lo_code": "L.O.1.1",
+          "assessment_code": "A.O.1",
+          "row_order_index": null,
+          "chapter_code": null,
+          "provenance": "extracted",
+          "source_section": "5.3",
+          "source_page": 5
+        },
+        {
+          "lo_code": "L.O.1.1",
+          "assessment_code": "A.O.2",
+          "row_order_index": null,
+          "chapter_code": null,
+          "provenance": "extracted",
+          "source_section": "5.3",
+          "source_page": 5
+        },
+        {
+          "lo_code": "L.O.1.2",
+          "assessment_code": "A.O.1",
+          "row_order_index": null,
+          "chapter_code": null,
+          "provenance": "extracted",
+          "source_section": "5.3",
+          "source_page": 5
+        },
+        {
+          "lo_code": "L.O.1.2",
+          "assessment_code": "A.O.2",
+          "row_order_index": null,
+          "chapter_code": null,
+          "provenance": "extracted",
+          "source_section": "5.3",
+          "source_page": 5
+        },
+        {
+          "lo_code": "L.O.2.1",
+          "assessment_code": "A.O.1",
+          "row_order_index": null,
+          "chapter_code": null,
+          "provenance": "extracted",
+          "source_section": "5.3",
+          "source_page": 5
+        },
+        {
+          "lo_code": "L.O.2.1",
+          "assessment_code": "A.O.2",
+          "row_order_index": null,
+          "chapter_code": null,
+          "provenance": "extracted",
+          "source_section": "5.3",
+          "source_page": 5
+        },
+        {
+          "lo_code": "L.O.2.2",
+          "assessment_code": "A.O.1",
+          "row_order_index": null,
+          "chapter_code": null,
+          "provenance": "extracted",
+          "source_section": "5.3",
+          "source_page": 5
+        },
+        {
+          "lo_code": "L.O.2.2",
+          "assessment_code": "A.O.1.1",
+          "row_order_index": null,
+          "chapter_code": null,
+          "provenance": "extracted",
+          "source_section": "5.3",
+          "source_page": 5
+        },
+        {
+          "lo_code": "L.O.2.2",
+          "assessment_code": "A.O.2",
+          "row_order_index": null,
+          "chapter_code": null,
+          "provenance": "extracted",
+          "source_section": "5.3",
+          "source_page": 5
+        },
+        {
+          "lo_code": "L.O.3",
+          "assessment_code": "A.O.1",
+          "row_order_index": null,
+          "chapter_code": null,
+          "provenance": "extracted",
+          "source_section": "5.3",
+          "source_page": 5
+        },
+        {
+          "lo_code": "L.O.3",
+          "assessment_code": "A.O.2",
+          "row_order_index": null,
+          "chapter_code": null,
+          "provenance": "extracted",
+          "source_section": "5.3",
+          "source_page": 5
+        },
+        {
+          "lo_code": "L.O.1.1",
+          "assessment_code": "A.O.1",
+          "row_order_index": 1,
+          "chapter_code": "1",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 6
+        },
+        {
+          "lo_code": "L.O.1.1",
+          "assessment_code": "A.O.2",
+          "row_order_index": 1,
+          "chapter_code": "1",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 6
+        },
+        {
+          "lo_code": "L.O.1.2",
+          "assessment_code": "A.O.1",
+          "row_order_index": 2,
+          "chapter_code": "2",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 7
+        },
+        {
+          "lo_code": "L.O.1.2",
+          "assessment_code": "A.O.2",
+          "row_order_index": 2,
+          "chapter_code": "2",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 7
+        },
+        {
+          "lo_code": "L.O.1.2",
+          "assessment_code": "A.O.1",
+          "row_order_index": 3,
+          "chapter_code": "3",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 7
+        },
+        {
+          "lo_code": "L.O.1.2",
+          "assessment_code": "A.O.2",
+          "row_order_index": 3,
+          "chapter_code": "3",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 7
+        },
+        {
+          "lo_code": "L.O.2.2",
+          "assessment_code": "A.O.1",
+          "row_order_index": 4,
+          "chapter_code": "4",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 8
+        },
+        {
+          "lo_code": "L.O.2.2",
+          "assessment_code": "A.O.2",
+          "row_order_index": 4,
+          "chapter_code": "4",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 8
+        },
+        {
+          "lo_code": "L.O.2.2",
+          "assessment_code": "A.O.1",
+          "row_order_index": 5,
+          "chapter_code": "5",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 9
+        },
+        {
+          "lo_code": "L.O.2.2",
+          "assessment_code": "A.O.2",
+          "row_order_index": 5,
+          "chapter_code": "5",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 9
+        },
+        {
+          "lo_code": "L.O.2.1",
+          "assessment_code": "A.O.1",
+          "row_order_index": 6,
+          "chapter_code": "6",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 9
+        },
+        {
+          "lo_code": "L.O.2.1",
+          "assessment_code": "A.O.2",
+          "row_order_index": 6,
+          "chapter_code": "6",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 9
+        },
+        {
+          "lo_code": "L.O.2.2",
+          "assessment_code": "A.O.1",
+          "row_order_index": 8,
+          "chapter_code": "7",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 10
+        },
+        {
+          "lo_code": "L.O.2.2",
+          "assessment_code": "A.O.2",
+          "row_order_index": 8,
+          "chapter_code": "7",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 10
+        },
+        {
+          "lo_code": "L.O.2.1",
+          "assessment_code": "A.O.1",
+          "row_order_index": 9,
+          "chapter_code": "8",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 10
+        },
+        {
+          "lo_code": "L.O.2.1",
+          "assessment_code": "A.O.2",
+          "row_order_index": 9,
+          "chapter_code": "8",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 10
+        },
+        {
+          "lo_code": "L.O.2.1",
+          "assessment_code": "A.O.1",
+          "row_order_index": 10,
+          "chapter_code": "9",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 11
+        },
+        {
+          "lo_code": "L.O.2.1",
+          "assessment_code": "A.O.2",
+          "row_order_index": 10,
+          "chapter_code": "9",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 11
+        },
+        {
+          "lo_code": "L.O.3",
+          "assessment_code": "A.O.1",
+          "row_order_index": 11,
+          "chapter_code": "10",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 11
+        },
+        {
+          "lo_code": "L.O.3",
+          "assessment_code": "A.O.1",
+          "row_order_index": 12,
+          "chapter_code": "11",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 12
+        },
+        {
+          "lo_code": "L.O.3",
+          "assessment_code": "A.O.2",
+          "row_order_index": 12,
+          "chapter_code": "11",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 12
+        },
+        {
+          "lo_code": "L.O.2.2",
+          "assessment_code": "A.O.1",
+          "row_order_index": 13,
+          "chapter_code": "12",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 12
+        },
+        {
+          "lo_code": "L.O.2.2",
+          "assessment_code": "A.O.2",
+          "row_order_index": 13,
+          "chapter_code": "12",
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 12
+        },
+        {
+          "lo_code": "L.O.2.2",
+          "assessment_code": "A.O.1",
+          "row_order_index": 14,
+          "chapter_code": null,
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 13
+        },
+        {
+          "lo_code": "L.O.2.2",
+          "assessment_code": "A.O.1.1",
+          "row_order_index": 14,
+          "chapter_code": null,
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 13
+        },
+        {
+          "lo_code": "L.O.2.1",
+          "assessment_code": "A.O.1",
+          "row_order_index": 15,
+          "chapter_code": null,
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 13
+        },
+        {
+          "lo_code": "L.O.2.1",
+          "assessment_code": "A.O.2",
+          "row_order_index": 15,
+          "chapter_code": null,
+          "provenance": "extracted",
+          "source_section": "6",
+          "source_page": 13
+        }
+      ],
+      "issues": [
+        {
+          "code": "lo.not_taught",
+          "severity": "warning",
+          "message": "L.O.3.1 được định nghĩa ở mục 4.2 nhưng không hàng nào của mục 6 nhắc tới.",
+          "source_section": "4.2",
+          "source_page": 4,
+          "source_locator": null
+        },
+        {
+          "code": "lo.not_assessed",
+          "severity": "warning",
+          "message": "L.O.3.1 không gắn với hoạt động đánh giá nào.",
+          "source_section": "4.2",
+          "source_page": 4,
+          "source_locator": null
+        },
+        {
+          "code": "lo.not_taught",
+          "severity": "warning",
+          "message": "L.O.3.2 được định nghĩa ở mục 4.2 nhưng không hàng nào của mục 6 nhắc tới.",
+          "source_section": "4.2",
+          "source_page": 4,
+          "source_locator": null
+        },
+        {
+          "code": "lo.not_assessed",
+          "severity": "warning",
+          "message": "L.O.3.2 không gắn với hoạt động đánh giá nào.",
+          "source_section": "4.2",
+          "source_page": 4,
+          "source_locator": null
+        },
+        {
+          "code": "goal.code_collision",
+          "severity": "info",
+          "message": "L.O.1 ở mục 4.1 (mục tiêu) khác nội dung L.O.1 ở mục 4.2 (chuẩn đầu ra); lưu tách riêng.",
+          "source_section": "4.1",
+          "source_page": 3,
+          "source_locator": null
+        },
+        {
+          "code": "goal.code_collision",
+          "severity": "info",
+          "message": "L.O.2 ở mục 4.1 (mục tiêu) khác nội dung L.O.2 ở mục 4.2 (chuẩn đầu ra); lưu tách riêng.",
+          "source_section": "4.1",
+          "source_page": 3,
+          "source_locator": null
+        },
+        {
+          "code": "lo.bloom_inferred",
+          "severity": "info",
+          "message": "Mục 4.2 không ghi Bloom/CDIO. Bloom là đề xuất của hệ thống, CDIO để trống; cả hai cần giảng viên xác nhận.",
+          "source_section": null,
+          "source_page": null,
+          "source_locator": null
+        }
+      ]
+    },
+    "error": null
+  }
+}

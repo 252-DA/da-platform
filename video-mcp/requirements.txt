@@ -1,0 +1,2 @@
+# CLI used only for public YouTube search/captions. No media is downloaded.
+yt-dlp==2026.8.19

@@ -1,0 +1,233 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/curriculum-import-result.json",
+  "title": "CURRICULUM_IMPORT_RESULT",
+  "description": "Worker → core-api (hàng đợi worker_results). Kết quả bước xem trước của một lần nạp đề cương (job curriculum_preview của worker/worker/use_cases/curriculum_import.py): bản xem trước cho màn hình duyệt và bản đề cương chuẩn hoá đầy đủ. core-api (src/modules/curriculum/handlers/curriculum-import-result.handler.ts) lưu cả hai vào curriculum_imports khi lần nạp còn QUEUED/EXTRACTING; khi giảng viên áp dụng, core-api ghi đúng bản `curriculum` đã lưu vào 9 bảng đề cương (src/modules/curriculum/services/curriculum-writer.ts), không parse lại. FAILED còn được gửi cho job curriculum_apply cũ (lần nạp đang APPLYING từ trước 2026-11-07). result_id = CURRICULUM_IMPORT_RESULT.<import_id> (job apply cũ: thêm .legacy-apply). id dòng không đi trong payload: core-api tự sinh tất định từ course_id của lần nạp và mã (uuid5 URL '<course_id>:<mã LO/AO>', '<course_id>:CH<mã chương>').",
+  "type": "object",
+  "allOf": [{ "$ref": "worker-result-envelope.json" }],
+  "properties": {
+    "kind": { "const": "CURRICULUM_IMPORT_RESULT" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "import_id": { "type": "string", "format": "uuid" },
+        "status": { "enum": ["READY", "BLOCKED", "FAILED"] },
+        "preview": {
+          "type": ["object", "null"],
+          "description": "Dạng màn hình duyệt đang đọc (web/src/app/manage/curriculum/page.tsx); blocking = còn issue severity error."
+        },
+        "curriculum": {
+          "oneOf": [{ "$ref": "curriculum-import-result.json#/definitions/curriculum" }, { "type": "null" }]
+        },
+        "error": { "type": ["string", "null"], "maxLength": 2000 }
+      },
+      "required": ["import_id", "status", "preview", "curriculum", "error"],
+      "additionalProperties": false,
+      "if": { "properties": { "status": { "const": "FAILED" } } },
+      "then": {
+        "properties": {
+          "preview": { "type": "null" },
+          "curriculum": { "type": "null" },
+          "error": { "type": "string", "minLength": 1 }
+        }
+      },
+      "else": {
+        "properties": {
+          "preview": {
+            "type": "object",
+            "required": ["blocking"],
+            "properties": { "blocking": { "type": "boolean" } }
+          },
+          "curriculum": { "$ref": "curriculum-import-result.json#/definitions/curriculum" },
+          "error": { "type": "null" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "code": { "type": "string", "minLength": 1 },
+    "text": { "type": "string" },
+    "optionalText": { "type": ["string", "null"] },
+    "provenance": { "enum": ["extracted", "inferred", "confirmed"] },
+    "sourceSection": { "type": ["string", "null"] },
+    "sourcePage": { "type": ["integer", "null"] },
+    "curriculum": {
+      "type": "object",
+      "description": "Đề cương chuẩn hoá: mọi thứ cần để ghi courses, chapters, learning_outcomes, chapter_los, course_goals, course_sessions, assessments, lo_assessments, curriculum_extraction_issues. Thứ tự phần tử giữ như tài liệu (assessments.sort_order = vị trí + 1; trùng khoá thì phần tử sau thắng).",
+      "properties": {
+        "course": {
+          "type": "object",
+          "properties": {
+            "code": { "$ref": "curriculum-import-result.json#/definitions/code" },
+            "title_vi": { "$ref": "curriculum-import-result.json#/definitions/text" },
+            "title_en": { "$ref": "curriculum-import-result.json#/definitions/optionalText" },
+            "credits": { "type": ["integer", "null"] },
+            "semester": { "$ref": "curriculum-import-result.json#/definitions/optionalText" },
+            "syllabus_version": { "$ref": "curriculum-import-result.json#/definitions/optionalText" },
+            "lo_year": { "$ref": "curriculum-import-result.json#/definitions/optionalText" }
+          },
+          "required": ["code", "title_vi", "title_en", "credits", "semester", "syllabus_version", "lo_year"],
+          "additionalProperties": false
+        },
+        "source_document_id": {
+          "type": ["string", "null"],
+          "description": "id tài liệu parser gán; ghi vào curriculum_extraction_issues.document_id (giữ nguyên nếu là UUID, không thì uuid5 URL)."
+        },
+        "chapters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": { "$ref": "curriculum-import-result.json#/definitions/code" },
+              "title": { "$ref": "curriculum-import-result.json#/definitions/text" },
+              "title_en": { "$ref": "curriculum-import-result.json#/definitions/optionalText" },
+              "order_index": { "type": "integer" },
+              "topics": { "type": "array", "items": { "type": "string" } },
+              "source_section": { "$ref": "curriculum-import-result.json#/definitions/sourceSection" },
+              "source_page": { "$ref": "curriculum-import-result.json#/definitions/sourcePage" }
+            },
+            "required": ["code", "title", "title_en", "order_index", "topics", "source_section", "source_page"],
+            "additionalProperties": false
+          }
+        },
+        "learning_outcomes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": { "$ref": "curriculum-import-result.json#/definitions/code" },
+              "parent_code": { "$ref": "curriculum-import-result.json#/definitions/optionalText" },
+              "statement_vi": { "$ref": "curriculum-import-result.json#/definitions/text" },
+              "statement_en": { "$ref": "curriculum-import-result.json#/definitions/optionalText" },
+              "bloom_level": { "type": ["integer", "null"], "minimum": 1, "maximum": 6 },
+              "bloom_provenance": { "$ref": "curriculum-import-result.json#/definitions/provenance" },
+              "cdio_level": { "enum": ["I", "II", "III", null] },
+              "cdio_provenance": { "$ref": "curriculum-import-result.json#/definitions/provenance" },
+              "source_section": { "$ref": "curriculum-import-result.json#/definitions/sourceSection" },
+              "source_page": { "$ref": "curriculum-import-result.json#/definitions/sourcePage" }
+            },
+            "required": [
+              "code", "parent_code", "statement_vi", "statement_en", "bloom_level",
+              "bloom_provenance", "cdio_level", "cdio_provenance", "source_section", "source_page"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "chapter_lo_links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "chapter_code": { "$ref": "curriculum-import-result.json#/definitions/code" },
+              "lo_code": { "$ref": "curriculum-import-result.json#/definitions/code" },
+              "provenance": { "$ref": "curriculum-import-result.json#/definitions/provenance" },
+              "source_section": { "$ref": "curriculum-import-result.json#/definitions/sourceSection" },
+              "source_page": { "$ref": "curriculum-import-result.json#/definitions/sourcePage" }
+            },
+            "required": ["chapter_code", "lo_code", "provenance", "source_section", "source_page"],
+            "additionalProperties": false
+          }
+        },
+        "goals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": { "$ref": "curriculum-import-result.json#/definitions/code" },
+              "statement_vi": { "$ref": "curriculum-import-result.json#/definitions/text" },
+              "statement_en": { "$ref": "curriculum-import-result.json#/definitions/optionalText" },
+              "source_section": { "$ref": "curriculum-import-result.json#/definitions/sourceSection" },
+              "source_page": { "$ref": "curriculum-import-result.json#/definitions/sourcePage" }
+            },
+            "required": ["code", "statement_vi", "statement_en", "source_section", "source_page"],
+            "additionalProperties": false
+          }
+        },
+        "sessions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "order_index": { "type": "integer" },
+              "session_no": { "type": ["integer", "null"] },
+              "chapter_code": { "$ref": "curriculum-import-result.json#/definitions/optionalText" },
+              "title_vi": { "$ref": "curriculum-import-result.json#/definitions/text" },
+              "title_en": { "$ref": "curriculum-import-result.json#/definitions/optionalText" },
+              "source_section": { "$ref": "curriculum-import-result.json#/definitions/sourceSection" },
+              "source_page": { "$ref": "curriculum-import-result.json#/definitions/sourcePage" }
+            },
+            "required": ["order_index", "session_no", "chapter_code", "title_vi", "title_en", "source_section", "source_page"],
+            "additionalProperties": false
+          }
+        },
+        "assessments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": { "$ref": "curriculum-import-result.json#/definitions/code" },
+              "parent_code": { "$ref": "curriculum-import-result.json#/definitions/optionalText" },
+              "name_vi": { "$ref": "curriculum-import-result.json#/definitions/text" },
+              "name_en": { "$ref": "curriculum-import-result.json#/definitions/optionalText" },
+              "activity_type": { "$ref": "curriculum-import-result.json#/definitions/optionalText" },
+              "category": {
+                "type": "string",
+                "description": "quiz | midterm | final | project | group_quiz; core-api quy về assessments.type, giá trị khác thành ASSIGNMENT."
+              },
+              "weight": { "type": ["number", "null"] },
+              "weight_provenance": { "$ref": "curriculum-import-result.json#/definitions/provenance" },
+              "source_section": { "$ref": "curriculum-import-result.json#/definitions/sourceSection" },
+              "source_page": { "$ref": "curriculum-import-result.json#/definitions/sourcePage" }
+            },
+            "required": [
+              "code", "parent_code", "name_vi", "name_en", "activity_type", "category",
+              "weight", "weight_provenance", "source_section", "source_page"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "lo_assessment_links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "lo_code": { "$ref": "curriculum-import-result.json#/definitions/code" },
+              "assessment_code": { "$ref": "curriculum-import-result.json#/definitions/code" },
+              "row_order_index": {
+                "type": ["integer", "null"],
+                "description": "Hàng của bảng mục 6 khẳng định cạnh này; null = phát biểu chung (scope course, session_order 0)."
+              },
+              "chapter_code": { "$ref": "curriculum-import-result.json#/definitions/optionalText" },
+              "provenance": { "$ref": "curriculum-import-result.json#/definitions/provenance" },
+              "source_section": { "$ref": "curriculum-import-result.json#/definitions/sourceSection" },
+              "source_page": { "$ref": "curriculum-import-result.json#/definitions/sourcePage" }
+            },
+            "required": ["lo_code", "assessment_code", "row_order_index", "chapter_code", "provenance", "source_section", "source_page"],
+            "additionalProperties": false
+          }
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": { "$ref": "curriculum-import-result.json#/definitions/code" },
+              "severity": { "enum": ["error", "warning", "info"] },
+              "message": { "type": "string" },
+              "source_section": { "$ref": "curriculum-import-result.json#/definitions/sourceSection" },
+              "source_page": { "$ref": "curriculum-import-result.json#/definitions/sourcePage" },
+              "source_locator": { "$ref": "curriculum-import-result.json#/definitions/optionalText" }
+            },
+            "required": ["code", "severity", "message", "source_section", "source_page", "source_locator"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "course", "source_document_id", "chapters", "learning_outcomes", "chapter_lo_links",
+        "goals", "sessions", "assessments", "lo_assessment_links", "issues"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

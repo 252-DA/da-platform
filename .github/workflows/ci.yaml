@@ -1,0 +1,53 @@
+name: ci
+
+# CI + CD của toàn hệ thống, chạy trên meta-repo vì chỉ ở đây mới có đúng bộ
+# commit của mọi submodule (gitlink) cùng lúc.
+#
+#   PR / push  → test: mọi thành phần song song (component.yaml)
+#   push dev/master, test xanh → images: build + đẩy image lên GHCR (images.yaml)
+#   deploy     → vẫn chạy tay trên VM: deploy/deploy.sh <sha>
+#
+# Nhóm merge vào `dev` (master đứng yên từ 08/2026), nên image build từ cả hai.
+
+on:
+  push:
+    branches: [dev, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        component:
+          - contracts
+          - core-api
+          - web
+          - worker
+          - packages-ai
+          - ai-sdk
+          - ai-tutor
+          - mcp-service
+          - embedding-service
+          - service-sdk
+          - document-inspector
+          - video-mcp
+    uses: ./.github/workflows/component.yaml
+    with:
+      component: ${{ matrix.component }}
+
+  images:
+    needs: test
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/images.yaml

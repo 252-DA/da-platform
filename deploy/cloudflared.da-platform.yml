@@ -1,0 +1,7 @@
+tunnel: 74779ab4-983a-4f51-908b-0bd605c52f26
+credentials-file: /etc/cloudflared/credentials.json
+
+ingress:
+  - hostname: app.canxphung.dev
+    service: http://web:3000
+  - service: http_status:404

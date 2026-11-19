@@ -1,0 +1,30 @@
+{
+  "result_id": "ENRICHMENT_CONTENT_RESULT.019fdbaa-c096-78e5-a91a-982998d5b5b0.g3",
+  "kind": "ENRICHMENT_CONTENT_RESULT",
+  "source_event_id": null,
+  "occurred_at": "2026-11-07T10:30:15.123Z",
+  "payload": {
+    "document_id": "019fdbaa-c096-78e5-a91a-982998d5b5b0",
+    "processing_generation": 3,
+    "model_id": "gemini-3-flash",
+    "quiz_items": [
+      {
+        "quiz_id": "7a1c2d3e-4b5a-4c6d-8e7f-9a0b1c2d3e4f",
+        "primary_chunk_id": "019fdbab-0000-7000-8000-000000000001",
+        "source_chunk_ids": [
+          "019fdbab-0000-7000-8000-000000000001",
+          "019fdbab-0000-7000-8000-000000000002"
+        ],
+        "question": "Đạo hàm dùng để làm gì?",
+        "choices": [
+          "Trang trí biểu đồ",
+          "Đo tốc độ thay đổi",
+          "Đổi đơn vị",
+          "Đếm số trang"
+        ],
+        "correct_index": 1,
+        "explanation": "Đạo hàm đo tốc độ thay đổi tức thời."
+      }
+    ]
+  }
+}

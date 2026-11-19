@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/micro-content-grading-result.json",
+  "title": "MICRO_CONTENT_GRADING_RESULT",
+  "description": "Kết quả chấm câu tự luận của một lệnh MICRO_CONTENT_GRADING_REQUESTED: worker chấm (worker/runners/answer_grading_worker.py) → core-api (core-api/src/modules/micro-content/handlers/micro-content-grading-result.handler.ts), hàng đợi worker_results. Một kết quả cho mỗi lệnh, gồm mọi câu của lệnh; dạng từng câu giống quiz-grading-result.json nhưng định danh là answer_id. result_id = MICRO_CONTENT_GRADING_RESULT.<event_id của lệnh>. core-api trong một transaction: khoá micro_content_attempts, chỉ ghi câu còn PENDING, rồi tính lại điểm lượt nộp bằng submissionScore (trung bình, Math.round), passed theo micro_contents.passing_score, grading_status: còn câu NEEDS_REVIEW → NEEDS_REVIEW, còn PENDING → PENDING, còn lại GRADED. Mọi answer_id phải thuộc attempt_id, và attempt thuộc micro_content_id/course_id.",
+  "type": "object",
+  "allOf": [{ "$ref": "worker-result-envelope.json" }],
+  "properties": {
+    "kind": { "const": "MICRO_CONTENT_GRADING_RESULT" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "attempt_id": { "type": "string", "format": "uuid" },
+        "course_id": { "type": "string", "format": "uuid" },
+        "micro_content_id": { "type": "string", "format": "uuid" },
+        "answers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "answer_id": { "type": "string", "format": "uuid" },
+                  "status": { "const": "GRADED" },
+                  "score": { "type": "integer", "minimum": 0, "maximum": 100 },
+                  "is_correct": { "type": "boolean" },
+                  "feedback": { "type": ["string", "null"], "maxLength": 4000 },
+                  "grader_model": { "type": ["string", "null"], "maxLength": 200 }
+                },
+                "required": ["answer_id", "status", "score", "is_correct", "feedback", "grader_model"],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "answer_id": { "type": "string", "format": "uuid" },
+                  "status": { "const": "NEEDS_REVIEW" },
+                  "reason": { "enum": ["MODEL_ERROR", "NO_GRADING_INPUT", "LEGACY_COMMAND"] },
+                  "feedback": { "type": ["string", "null"], "maxLength": 4000 },
+                  "grader_model": { "type": ["string", "null"], "maxLength": 200 }
+                },
+                "required": ["answer_id", "status", "reason", "feedback", "grader_model"],
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      },
+      "required": ["attempt_id", "course_id", "micro_content_id", "answers"],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "da-service-sdk"
+version = "0.1.0"
+description = "Typed gRPC clients and generated protobuf code for da-platform internal services"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+dependencies = [
+    "grpcio>=1.80.0",
+    "protobuf>=4.25.0",
+]
+
+[dependency-groups]
+dev = [
+    "grpcio-tools>=1.80.0",
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "mypy>=1.0.0",
+]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "-v --cov=da_service_sdk --cov-report=term-missing"

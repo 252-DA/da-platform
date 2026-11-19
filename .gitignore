@@ -4,6 +4,7 @@
 !.env.*.example
 *.pem
 keys/
+.cloudflared/
 
 # ===== Tài liệu tham khảo (đồ án nhóm khác — không đẩy lên GitHub) =====
 tham-khao/
@@ -24,5 +25,21 @@ dist/
 .claude/
 .codex
 .idea/
-.vscode/
+# Chỉ chia sẻ cấu hình format/lint chung; phần còn lại của .vscode là đồ cá nhân.
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .agents/
+.archify/
+
+# ===== Test artifacts =====
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Generated CodeWiki output
+codewiki-docs/
+
+# ===== Deploy prod (trên VM) =====
+backups/

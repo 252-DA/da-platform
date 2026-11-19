@@ -1,0 +1,13 @@
+{
+  "result_id": "CURRICULUM_IMPORT_RESULT.01900000-0000-7000-8000-0000000000aa",
+  "kind": "CURRICULUM_IMPORT_RESULT",
+  "source_event_id": null,
+  "occurred_at": "2026-11-07T10:30:15.123Z",
+  "payload": {
+    "import_id": "01900000-0000-7000-8000-0000000000aa",
+    "status": "FAILED",
+    "preview": null,
+    "curriculum": null,
+    "error": null
+  }
+}

@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcp-service"
+version = "0.1.0"
+description = "MCP delivery for course-context retrieval — semantic search + quiz-context tools, remote embedding via embedding-service"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+# document-chunk's base `dependencies` currently bundle Postgres/Qdrant/
+# Neo4j/MinIO/BullMQ/FastAPI/mcp/google-genai together (not yet split into
+# extras) — mcp-service transitively gets all of it even though it only
+# uses Postgres+Qdrant+mcp. This is a known, deliberately deferred cost; see
+# docs/embedding-service-migration.md §9 step 15 ("Thu gọn dependency").
+dependencies = [
+    "document-chunk[remote-embedding]",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.0",
+]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[tool.uv.sources]
+document-chunk = { path = "../packages-ai", editable = true }
+da-service-sdk = { path = "../service-sdk", editable = true }
+
+[project.scripts]
+mcp-service = "mcp_service.delivery.server:serve"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "-v --cov=mcp_service --cov-report=term-missing"

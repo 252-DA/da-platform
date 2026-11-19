@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://da-platform.dev/contracts/integration-events/v1/course-chunk-lo-remap-requested.json",
+  "title": "COURSE_CHUNK_LO_REMAP_REQUESTED",
+  "description": "Core command → document worker (queue: document_processing, worker/runners/document_worker.py; job name = event_type). Phát qua outbox trong cùng transaction core-api ghi đề cương khi giảng viên áp dụng một lần nạp (src/modules/curriculum/services/curriculum-import.service.ts). Worker map lại chunk → LO cho mọi tài liệu đã index của học phần (MapChunksToLosUseCase, best-effort từng tài liệu) và ghi chunk_lo_mappings — dữ liệu AI của worker, không gửi kết quả về.",
+  "type": "object",
+  "allOf": [{ "$ref": "envelope.json" }],
+  "properties": {
+    "event_type": { "const": "COURSE_CHUNK_LO_REMAP_REQUESTED" },
+    "aggregate_type": { "const": "course" },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "course_id": { "type": "string", "format": "uuid" },
+        "import_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Lần nạp vừa áp dụng; chỉ để truy vết trong log."
+        }
+      },
+      "required": ["course_id", "import_id"],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "result_id": "CONTENT_GENERATION_RESULT.0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c01.SUCCEEDED",
+  "kind": "CONTENT_GENERATION_RESULT",
+  "source_event_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c01",
+  "occurred_at": "2026-11-07T10:30:15.123Z",
+  "payload": {
+    "request_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c02",
+    "course_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c03",
+    "content_type": "quiz",
+    "status": "SUCCEEDED",
+    "lo_id": "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c04",
+    "generated_count": 2,
+    "quiz_items": [
+      {
+        "quiz_id": "8d3c6a52-5b1e-5c7a-9f0e-2a4b6c8d0e11",
+        "type": "MCQ_SINGLE",
+        "question": "Dijkstra yêu cầu trọng số cạnh như thế nào?",
+        "options": [
+          "Âm",
+          "Không âm",
+          "Bằng 0",
+          "Tuỳ ý"
+        ],
+        "correct_answer": "Không âm",
+        "explanation": "Slide 12: Dijkstra chỉ đúng khi mọi trọng số không âm.",
+        "bloom_level": 3,
+        "source_chunk_ids": [
+          "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c05"
+        ],
+        "verification_status": "VERIFIED",
+        "verification_evidence": {
+          "criterion": "source_grounding",
+          "judge_verdict": "supported",
+          "judge_reason": "Khớp slide 12.",
+          "inconclusive_reason": null,
+          "regeneration_attempts": 1,
+          "regenerations_applied": 1,
+          "history": [
+            {
+              "round": 0,
+              "verdict": "contradicted",
+              "reason": "Nguồn nói trọng số phải không âm."
+            },
+            {
+              "round": 1,
+              "verdict": "supported",
+              "reason": "Khớp slide 12."
+            }
+          ],
+          "writer_model": "deepseek-chat",
+          "judge_model": "gemini-3-flash-preview",
+          "judge_is_writer": false,
+          "source_chunk_ids": [
+            "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c05"
+          ],
+          "requested_bloom_level": 3
+        }
+      },
+      {
+        "quiz_id": "8d3c6a52-5b1e-5c7a-9f0e-2a4b6c8d0e12",
+        "type": "FILL_BLANK",
+        "question": "Cây n đỉnh có ____ cạnh.",
+        "options": null,
+        "correct_answer": [
+          "n-1",
+          "n − 1"
+        ],
+        "explanation": "Slide 4.",
+        "bloom_level": 3,
+        "source_chunk_ids": [
+          "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c05",
+          "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c06"
+        ],
+        "verification_status": "INCONCLUSIVE",
+        "verification_evidence": {
+          "criterion": "source_grounding",
+          "judge_verdict": null,
+          "judge_reason": null,
+          "inconclusive_reason": "judge_failed",
+          "regeneration_attempts": 0,
+          "regenerations_applied": 0,
+          "history": [],
+          "writer_model": "deepseek-chat",
+          "judge_model": "gemini-3-flash-preview",
+          "judge_is_writer": false,
+          "source_chunk_ids": [
+            "0193f2a1-7c4e-7d10-9a3b-5e6f7a8b9c05"
+          ],
+          "requested_bloom_level": 3
+        }
+      }
+    ],
+    "rejected": [
+      {
+        "reason": "Nguồn không nhắc tới Bellman-Ford.",
+        "regeneration_attempts": 2
+      }
+    ]
+  }
+}

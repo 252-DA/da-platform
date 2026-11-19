@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://da-platform.dev/contracts/integration-events/v1/document-enrichment-failed.json",
   "title": "DOCUMENT_ENRICHMENT_FAILED",
-  "description": "AI result event → Core (queue: core_writeback). Core giữ document ở INDEXED và đặt enrichment_status=FAILED.",
+  "description": "KHÔNG DÙNG: hàng đợi core_writeback chưa từng được cài; kết quả này đi qua worker_results dưới dạng DOCUMENT_PROCESSING_RESULT (stage enrichment, status INDEXED). AI result event → Core (queue: core_writeback). Core giữ document ở INDEXED và đặt enrichment_status=FAILED.",
   "type": "object",
   "allOf": [{ "$ref": "envelope.json" }],
   "properties": {
