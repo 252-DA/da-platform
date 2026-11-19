@@ -60,26 +60,30 @@ thay `docker compose`. Dev reload: `scripts/dev_reload.py` mount source nóng.
     `event-types.ts` (nguồn duy nhất `event_type`), `QueueModule` (`@Global()`
     đăng ký toàn bộ BullMQ queue), `outbox/` và `worker-results/`; chỉ được
     import `common/`, `config/`, `infra/`.
-  - `src/modules/*`: 18 module nghiệp vụ (`ags`, `canvas-sync`, `chat`,
+  - `src/modules/*`: 19 module nghiệp vụ (`ags`, `canvas-sync`, `chat`,
     `content-generation`, `course`, `curriculum`, `document`, `essay-processor`,
     `learning-agent`, `lesson`, `lti`, `micro-content`, `model-settings`,
-    `question`, `quiz`, `review`, `roster`, `video-asset`). Module lớn chia
-    `controllers/`, `services/`, `handlers/`, `domain/`, `dto/`, kèm `<m>.types.ts` /
-    `<m>.mapper.ts` ở gốc module; module `<= 8` file để phẳng. Cạnh
-    `module -> module` chỉ được phép theo §3.2:
+    `question`, `question-bank`, `quiz`, `review`, `roster`, `video-asset`).
+    Module lớn chia `controllers/`, `services/`, `handlers/`, `domain/`, `dto/`,
+    kèm `<m>.types.ts` / `<m>.mapper.ts` ở gốc module; module `<= 8` file để
+    phẳng. Cạnh `module -> module` chỉ được phép theo §3.2:
     `canvas-sync -> document, roster`; `content-generation -> question`;
     `curriculum -> course`; `learning-agent -> question, quiz, roster`;
     `lti -> canvas-sync, roster`; `micro-content -> question`;
-    `quiz -> ags, question, roster`; `review -> question`; `question` và các
-    module còn lại không phụ thuộc module nghiệp vụ nào.
+    `question-bank -> question`;
+    `quiz -> ags, question, question-bank, roster`;
+    `review -> question, question-bank`; `question` và các module còn lại không
+    phụ thuộc module nghiệp vụ nào.
   - `src/testing/repo-paths.ts`: xuất `CONTRACTS_DIR` cho spec.
 - Modules nghiệp vụ chính: `auth` (authz theo `course_memberships` + role
   `administrator` trong `lms_user_mappings`), `lti` (LaunchSync, assignment
   settings), `course`, `curriculum` (`handlers/`, `services/`, `domain/`),
   `document` (`handlers/`, `document.mapper.ts`, upload session & kết quả),
   `canvas-sync` (`services/`, `jobs/` đồng bộ file/module/nhịp tự động),
-  `lesson`, `review` (duyệt card/quiz draft), `question` (`question-types.ts`,
-  `answer-grading.ts` — lõi dùng chung), `quiz` (`controllers/`, `services/`,
+  `lesson`, `review` (duyệt card/quiz draft theo quyền ngân hàng), `question`
+  (`question-types.ts`, `answer-grading.ts` — lõi dùng chung), `question-bank`
+  (`bank-access.service.ts`, CRUD ngân hàng/câu viết tay, chia sẻ, lịch sử
+  phiên bản, ngừng dùng câu), `quiz` (`controllers/`, `services/`, `handlers/`,
   `handlers/`, `domain/`, `quiz.types.ts`), `ags` (đẩy điểm về Canvas, recovery
   POSTING), `roster` (`CourseRosterRepository` + NRPS sync), `essay-processor`
   (`handlers/` + LTI Asset Processor chấm bài luận file), `micro-content`
