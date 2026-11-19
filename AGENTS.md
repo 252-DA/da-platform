@@ -32,44 +32,77 @@ thay `docker compose`. Dev reload: `scripts/dev_reload.py` mount source nóng.
 
 ## 2. Từng repo / service
 
-### core-api/ (NestJS 11 + Fastify, Prisma 7, BullMQ) — nhánh master
+### core-api/ (NestJS 11 + Fastify, Prisma 7, BullMQ) — nhánh master (refactor tại `refactor/core-api-structure`)
 - Trung tâm nghiệp vụ, nơi DUY NHẤT ghi các bảng domain ("worker tính,
   core-api ghi"). 54 model trong `prisma/schema.prisma` (cần PG18 vì uuidv7).
 - HTTP REST API (`/api/*`, Fastify + `ValidationPipe`), mọi route nội bộ đều qua
   `BffJwtGuard` (verify JWT từ web) rồi dispatch sang domain service.
-- Modules: `auth` (authz theo `course_memberships` + role `administrator`
-  trong `lms_user_mappings`), `lti` (LaunchSync, assignment settings),
-  `course`, `curriculum` (import đề cương Canvas, `curriculum-writer`,
-  stable-uuid), `storage` (`DocumentStorageService`), `document` (upload
-  session, tài liệu, xử lý kết quả), `canvas-sync` (đồng bộ file/module
-  Canvas: `canvas-document-sync`, `canvas-sync-jobs`, queue `canvas_sync`),
+- **Cấu trúc `src/` & luật phụ thuộc** (khóa bằng ESLint `no-restricted-imports`
+  và `no-restricted-properties` trong `core-api/eslint.config.mjs`, chi tiết ở
+  `docs/ke-hoach-tai-cau-truc-core-api.md` §3):
+  - `src/main.ts`, `src/app.module.ts`, `src/http-controllers.spec.ts`: gốc ứng dụng.
+  - `src/common/`: thuần (`utils/`: `uuid`, `type-guards`, `file-name`, `url`,
+    `errors`, `text-length`, `best-effort`, `query-params`; `constants/`:
+    `course-roles`, `ags-status`). Cấm import mọi thư mục nội bộ khác; chỉ
+    dùng `import type` từ `@prisma/client`.
+  - `src/config/`: nơi DUY NHẤT đọc `process.env` (`env.ts`, `app`, `database`,
+    `redis`, `logging`, `storage`, `canvas-api`, `ags`, `canvas-sync`, `essay`);
+    chỉ được import `common/`.
+  - `src/infra/`: Nest hạ tầng dùng chung (`prisma/`, `logging/`, `storage/`);
+    chỉ được import `common/`, `config/`.
+  - `src/integrations/`: client ngoài (`canvas/` gồm `canvas-api.client`,
+    `canvas-course.service`, `canvas-errors`, `canvas-placement`; `lti-platform/`
+    gồm `LtiPlatformModule` cung cấp `AGS_CONFIG` + `AgsTokenService` dùng chung
+    cho AGS, NRPS và Asset Processor); chỉ được import `common/`, `config/`, `infra/`.
+  - `src/auth/`: `BffJwtGuard`, `BffJwtService`, `AuthzService`, claims/decorator;
+    chỉ được import `common/`, `config/`, `infra/`.
+  - `src/messaging/`: `queues.ts` (nguồn duy nhất các tên queue),
+    `event-types.ts` (nguồn duy nhất `event_type`), `QueueModule` (`@Global()`
+    đăng ký toàn bộ BullMQ queue), `outbox/` và `worker-results/`; chỉ được
+    import `common/`, `config/`, `infra/`.
+  - `src/modules/*`: 18 module nghiệp vụ (`ags`, `canvas-sync`, `chat`,
+    `content-generation`, `course`, `curriculum`, `document`, `essay-processor`,
+    `learning-agent`, `lesson`, `lti`, `micro-content`, `model-settings`,
+    `question`, `quiz`, `review`, `roster`, `video-asset`). Module lớn chia
+    `controllers/`, `services/`, `handlers/`, `domain/`, `dto/`, kèm `<m>.types.ts` /
+    `<m>.mapper.ts` ở gốc module; module `<= 8` file để phẳng. Cạnh
+    `module -> module` chỉ được phép theo §3.2:
+    `canvas-sync -> document, roster`; `content-generation -> question`;
+    `curriculum -> course`; `learning-agent -> question, quiz, roster`;
+    `lti -> canvas-sync, roster`; `micro-content -> question`;
+    `quiz -> ags, question, roster`; `review -> question`; `question` và các
+    module còn lại không phụ thuộc module nghiệp vụ nào.
+  - `src/testing/repo-paths.ts`: xuất `CONTRACTS_DIR` cho spec.
+- Modules nghiệp vụ chính: `auth` (authz theo `course_memberships` + role
+  `administrator` trong `lms_user_mappings`), `lti` (LaunchSync, assignment
+  settings), `course`, `curriculum` (`handlers/`, `services/`, `domain/`),
+  `document` (`handlers/`, `document.mapper.ts`, upload session & kết quả),
+  `canvas-sync` (`services/`, `jobs/` đồng bộ file/module/nhịp tự động),
   `lesson`, `review` (duyệt card/quiz draft), `question` (`question-types.ts`,
-  `answer-grading.ts` dùng chung cho quiz/micro-content/content-gen/review/
-  learning-agent/outbox), `quiz` (quiz-set service 841 dòng — làm bài, chấm), `ags` (LTI
-  Assignment&Grades: đẩy điểm về Canvas, token service, recovery POSTING),
-  `roster` (NRPS sync), `essay-processor` (LTI Asset Processor chấm bài
-  luận file), `micro-content` (lớn nhất, 1116 dòng service: CRUD, video,
-  attempts, grading), `video-asset` (DAM), `chat` (lưu hội thoại/rating/
-  mode chatbot), `learning-agent` (BKT: `bkt.ts`, `planner.ts`,
-  `review-schedule.ts`, mastery theo LO; `review-queue.ts` dẫn xuất lịch ôn
-  từ evidence; `summary` trả kèm `plan` của planner + `review` từng LO),
-  `model-settings` (binding task->model profile), `content-generation` (nhận
-  request sinh quiz/card),
-  `outbox` (relay sang BullMQ), `worker-results` (registry handler theo
-  kind, `@WorkerResultHandler`).
-- Queue BullMQ (producer ở core-api): `document_processing`,
-  `content_generation`, `answer_grading`, `essay_grading`, `canvas_sync`,
-  `micro_content_video`, `outbox_relay`; consumer: `worker_results`.
-- Outbox: trigger PG bắn kênh `outbox_channel`; LISTEN + fallback poll 15s,
+  `answer-grading.ts` — lõi dùng chung), `quiz` (`controllers/`, `services/`,
+  `handlers/`, `domain/`, `quiz.types.ts`), `ags` (đẩy điểm về Canvas, recovery
+  POSTING), `roster` (`CourseRosterRepository` + NRPS sync), `essay-processor`
+  (`handlers/` + LTI Asset Processor chấm bài luận file), `micro-content`
+  (`services/`, `handlers/`, `dto/`, `micro-content.types.ts` — CRUD, video,
+  attempts, grading), `video-asset` (DAM + `video-asset.mapper.ts`), `chat`
+  (hội thoại/rating/mode chatbot), `learning-agent` (`domain/`: `bkt.ts`,
+  `planner.ts`, `review-schedule.ts`, `review-queue.ts`...), `model-settings`,
+  `content-generation` (`handlers/`, `domain/`).
+- Queue BullMQ (khai báo tại `src/messaging/queues.ts`, đăng ký tại
+  `QueueModule`): producer ở `core-api` gồm `document_processing`,
+  `document_enrichment`, `content_generation`, `answer_grading`,
+  `essay_grading`, `canvas_sync`, `micro_content_video`, `outbox_relay`;
+  consumer: `worker_results`.
+- Outbox (`src/messaging/outbox/`): trigger PG bắn kênh `outbox_channel`; LISTEN + fallback poll 15s,
   debounce 50ms, claim batch 10, lock PROCESSING quá 10 phút coi như chết,
   retry backoff 2^n giây, lỗi lần thứ 10 -> DEAD_LETTER.
-- worker_results: concurrency 1, handler phải idempotent (chỉ áp dụng khi
+- worker_results (`src/messaging/worker-results/`): concurrency 1, handler phải idempotent (chỉ áp dụng khi
   dòng còn trạng thái chờ); `onFinalFailure` chạy TRONG process() để gỡ
   dòng chờ; có `salvageEnvelope` cứu envelope lỗi format.
-- Canvas REST client: `canvas/canvas-api.client.ts`; rewrite public URL ->
+- Canvas REST client: `src/integrations/canvas/canvas-api.client.ts`; rewrite public URL ->
   internal khi CANVAS_API_URL nội bộ; compose map `canvas.docker:host-gateway`
   (Canvas chặn host.docker.internal bằng Blocked hosts).
-- Logger (`src/logging/`): dùng `nestjs-pino` (`LoggerModule.forRoot`,
+- Logger (`src/infra/logging/`): dùng `nestjs-pino` (`LoggerModule.forRoot`,
   `createBootstrapLogger` ngay từ `NestFactory.create` — không dùng
   `bufferLogs`, nên log khởi động và lỗi DI/constructor xuất JSON ngay từ
   dòng đầu) cấu hình qua `APP__LOG_LEVEL` (mức kiểu Python, mặc định
@@ -79,7 +112,7 @@ thay `docker compose`. Dev reload: `scripts/dev_reload.py` mount source nóng.
   `BffJwtGuard`), access log mang `logger: "HttpAccess"`;
   `BullMqErrorLogger` gắn listener `error` cho các `Queue`/`Worker` sau
   `onApplicationBootstrap`; `HttpExceptionLoggingFilter` bắt toàn cục
-  (`@Catch()`), đổi lỗi DB mã `22P02`, `22021` (`src/prisma/invalid-input-error.ts`)
+  (`@Catch()`), đổi lỗi DB mã `22P02`, `22021` (`src/infra/prisma/invalid-input-error.ts`)
   thành 400 `"Tham số không hợp lệ."` kèm `db_code`/`model`, và ghi
   `warning` cho 4xx (trừ `GET /metrics`). Quy ước: không bao giờ ghi
   `authorization`, `cookie`, `roles`, body request/response hay giá trị đầu

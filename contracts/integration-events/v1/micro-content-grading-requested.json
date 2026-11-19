@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://da-platform.dev/contracts/integration-events/v1/micro-content-grading-requested.json",
   "title": "MICRO_CONTENT_GRADING_REQUESTED",
-  "description": "Core command → answer-grading worker (queue: answer_grading, worker/runners/answer_grading_worker.py). Phát khi người học nộp bài củng cố của một Micro Content có câu tự luận (core-api micro-content/micro-content-attempt.service.ts). Lệnh tự chứa: `answers` mang đề lúc nộp (micro_content_answers.grading_input) và bài làm của từng câu cần chấm, worker không đọc micro_content_answers. Worker trả MICRO_CONTENT_GRADING_RESULT (micro-content-grading-result.json); core-api ghi điểm câu và tính lại điểm lượt nộp. Sự kiện cũ không có `answers`: worker trả NEEDS_REVIEW với reason LEGACY_COMMAND cho mọi câu trong answer_ids.",
+  "description": "Core command → answer-grading worker (queue: answer_grading, worker/runners/answer_grading_worker.py). Phát khi người học nộp bài củng cố của một Micro Content có câu tự luận (core-api src/modules/micro-content/services/micro-content-attempt.service.ts). Lệnh tự chứa: `answers` mang đề lúc nộp (micro_content_answers.grading_input) và bài làm của từng câu cần chấm, worker không đọc micro_content_answers. Worker trả MICRO_CONTENT_GRADING_RESULT (micro-content-grading-result.json); core-api ghi điểm câu và tính lại điểm lượt nộp. Sự kiện cũ không có `answers`: worker trả NEEDS_REVIEW với reason LEGACY_COMMAND cho mọi câu trong answer_ids.",
   "type": "object",
   "allOf": [{ "$ref": "envelope.json" }],
   "properties": {
