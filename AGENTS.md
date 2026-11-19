@@ -83,7 +83,8 @@ thay `docker compose`. Dev reload: `scripts/dev_reload.py` mount source nóng.
   `lesson`, `review` (duyệt card/quiz draft theo quyền ngân hàng), `question`
   (`question-types.ts`, `answer-grading.ts` — lõi dùng chung), `question-bank`
   (`bank-access.service.ts`, CRUD ngân hàng/câu viết tay, chia sẻ, lịch sử
-  phiên bản, ngừng dùng câu), `quiz` (`controllers/`, `services/`, `handlers/`,
+  phiên bản, ngừng dùng câu; `canvas/`: gói QTI 2.1 + job xuất sang ngân
+  hàng Classic của Canvas qua content migration), `quiz` (`controllers/`, `services/`, `handlers/`,
   `handlers/`, `domain/`, `quiz.types.ts`), `ags` (đẩy điểm về Canvas, recovery
   POSTING), `roster` (`CourseRosterRepository` + NRPS sync), `essay-processor`
   (`handlers/` + LTI Asset Processor chấm bài luận file), `micro-content`
@@ -96,7 +97,8 @@ thay `docker compose`. Dev reload: `scripts/dev_reload.py` mount source nóng.
   `QueueModule`): producer ở `core-api` gồm `document_processing`,
   `document_enrichment`, `content_generation`, `answer_grading`,
   `essay_grading`, `canvas_sync`, `micro_content_video`, `outbox_relay`;
-  consumer: `worker_results`.
+  consumer: `worker_results`. `canvas_sync` và `question_bank_sync` (xuất
+  ngân hàng câu hỏi sang Canvas) do chính core-api vừa đẩy vừa xử lý.
 - Outbox (`src/messaging/outbox/`): trigger PG bắn kênh `outbox_channel`; LISTEN + fallback poll 15s,
   debounce 50ms, claim batch 10, lock PROCESSING quá 10 phút coi như chết,
   retry backoff 2^n giây, lỗi lần thứ 10 -> DEAD_LETTER.
