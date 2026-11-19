@@ -1,0 +1,4 @@
+{
+  // VS Code gợi ý cài khi mở repo; cần cho format-on-save và báo lỗi ESLint.
+  "recommendations": ["esbenp.prettier-vscode", "dbaeumer.vscode-eslint"]
+}

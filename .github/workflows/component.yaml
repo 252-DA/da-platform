@@ -1,0 +1,105 @@
+name: component
+
+# Kiểm tra MỘT thành phần trên layout meta-repo. Dùng chung cho:
+#   - ci.yaml của da-platform (matrix mọi thành phần, đúng bộ gitlink đã commit);
+#   - workflow của từng repo con (worker, core-api, web, ...): lấy da-platform ở
+#     nhánh `platform_ref`, rồi đặt commit đang test của repo con vào thư mục
+#     của nó. Repo anh em vì vậy luôn là bản mới nhất của nhánh đó, không còn
+#     SHA ghim cứng trong YAML từng repo (nguyên nhân CI đỏ từ tháng 9).
+#
+# Lệnh kiểm tra nằm ở scripts/ci/test-component.sh, chạy local ra kết quả y hệt.
+
+on:
+  workflow_call:
+    inputs:
+      component:
+        description: Tên thành phần (scripts/ci/test-component.sh --list)
+        required: true
+        type: string
+      platform_ref:
+        description: Nhánh da-platform dùng làm nền khi gọi từ repo con
+        required: false
+        type: string
+        default: dev
+  workflow_dispatch:
+    inputs:
+      component:
+        description: Tên thành phần (scripts/ci/test-component.sh --list)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  FROM_PLATFORM: ${{ github.repository == '252-DA/da-platform' }}
+
+jobs:
+  test:
+    name: ${{ inputs.component }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Gọi từ da-platform: ref rỗng = đúng commit/PR đang chạy.
+      # Gọi từ repo con: lấy da-platform ở platform_ref.
+      - name: Checkout da-platform
+        uses: actions/checkout@v4
+        with:
+          repository: 252-DA/da-platform
+          ref: ${{ github.repository != '252-DA/da-platform' && inputs.platform_ref || '' }}
+          persist-credentials: false
+
+      - name: Submodule (trừ report)
+        run: |
+          if [ "$FROM_PLATFORM" = true ]; then
+            bash scripts/ci/init-submodules.sh
+          else
+            bash scripts/ci/init-submodules.sh "${{ inputs.component }}"
+          fi
+
+      - name: Đặt commit đang test vào ${{ inputs.component }}/
+        if: github.repository != '252-DA/da-platform'
+        uses: actions/checkout@v4
+        with:
+          path: ${{ inputs.component }}
+          persist-credentials: false
+
+      # ── Toolchain theo thành phần ──
+      - name: pnpm (web, theo packageManager)
+        if: inputs.component == 'web'
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: web/package.json
+
+      - name: pnpm (core-api)
+        if: inputs.component == 'core-api'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
+      - name: Node
+        if: inputs.component == 'core-api' || inputs.component == 'web'
+        uses: actions/setup-node@v4
+        with:
+          # Khớp Dockerfile: core-api node:24, web node:22.
+          node-version: ${{ inputs.component == 'core-api' && '24' || '22' }}
+          cache: pnpm
+          cache-dependency-path: ${{ inputs.component }}/pnpm-lock.yaml
+
+      - name: uv
+        if: inputs.component != 'core-api' && inputs.component != 'web' && inputs.component != 'video-mcp' && inputs.component != 'contracts'
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.11.32"   # khớp image ghcr.io/astral-sh/uv trong Dockerfile
+          enable-cache: true
+          cache-dependency-glob: ${{ inputs.component }}/uv.lock
+
+      - name: Go
+        if: inputs.component == 'video-mcp'
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: video-mcp/go.mod
+          cache-dependency-path: video-mcp/go.sum
+
+      - name: Kiểm tra
+        run: bash scripts/ci/test-component.sh "${{ inputs.component }}"

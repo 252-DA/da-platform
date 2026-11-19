@@ -25,7 +25,10 @@ dist/
 .claude/
 .codex
 .idea/
-.vscode/
+# Chỉ chia sẻ cấu hình format/lint chung; phần còn lại của .vscode là đồ cá nhân.
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .agents/
 .archify/
 

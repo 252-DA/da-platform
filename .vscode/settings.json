@@ -1,0 +1,20 @@
+{
+  // Prettier chỉ định dạng file nằm dưới một thư mục có cấu hình prettier
+  // (hiện chỉ core-api/.prettierrc), nên web/ và code Python không bị đụng.
+  // Extension dùng bản prettier trong node_modules của core-api, cùng bản với CI.
+  "prettier.requireConfig": true,
+  "prettier.resolveGlobalModules": false,
+
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+
+  // ESLint tìm eslint.config.mjs gần nhất (core-api/, web/), báo lỗi ngay
+  // trong editor: luật phân tầng của core-api, prettier, type-aware...
+  "eslint.workingDirectories": [{ "mode": "auto" }]
+}
