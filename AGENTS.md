@@ -156,8 +156,13 @@ thay `docker compose`. Dev reload: `scripts/dev_reload.py` mount source nóng.
   answer_grading, micro_content_video, outbox. Entry `dev_reload` trong dev.
 - `use_cases/`: run_pipeline (parse->chunk->embed->store), run_enrichment,
   generate_curriculum_quiz, generate_lesson_cards, generate_micro_outline/
-  quiz, generate_video_script, render_micro_content_video (slide + edge-tts
-  + ffmpeg), grade_short_answers, grade_essay_submission,
+  quiz, generate_video_script, render_micro_content_video (storyboard `visual`
+  chọn slide PDF, `bullet_reveal` hoặc sơ đồ Manim `flow`/`array`/`stack` từ
+  JSON đã kiểm tra, không chạy code Manim do LLM sinh; ảnh 1080p, zoom nhẹ;
+  edge-tts retry cùng giọng; ffmpeg chuẩn hóa âm lượng -16 LUFS). Manim nằm ở
+  extra `video`, image Docker cài Cairo/Pango, không cần LaTeX cho `Text`.
+  Các use case khác: grade_short_answers,
+  grade_essay_submission,
   grade_micro_content_answers, extract_relations (knowledge graph PG),
   curriculum_import, verification (kiểm chứng câu hỏi — judge KHÁC model
   sinh). `prompts/` tách riêng từng loại.

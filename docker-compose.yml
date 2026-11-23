@@ -59,7 +59,7 @@ x-worker-volumes: &worker-volumes
   - ./service-sdk/pyproject.toml:/app/service-sdk/pyproject.toml:ro
   - ./service-sdk/uv.lock:/app/service-sdk/uv.lock:ro
 
-x-worker-entrypoint: &worker-entrypoint ["uv", "run", "--frozen", "python", "-m"]
+x-worker-entrypoint: &worker-entrypoint ["uv", "run", "--frozen", "--extra", "video", "python", "-m"]
 
 # ─────────────────────────────────────────────────────────
 # Infrastructure

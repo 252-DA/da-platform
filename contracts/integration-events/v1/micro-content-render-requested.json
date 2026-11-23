@@ -50,6 +50,31 @@
                   "source_pages": {
                     "type": "array",
                     "items": { "type": "integer", "minimum": 1 }
+                  },
+                  "visual": {
+                    "type": "object",
+                    "description": "Storyboard trình bày cảnh. source_slide giữ trang PDF gốc; bullet_reveal dựng slide chữ và hiện từng bullet; manim dựng sơ đồ flow/array/stack từ 2–6 nhãn; auto để worker chọn. motion=zoom_in tạo chuyển động zoom nhẹ cho slide tĩnh.",
+                    "properties": {
+                      "type": { "enum": ["auto", "source_slide", "bullet_reveal", "manim"] },
+                      "motion": { "enum": ["none", "zoom_in"] },
+                      "diagram": { "enum": ["flow", "array", "stack"] },
+                      "items": {
+                        "type": "array",
+                        "minItems": 2,
+                        "maxItems": 6,
+                        "items": { "type": "string", "minLength": 1, "maxLength": 80 }
+                      }
+                    },
+                    "additionalProperties": false,
+                    "allOf": [
+                      {
+                        "if": {
+                          "properties": { "type": { "const": "manim" } },
+                          "required": ["type"]
+                        },
+                        "then": { "required": ["diagram", "items"] }
+                      }
+                    ]
                   }
                 }
               }

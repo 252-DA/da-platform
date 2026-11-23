@@ -16,13 +16,25 @@
         {
           "title": "Giới thiệu",
           "bullets": ["Đệ quy là gì"],
-          "narration": "Chào các bạn."
+          "narration": "Chào các bạn.",
+          "visual": { "type": "bullet_reveal", "motion": "zoom_in" }
         },
         {
           "title": "Ví dụ",
           "bullets": ["Giai thừa"],
           "narration": "Ta xét hàm giai thừa.",
           "voice": "vi-VN-NamMinhNeural"
+        },
+        {
+          "title": "Luồng đệ quy",
+          "bullets": ["Điều kiện dừng", "Gọi hàm"],
+          "narration": "Mỗi lần gọi hàm cần tiến tới điều kiện dừng.",
+          "visual": {
+            "type": "manim",
+            "diagram": "flow",
+            "items": ["Nhận tham số", "Kiểm tra điều kiện dừng", "Gọi lại hàm"],
+            "motion": "none"
+          }
         }
       ]
     }
