@@ -41,5 +41,8 @@ coverage.xml
 # Generated CodeWiki output
 codewiki-docs/
 
+# Manim transient build outputs
+media/
+
 # ===== Deploy prod (trên VM) =====
 backups/

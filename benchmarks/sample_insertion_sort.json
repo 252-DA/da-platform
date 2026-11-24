@@ -1,0 +1,157 @@
+{
+  "sample_id": "CO2003_pilot_01",
+  "topic_title": "Straight Insertion Sort (Sắp xếp chèn trực tiếp)",
+  "page_range": "Trang 10 - 17, 27",
+  "learning_outcome": "LO.3.2: Illustrate how sorting algorithms work on an array",
+  "video_duration_sec": 69.87,
+  "word_count_override": 162,
+  "word_count_unit": "segmented_words",
+  "sas_reference": 0.94,
+  "visual_metrics": {
+    "vp": 1.0,
+    "avg_av_offset_sec": 1.0
+  },
+  "slide_text": "Slide 10: Straight Insertion Sort. The list is divided into two parts: sorted and unsorted. In each pass, the first element of the unsorted sublist is inserted into the sorted sublist.\nSlide 11-16: Trace example on array [23, 78, 45, 8, 32, 56]. Initial sorted=[23]. Pass 1 (78): [23, 78 | 45, 8, 32, 56]. Pass 2 (45): shift 78 right, insert 45 -> [23, 45, 78 | 8, 32, 56]. Pass 3 (8): shift 78, 45, 23 right -> [8, 23, 45, 78 | 32, 56].\nSlide 17: Algorithm InsertionSort(). while current < count: temp = data[current], walker = current - 1; while walker >= 0 and temp.key < data[walker].key: data[walker+1] = data[walker], walker -= 1; data[walker+1] = temp.\nSlide 27: Insertion Sort Efficiency. Straight insertion sort: f(n) = n(n+1)/2 = O(n^2).",
+  "scenes": [
+    {
+      "slide_page": 10,
+      "title": "Nguyên lý chèn trực tiếp (Straight Insertion Sort)",
+      "bullets": [
+        "Chia danh sách làm 2 phần: sorted (đã sắp xếp) và unsorted (chưa sắp xếp)",
+        "Mỗi lượt lấy phần tử đầu của unsorted chèn vào đúng vị trí trong sorted"
+      ],
+      "visual_notes": "Slide 10 minh họa vách ngăn chia mảng thành 2 vùng sorted (xám) và unsorted (trắng).",
+      "narration": "Thuật toán sắp xếp chèn trực tiếp hoạt động dựa trên nguyên lý chia danh sách làm hai phần: phần đã sắp xếp và phần chưa sắp xếp. Tại mỗi bước lặp, phần tử đầu tiên của phần chưa sắp xếp sẽ được chọn và chèn vào vị trí thích hợp trong phần đã sắp xếp."
+    },
+    {
+      "slide_page": "11-16",
+      "title": "Ví dụ minh họa từng bước trên mảng",
+      "bullets": [
+        "Mảng đầu vào: [23, 78, 45, 8, 32, 56]",
+        "Vách ngăn màu xanh dịch chuyển sang phải sau mỗi lượt chèn (23 -> 78 -> 45 -> 8 -> 32 -> 56)"
+      ],
+      "visual_notes": "Slide 11-16 (Manim Hybrid Scene): Minh họa chi tiết Pass 1 (78) và Pass 2 (nhấc temp=45, dời 78, chèn 45 -> [23, 45, 78 | 8, 32, 56]), tiếp nối bằng Rapid Trace cho Pass 3 (chèn 8 với walker=-1), Pass 4 (chèn 32) và Pass 5 (chèn 56) để hoàn tất mảng [8, 23, 32, 45, 56, 78].",
+      "narration": "Hãy quan sát mảng ví dụ gồm các số: hai mươi ba, bảy mươi tám, bốn mươi lăm, tám, ba mươi hai và năm mươi sáu. Ban đầu, phần tử đầu tiên được xem là đã sắp xếp. Các phần tử kế tiếp lần lượt được so sánh để dời chỗ và chèn vào đúng thứ tự. Quá trình tiếp tục tương tự cho các phần tử tám, ba mươi hai và năm mươi sáu, cho đến khi toàn bộ mảng được sắp xếp hoàn chỉnh theo thứ tự tăng dần."
+    },
+    {
+      "slide_page": 17,
+      "title": "Giải thuật và Mã giả InsertionSort()",
+      "bullets": [
+        "Vòng lặp ngoài: duyệt current từ 1 đến count - 1",
+        "temp = data[current]; walker = current - 1",
+        "Vòng lặp trong: while (walker >= 0 && data[walker] > temp) dời phải và giảm walker",
+        "Đặt data[walker + 1] = temp"
+      ],
+      "visual_notes": "Slide 17 hiển thị mã giả đầy đủ hàm InsertionSort() với điều kiện dừng walker >= 0.",
+      "narration": "Về mặt thuật toán, vòng lặp ngoài duyệt biến current từ vị trí một đến cuối mảng. Giá trị cần chèn được lưu tạm vào biến temp, trong khi biến walker lùi dần để dời các phần tử lớn hơn temp sang phải, và cuối cùng đặt temp vào vị trí thích hợp."
+    },
+    {
+      "slide_page": 27,
+      "title": "Đánh giá độ phức tạp thời gian",
+      "bullets": [
+        "Tổng số phép so sánh/dịch chuyển tối đa: f(n) = n(n + 1)/2",
+        "Độ phức tạp thời gian trường hợp xấu nhất: O(n^2)"
+      ],
+      "visual_notes": "Slide 27 trình bày công thức f(n) = n(n+1)/2 = O(n^2).",
+      "narration": "Hiệu năng của thuật toán được đo bằng tổng số phép so sánh và số lần di chuyển. Trong trường hợp xấu nhất, hàm f của n bằng n nhân n cộng một chia hai, tương ứng với độ phức tạp thời gian cấp O n bình phương."
+    }
+  ],
+  "present_quiz": [
+    {
+      "id": "Q1",
+      "bloom_level": "Remember",
+      "stem": "Trong thuật toán Straight Insertion Sort, danh sách được chia thành hai phần nào?",
+      "options": [
+        {
+          "key": "A",
+          "text": "Phần số chẵn và phần số lẻ"
+        },
+        {
+          "key": "B",
+          "text": "Phần đã sắp xếp (sorted) và phần chưa sắp xếp (unsorted)"
+        },
+        {
+          "key": "C",
+          "text": "Phần nửa đầu (lowlist) và phần nửa sau (highlist)"
+        },
+        {
+          "key": "D",
+          "text": "Phần chứa Pivot và phần không chứa Pivot"
+        }
+      ],
+      "correct_key": "B"
+    },
+    {
+      "id": "Q2",
+      "bloom_level": "Remember",
+      "stem": "Độ phức tạp thời gian trong trường hợp xấu nhất của thuật toán Straight Insertion Sort là bao nhiêu?",
+      "options": [
+        {
+          "key": "A",
+          "text": "O(log n)"
+        },
+        {
+          "key": "B",
+          "text": "O(n)"
+        },
+        {
+          "key": "C",
+          "text": "O(n log n)"
+        },
+        {
+          "key": "D",
+          "text": "O(n^2)"
+        }
+      ],
+      "correct_key": "D"
+    },
+    {
+      "id": "Q3",
+      "bloom_level": "Understand",
+      "stem": "Cho mảng ban đầu [23, 78, 45, 8, 32, 56]. Sau khi biến current = 2 hoàn thành vòng lặp ngoài (chèn xong phần tử 45), trạng thái mảng là gì?",
+      "options": [
+        {
+          "key": "A",
+          "text": "[23, 45, 78, 8, 32, 56]"
+        },
+        {
+          "key": "B",
+          "text": "[23, 78, 45, 8, 32, 56]"
+        },
+        {
+          "key": "C",
+          "text": "[8, 23, 45, 78, 32, 56]"
+        },
+        {
+          "key": "D",
+          "text": "[45, 23, 78, 8, 32, 56]"
+        }
+      ],
+      "correct_key": "A"
+    },
+    {
+      "id": "Q4",
+      "bloom_level": "Apply",
+      "stem": "Trong hàm InsertionSort, khi biến temp nhỏ hơn toàn bộ các phần tử trong phần đã sắp xếp, điều kiện nào sẽ làm dừng vòng lặp while (walker >= 0 && data[walker] > temp)?",
+      "options": [
+        {
+          "key": "A",
+          "text": "Biến walker giảm về giá trị -1, làm sai điều kiện walker >= 0"
+        },
+        {
+          "key": "B",
+          "text": "Biến walker dừng tại giá trị 0 do gặp phần tử bằng với temp"
+        },
+        {
+          "key": "C",
+          "text": "Vòng lặp gặp lệnh ngắt cưỡng bức break"
+        },
+        {
+          "key": "D",
+          "text": "Biến current chạm đến chỉ số cuối cùng của mảng"
+        }
+      ],
+      "correct_key": "A"
+    }
+  ]
+}
