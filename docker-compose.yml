@@ -363,6 +363,10 @@ services:
       METRICS__PORT: "9091"
       EMBEDDER__PROVIDER: grpc
       EMBEDDER__GRPC_TARGET: embedding-service:50051
+      # Tránh OOM khi chạy Docling/RapidOCR trên máy WSL2 8GB RAM với slide PDF có trang bìa ít chữ
+      PARSER__PDF_PAGE_FALLBACK_ENABLED: "${PARSER__PDF_PAGE_FALLBACK_ENABLED:-false}"
+      PARSER__PDF_STRICT_MISSING_TEXT: "${PARSER__PDF_STRICT_MISSING_TEXT:-false}"
+      PARSER__PDF_SLIDE_MODE: "${PARSER__PDF_SLIDE_MODE:-auto}"
     ports:
       - "8081:8081"
       - "9091:9091"
@@ -508,6 +512,8 @@ services:
       WORKER_CONCURRENCY: "1"
       HEALTH_PORT: "8086"
       METRICS__PORT: "9097"
+      # Tự động dự phòng bằng giọng đọc tiếng Việt thật (Google Translate TTS) khi Microsoft Edge TTS chập chờn NoAudioReceived
+      MICRO_CONTENT_GOOGLE_TTS_FALLBACK: "${MICRO_CONTENT_GOOGLE_TTS_FALLBACK:-true}"
     ports:
       - "8086:8086"
       - "9097:9097"
