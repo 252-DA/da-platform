@@ -1,0 +1,169 @@
+{
+  "benchmark_name": "CO2003_DSA_Hybrid_Manim_Benchmark_v1",
+  "course_code": "CO2003",
+  "course_name": "Data Structures and Algorithms (Cấu trúc Dữ liệu & Giải thuật)",
+  "tasks": [
+    {
+      "task_id": "DSA_01",
+      "algorithm": "Straight Insertion Sort",
+      "lo_code": "LO.3.2",
+      "tier_capability": "TEMPLATE",
+      "template_name": "insertion_sort",
+      "template_params": {"array": [23, 78, 45, 8, 32, 56], "title": "Straight Insertion Sort — Array Trace"},
+      "target_duration_sec": 20.5,
+      "title": "Vết chạy Straight Insertion Sort trên mảng 6 phần tử",
+      "bullets": [
+        "Mảng đầu vào: [23, 78, 45, 8, 32, 56]",
+        "Chia 2 vùng sorted và unsorted; chèn từng phần tử sang vùng sorted",
+        "Độ phức tạp xấu nhất O(n^2)"
+      ],
+      "narration": "Quan sát mảng [23, 78, 45, 8, 32, 56]. Ban đầu 23 thuộc vùng đã sắp xếp. Lần lượt chèn 78, 45, 8 (walker về -1 chèn vào đầu mảng), 32 và 56 để thu được mảng tăng dần hoàn chỉnh.",
+      "metrics_by_group": {
+        "slide_only": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 1.0, "delta_t": 1.0, "af": 0.0, "pqcs": 0.75, "lo_align": 0.90, "wpm": 135.2},
+        "manim_auto": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 0.95, "delta_t": 1.1, "af": 0.85, "pqcs": 0.95, "lo_align": 0.96, "wpm": 138.0},
+        "template_upper": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 1.0, "delta_t": 0.6, "af": 0.98, "pqcs": 1.0, "lo_align": 0.98, "wpm": 139.1}
+      }
+    },
+    {
+      "task_id": "DSA_02",
+      "algorithm": "Merge Sort",
+      "lo_code": "LO.3.2",
+      "tier_capability": "TEMPLATE",
+      "template_name": "merge_sort",
+      "template_params": {"array": [38, 27, 43, 3, 9, 82], "title": "Merge Sort — Divide & Conquer Trace"},
+      "target_duration_sec": 16.0,
+      "title": "Thuật toán Merge Sort theo chiến lược Chia để trị",
+      "bullets": [
+        "Chia mảng [38, 27, 43, 3, 9, 82] thành nửa trái và nửa phải",
+        "Sắp xếp đệ quy từng nửa rồi trộn hai nửa đã sắp xếp",
+        "Độ phức tạp thời gian luôn là O(n log n)"
+      ],
+      "narration": "Merge Sort chia mảng [38, 27, 43, 3, 9, 82] thành hai nửa bằng nhau, sắp xếp đệ quy từng nửa rồi so sánh từng phần tử đầu của hai nửa để trộn thành mảng tăng dần [3, 9, 27, 38, 43, 82] với độ phức tạp O(n log n).",
+      "metrics_by_group": {
+        "slide_only": {"kcc": 0.95, "hr": 0.0, "fdp": 1.0, "vp": 1.0, "delta_t": 1.2, "af": 0.0, "pqcs": 0.72, "lo_align": 0.88, "wpm": 134.0},
+        "manim_auto": {"kcc": 0.95, "hr": 0.0, "fdp": 1.0, "vp": 0.92, "delta_t": 1.0, "af": 0.84, "pqcs": 0.92, "lo_align": 0.94, "wpm": 136.5},
+        "template_upper": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 0.98, "delta_t": 0.5, "af": 0.96, "pqcs": 0.98, "lo_align": 0.97, "wpm": 137.0}
+      }
+    },
+    {
+      "task_id": "DSA_03",
+      "algorithm": "QuickSort (Lomuto Partition)",
+      "lo_code": "LO.3.2",
+      "tier_capability": "HANDCRAFTED",
+      "template_name": null,
+      "target_duration_sec": 18.0,
+      "title": "Phân hoạch Lomuto trong thuật toán QuickSort",
+      "bullets": [
+        "Chọn phần tử cuối làm pivot",
+        "Con trỏ i đánh dấu ranh giới phần tử ≤ pivot, j quét từ trái sang phải",
+        "Đặt pivot vào vị trí i + 1; trung bình O(n log n)"
+      ],
+      "narration": "Trong phân hoạch Lomuto, phần tử cuối được chọn làm chốt pivot. Con trỏ j duyệt qua từng phần tử, nếu nhỏ hơn hoặc bằng pivot thì hoán đổi với vị trí i tăng dần, cuối cùng đưa pivot về đúng vị trí phân chia mảng.",
+      "metrics_by_group": {
+        "slide_only": {"kcc": 0.95, "hr": 0.0, "fdp": 1.0, "vp": 1.0, "delta_t": 1.1, "af": 0.0, "pqcs": 0.70, "lo_align": 0.88, "wpm": 132.0},
+        "manim_auto": {"kcc": 0.95, "hr": 0.0, "fdp": 0.95, "vp": 0.90, "delta_t": 1.3, "af": 0.80, "pqcs": 0.88, "lo_align": 0.92, "wpm": 135.0},
+        "template_upper": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 0.98, "delta_t": 0.7, "af": 0.95, "pqcs": 0.96, "lo_align": 0.96, "wpm": 136.0}
+      }
+    },
+    {
+      "task_id": "DSA_04",
+      "algorithm": "Selection Sort",
+      "lo_code": "LO.3.2",
+      "tier_capability": "AUTO_LLM",
+      "template_name": null,
+      "target_duration_sec": 15.0,
+      "title": "Sắp xếp chọn trực tiếp (Selection Sort)",
+      "bullets": [
+        "Mỗi lượt tìm phần tử nhỏ nhất (min_idx) trong đoạn chưa sắp xếp",
+        "Hoán đổi min_idx với phần tử đầu đoạn chưa sắp xếp",
+        "Số lần hoán đổi tối đa O(n), độ phức tạp so sánh O(n^2)"
+      ],
+      "narration": "Thuật toán Selection Sort duyệt qua vùng chưa sắp xếp để tìm phần tử có giá trị nhỏ nhất, sau đó thực hiện đúng một phép hoán đổi đưa phần tử nhỏ nhất đó về đầu vùng chưa sắp xếp.",
+      "metrics_by_group": {
+        "slide_only": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 1.0, "delta_t": 1.0, "af": 0.0, "pqcs": 0.78, "lo_align": 0.90, "wpm": 130.0},
+        "manim_auto": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 0.94, "delta_t": 0.9, "af": 0.86, "pqcs": 0.94, "lo_align": 0.95, "wpm": 133.0},
+        "template_upper": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 0.98, "delta_t": 0.6, "af": 0.95, "pqcs": 0.97, "lo_align": 0.96, "wpm": 133.0}
+      }
+    },
+    {
+      "task_id": "DSA_05",
+      "algorithm": "Bubble Sort",
+      "lo_code": "LO.3.2",
+      "tier_capability": "AUTO_LLM",
+      "template_name": null,
+      "target_duration_sec": 15.0,
+      "title": "Sắp xếp nổi bọt (Bubble Sort)",
+      "bullets": [
+        "So sánh từng cặp phần tử kề nhau và hoán đổi nếu sai thứ tự",
+        "Sau mỗi lượt, phần tử lớn nhất nổi về cuối mảng",
+        "Cờ swapped giúp dừng sớm trong trường hợp tốt nhất O(n)"
+      ],
+      "narration": "Bubble Sort liên tục so sánh các cặp phần tử liền kề và hoán đổi khi phần tử trước lớn hơn phần tử sau. Sau mỗi lượt duyệt, phần tử lớn nhất sẽ di chuyển về đúng vị trí cuối mảng.",
+      "metrics_by_group": {
+        "slide_only": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 1.0, "delta_t": 0.9, "af": 0.0, "pqcs": 0.80, "lo_align": 0.90, "wpm": 128.0},
+        "manim_auto": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 0.94, "delta_t": 0.8, "af": 0.88, "pqcs": 0.94, "lo_align": 0.95, "wpm": 131.0},
+        "template_upper": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 0.98, "delta_t": 0.5, "af": 0.96, "pqcs": 0.98, "lo_align": 0.96, "wpm": 131.0}
+      }
+    },
+    {
+      "task_id": "DSA_06",
+      "algorithm": "Binary Search",
+      "lo_code": "LO.3.1",
+      "tier_capability": "AUTO_LLM",
+      "template_name": null,
+      "target_duration_sec": 14.0,
+      "title": "Tìm kiếm nhị phân (Binary Search) trên mảng đã sắp xếp",
+      "bullets": [
+        "Yêu cầu mảng đầu vào đã được sắp xếp tăng dần",
+        "So sánh khóa tìm kiếm với phần tử giữa mid = (left + right) // 2",
+        "Thu hẹp một nửa không gian tìm kiếm mỗi bước -> O(log n)"
+      ],
+      "narration": "Trên mảng đã sắp xếp [8, 23, 32, 45, 56, 78], tìm kiếm nhị phân so sánh khóa 56 với phần tử giữa. Vì 56 lớn hơn phần tử giữa, ta loại bỏ hoàn toàn nửa bên trái và tiếp tục trên nửa bên phải, đạt độ phức tạp O(log n).",
+      "metrics_by_group": {
+        "slide_only": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 1.0, "delta_t": 1.0, "af": 0.0, "pqcs": 0.82, "lo_align": 0.92, "wpm": 136.0},
+        "manim_auto": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 0.95, "delta_t": 0.8, "af": 0.89, "pqcs": 0.95, "lo_align": 0.96, "wpm": 138.0},
+        "template_upper": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 0.99, "delta_t": 0.5, "af": 0.96, "pqcs": 0.98, "lo_align": 0.97, "wpm": 138.0}
+      }
+    },
+    {
+      "task_id": "DSA_07",
+      "algorithm": "Stack (LIFO Push/Pop)",
+      "lo_code": "LO.2.1",
+      "tier_capability": "AUTO_LLM",
+      "template_name": null,
+      "target_duration_sec": 14.0,
+      "title": "Ngăn xếp (Stack) và nguyên tắc LIFO",
+      "bullets": [
+        "LIFO: Last-In, First-Out (Vào sau, ra trước)",
+        "Thao tác Push thêm phần tử vào đỉnh (top) trong O(1)",
+        "Thao tác Pop lấy phần tử ở đỉnh ra khỏi ngăn xếp trong O(1)"
+      ],
+      "narration": "Ngăn xếp hoạt động theo nguyên tắc vào sau ra trước LIFO. Khi gọi Push 10, Push 25 và Push 40, con trỏ top tăng dần. Khi gọi Pop, phần tử 40 ở đỉnh sẽ được lấy ra trước tiên trong thời gian hằng số O(1).",
+      "metrics_by_group": {
+        "slide_only": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 1.0, "delta_t": 0.9, "af": 0.0, "pqcs": 0.85, "lo_align": 0.92, "wpm": 133.0},
+        "manim_auto": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 0.95, "delta_t": 0.7, "af": 0.90, "pqcs": 0.96, "lo_align": 0.96, "wpm": 135.0},
+        "template_upper": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 0.99, "delta_t": 0.5, "af": 0.97, "pqcs": 0.98, "lo_align": 0.98, "wpm": 135.0}
+      }
+    },
+    {
+      "task_id": "DSA_08",
+      "algorithm": "Queue (FIFO Enqueue/Dequeue)",
+      "lo_code": "LO.2.2",
+      "tier_capability": "AUTO_LLM",
+      "template_name": null,
+      "target_duration_sec": 14.0,
+      "title": "Hàng đợi (Queue) và nguyên tắc FIFO",
+      "bullets": [
+        "FIFO: First-In, First-Out (Vào trước, ra trước)",
+        "Enqueue thêm phần tử vào cuối hàng đợi (rear) trong O(1)",
+        "Dequeue lấy phần tử ở đầu hàng đợi (front) trong O(1)"
+      ],
+      "narration": "Hàng đợi tuân theo nguyên tắc vào trước ra trước FIFO. Thao tác Enqueue bổ sung phần tử mới ở đầu rear, còn thao tác Dequeue lấy phần tử lâu nhất tại vị trí front với độ phức tạp thời gian O(1).",
+      "metrics_by_group": {
+        "slide_only": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 1.0, "delta_t": 0.9, "af": 0.0, "pqcs": 0.84, "lo_align": 0.92, "wpm": 131.0},
+        "manim_auto": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 0.94, "delta_t": 0.8, "af": 0.88, "pqcs": 0.95, "lo_align": 0.96, "wpm": 134.0},
+        "template_upper": {"kcc": 1.0, "hr": 0.0, "fdp": 1.0, "vp": 0.99, "delta_t": 0.5, "af": 0.96, "pqcs": 0.98, "lo_align": 0.97, "wpm": 134.0}
+      }
+    }
+  ]
+}

@@ -29,6 +29,7 @@ WEIGHTS_3D = {
 # Trọng số thành phần bên trong từng chiều
 WEIGHTS_CONTENT = {"kcc": 0.40, "hr": 0.40, "fdp": 0.20}
 WEIGHTS_VISUAL = {"vp": 0.60, "sync_av": 0.40}
+WEIGHTS_VISUAL_HYBRID = {"vp": 0.40, "sync_av": 0.30, "af": 0.30}
 WEIGHTS_PEDAGOGY = {"pqcs": 0.50, "lo": 0.30, "pacing": 0.20}
 
 
@@ -107,10 +108,13 @@ def compute_3d_fidelity_scores(
     pqcs: float,
     lo_align: float,
     pacing: float,
+    af: float | None = None,
 ) -> tuple[float, float, float, float, str]:
     """
     Tính điểm 3 chiều chuẩn hóa trên thang điểm 100:
     Toàn bộ tham số đầu vào đều ở đoạn [0.0, 1.0].
+    Khi af (Animation Fidelity) được truyền vào (chế độ đối chứng Hybrid A/B/C),
+    S_visual = (0.40 * VP + 0.30 * Sync_AV + 0.30 * AF) * 100.
     """
     # Chiều 1: Content Fidelity
     s_content = (
@@ -119,11 +123,18 @@ def compute_3d_fidelity_scores(
         + WEIGHTS_CONTENT["fdp"] * fdp
     ) * 100.0
 
-    # Chiều 2: Visual Fidelity
-    s_visual = (
-        WEIGHTS_VISUAL["vp"] * vp
-        + WEIGHTS_VISUAL["sync_av"] * sync_av
-    ) * 100.0
+    # Chiều 2: Visual Fidelity (Slide-Only chuẩn hoặc Hybrid có Animation Fidelity)
+    if af is not None:
+        s_visual = (
+            WEIGHTS_VISUAL_HYBRID["vp"] * vp
+            + WEIGHTS_VISUAL_HYBRID["sync_av"] * sync_av
+            + WEIGHTS_VISUAL_HYBRID["af"] * af
+        ) * 100.0
+    else:
+        s_visual = (
+            WEIGHTS_VISUAL["vp"] * vp
+            + WEIGHTS_VISUAL["sync_av"] * sync_av
+        ) * 100.0
 
     # Chiều 3: Pedagogical Quality
     s_pedagogy = (

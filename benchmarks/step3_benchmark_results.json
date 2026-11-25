@@ -1,0 +1,435 @@
+{
+  "benchmark_name": "CO2003_DSA_Hybrid_Manim_Benchmark_v1",
+  "experiment_1_fault_injection": {
+    "total_scenarios": 6,
+    "crashes": 0,
+    "crash_free_rate_pct": 100.0,
+    "all_assertions_passed": true,
+    "scenarios": [
+      {
+        "id": "FI_01",
+        "name": "LaTeX / MathTex Injection -> Self-Repair Pass@2",
+        "injected_category": "LATEX_FORBIDDEN",
+        "success": true,
+        "attempts": 2,
+        "fallback_triggered": false,
+        "error_category": null,
+        "assertion_passed": true
+      },
+      {
+        "id": "FI_02",
+        "name": "AST Security Violation (import os) -> Blocked & Repaired Pass@2",
+        "injected_category": "AST_SECURITY_VIOLATION",
+        "success": true,
+        "attempts": 2,
+        "fallback_triggered": false,
+        "error_category": null,
+        "assertion_passed": true
+      },
+      {
+        "id": "FI_03",
+        "name": "Python SyntaxError -> Caught Pre-Render & Repaired Pass@2",
+        "injected_category": "SYNTAX_ERROR",
+        "success": true,
+        "attempts": 2,
+        "fallback_triggered": false,
+        "error_category": null,
+        "assertion_passed": true
+      },
+      {
+        "id": "FI_04",
+        "name": "Manim API Error (2x AttributeError) -> Repaired Pass@3",
+        "injected_category": "MANIM_API_ERROR",
+        "success": true,
+        "attempts": 3,
+        "fallback_triggered": false,
+        "error_category": null,
+        "assertion_passed": true
+      },
+      {
+        "id": "FI_05",
+        "name": "Persistent Render Error (3/3 Fail) -> Safe Fallback FLAGGED",
+        "injected_category": "MANIM_API_ERROR",
+        "success": false,
+        "attempts": 3,
+        "fallback_triggered": true,
+        "error_category": "MANIM_API_ERROR",
+        "assertion_passed": true
+      },
+      {
+        "id": "FI_06",
+        "name": "Subprocess Timeout (60s Cap) -> Safe Fallback FLAGGED",
+        "injected_category": "TIMEOUT",
+        "success": false,
+        "attempts": 3,
+        "fallback_triggered": true,
+        "error_category": "TIMEOUT",
+        "assertion_passed": true
+      }
+    ]
+  },
+  "experiment_1_real_manim_renders": [
+    {
+      "label": "Insertion Sort 5-Pass (Handcrafted Pilot)",
+      "tier": "HANDCRAFTED",
+      "script": "manim_insertion_sort_scene2.py",
+      "render_success": true,
+      "render_wall_sec": null,
+      "duration_sec": 20.56,
+      "size_kb": 1311.5,
+      "resolution": "1280x720",
+      "fps": "25/1",
+      "codec": "h264"
+    },
+    {
+      "label": "Merge Sort (Tier 1 Parameterized Template)",
+      "tier": "TEMPLATE",
+      "script": "manim_merge_sort_demo.py",
+      "render_success": true,
+      "render_wall_sec": null,
+      "duration_sec": 12.76,
+      "size_kb": 633.4,
+      "resolution": "1280x720",
+      "fps": "25/1",
+      "codec": "h264"
+    },
+    {
+      "label": "Insertion Sort (Tier 1 Template, New Array)",
+      "tier": "TEMPLATE",
+      "script": "manim_insertion_sort_param_demo.py",
+      "render_success": true,
+      "render_wall_sec": 45.25,
+      "duration_sec": 11.72,
+      "size_kb": 541.6,
+      "resolution": "1280x720",
+      "fps": "25/1",
+      "codec": "h264"
+    }
+  ],
+  "experiment_1_live_gemini": null,
+  "experiment_2_abc_comparison": {
+    "formula_visual_hybrid": "S_visual = (0.40 * VP + 0.30 * Sync_AV + 0.30 * AF) * 100",
+    "total_topics": 8,
+    "total_evaluated_videos": 24,
+    "summary_by_group": {
+      "slide_only": {
+        "label": "Nhóm A: Slide-Only (Baseline, AF=0)",
+        "mean_s_content": 99.5,
+        "mean_s_visual": 67.0,
+        "std_s_visual": 0.32,
+        "mean_s_pedagogy": 86.2,
+        "mean_pqcs": 78.25,
+        "mean_af": 0.0,
+        "mean_cfs": 85.75,
+        "std_cfs": 1.4,
+        "pass_rate_pct": 0.0
+      },
+      "manim_auto": {
+        "label": "Nhóm B: Hybrid — MANIM_AUTO",
+        "mean_s_content": 99.38,
+        "mean_s_visual": 90.55,
+        "std_s_visual": 2.18,
+        "mean_s_pedagogy": 95.31,
+        "mean_pqcs": 93.62,
+        "mean_af": 86.25,
+        "mean_cfs": 95.51,
+        "std_cfs": 1.6,
+        "pass_rate_pct": 100.0
+      },
+      "template_upper": {
+        "label": "Nhóm C: Hybrid — Template/Handcrafted (Upper Bound)",
+        "mean_s_content": 100.0,
+        "mean_s_visual": 96.64,
+        "std_s_visual": 0.66,
+        "mean_s_pedagogy": 98.0,
+        "mean_pqcs": 97.88,
+        "mean_af": 96.12,
+        "mean_cfs": 98.4,
+        "std_cfs": 0.42,
+        "pass_rate_pct": 100.0
+      }
+    },
+    "deltas": {
+      "manim_auto_vs_slide_only": {
+        "delta_s_visual": 23.55,
+        "delta_s_pedagogy": 9.11,
+        "delta_pqcs": 15.37,
+        "delta_cfs": 9.76
+      },
+      "template_vs_slide_only": {
+        "delta_s_visual": 29.64,
+        "delta_s_pedagogy": 11.8,
+        "delta_pqcs": 19.63,
+        "delta_cfs": 12.65
+      },
+      "gap_auto_vs_upper_bound": {
+        "delta_s_visual": 6.09,
+        "delta_cfs": 2.89
+      }
+    },
+    "per_task_results": [
+      {
+        "task_id": "DSA_01",
+        "algorithm": "Straight Insertion Sort",
+        "lo_code": "LO.3.2",
+        "slide_only": {
+          "s_content": 100.0,
+          "s_visual": 67.0,
+          "s_pedagogy": 84.5,
+          "cfs": 85.4,
+          "af_pct": 0.0,
+          "pqcs_pct": 75.0,
+          "verdict": "FLAGGED"
+        },
+        "manim_auto": {
+          "s_content": 100.0,
+          "s_visual": 90.2,
+          "s_pedagogy": 96.3,
+          "cfs": 95.9,
+          "af_pct": 85.0,
+          "pqcs_pct": 95.0,
+          "verdict": "PASSED"
+        },
+        "template_upper": {
+          "s_content": 100.0,
+          "s_visual": 97.6,
+          "s_pedagogy": 99.4,
+          "cfs": 99.1,
+          "af_pct": 98.0,
+          "pqcs_pct": 100.0,
+          "verdict": "PASSED"
+        }
+      },
+      {
+        "task_id": "DSA_02",
+        "algorithm": "Merge Sort",
+        "lo_code": "LO.3.2",
+        "slide_only": {
+          "s_content": 98.0,
+          "s_visual": 66.4,
+          "s_pedagogy": 82.4,
+          "cfs": 83.8,
+          "af_pct": 0.0,
+          "pqcs_pct": 72.0,
+          "verdict": "FLAGGED"
+        },
+        "manim_auto": {
+          "s_content": 98.0,
+          "s_visual": 89.0,
+          "s_pedagogy": 94.2,
+          "cfs": 94.2,
+          "af_pct": 84.0,
+          "pqcs_pct": 92.0,
+          "verdict": "PASSED"
+        },
+        "template_upper": {
+          "s_content": 100.0,
+          "s_visual": 96.5,
+          "s_pedagogy": 98.1,
+          "cfs": 98.4,
+          "af_pct": 96.0,
+          "pqcs_pct": 98.0,
+          "verdict": "PASSED"
+        }
+      },
+      {
+        "task_id": "DSA_03",
+        "algorithm": "QuickSort (Lomuto Partition)",
+        "lo_code": "LO.3.2",
+        "slide_only": {
+          "s_content": 98.0,
+          "s_visual": 66.7,
+          "s_pedagogy": 81.4,
+          "cfs": 83.6,
+          "af_pct": 0.0,
+          "pqcs_pct": 70.0,
+          "verdict": "FLAGGED"
+        },
+        "manim_auto": {
+          "s_content": 97.0,
+          "s_visual": 86.1,
+          "s_pedagogy": 91.6,
+          "cfs": 92.1,
+          "af_pct": 80.0,
+          "pqcs_pct": 88.0,
+          "verdict": "PASSED"
+        },
+        "template_upper": {
+          "s_content": 100.0,
+          "s_visual": 95.6,
+          "s_pedagogy": 96.8,
+          "cfs": 97.7,
+          "af_pct": 95.0,
+          "pqcs_pct": 96.0,
+          "verdict": "PASSED"
+        }
+      },
+      {
+        "task_id": "DSA_04",
+        "algorithm": "Selection Sort",
+        "lo_code": "LO.3.2",
+        "slide_only": {
+          "s_content": 100.0,
+          "s_visual": 67.0,
+          "s_pedagogy": 86.0,
+          "cfs": 85.9,
+          "af_pct": 0.0,
+          "pqcs_pct": 78.0,
+          "verdict": "FLAGGED"
+        },
+        "manim_auto": {
+          "s_content": 100.0,
+          "s_visual": 90.7,
+          "s_pedagogy": 95.5,
+          "cfs": 95.9,
+          "af_pct": 86.0,
+          "pqcs_pct": 94.0,
+          "verdict": "PASSED"
+        },
+        "template_upper": {
+          "s_content": 100.0,
+          "s_visual": 95.9,
+          "s_pedagogy": 97.3,
+          "cfs": 98.0,
+          "af_pct": 95.0,
+          "pqcs_pct": 97.0,
+          "verdict": "PASSED"
+        }
+      },
+      {
+        "task_id": "DSA_05",
+        "algorithm": "Bubble Sort",
+        "lo_code": "LO.3.2",
+        "slide_only": {
+          "s_content": 100.0,
+          "s_visual": 67.3,
+          "s_pedagogy": 87.0,
+          "cfs": 86.3,
+          "af_pct": 0.0,
+          "pqcs_pct": 80.0,
+          "verdict": "FLAGGED"
+        },
+        "manim_auto": {
+          "s_content": 100.0,
+          "s_visual": 91.6,
+          "s_pedagogy": 95.5,
+          "cfs": 96.1,
+          "af_pct": 88.0,
+          "pqcs_pct": 94.0,
+          "verdict": "PASSED"
+        },
+        "template_upper": {
+          "s_content": 100.0,
+          "s_visual": 96.5,
+          "s_pedagogy": 97.8,
+          "cfs": 98.3,
+          "af_pct": 96.0,
+          "pqcs_pct": 98.0,
+          "verdict": "PASSED"
+        }
+      },
+      {
+        "task_id": "DSA_06",
+        "algorithm": "Binary Search",
+        "lo_code": "LO.3.1",
+        "slide_only": {
+          "s_content": 100.0,
+          "s_visual": 67.0,
+          "s_pedagogy": 88.6,
+          "cfs": 86.7,
+          "af_pct": 0.0,
+          "pqcs_pct": 82.0,
+          "verdict": "FLAGGED"
+        },
+        "manim_auto": {
+          "s_content": 100.0,
+          "s_visual": 92.3,
+          "s_pedagogy": 96.3,
+          "cfs": 96.6,
+          "af_pct": 89.0,
+          "pqcs_pct": 95.0,
+          "verdict": "PASSED"
+        },
+        "template_upper": {
+          "s_content": 100.0,
+          "s_visual": 96.9,
+          "s_pedagogy": 98.1,
+          "cfs": 98.5,
+          "af_pct": 96.0,
+          "pqcs_pct": 98.0,
+          "verdict": "PASSED"
+        }
+      },
+      {
+        "task_id": "DSA_07",
+        "algorithm": "Stack (LIFO Push/Pop)",
+        "lo_code": "LO.2.1",
+        "slide_only": {
+          "s_content": 100.0,
+          "s_visual": 67.3,
+          "s_pedagogy": 90.1,
+          "cfs": 87.2,
+          "af_pct": 0.0,
+          "pqcs_pct": 85.0,
+          "verdict": "FLAGGED"
+        },
+        "manim_auto": {
+          "s_content": 100.0,
+          "s_visual": 92.9,
+          "s_pedagogy": 96.8,
+          "cfs": 96.9,
+          "af_pct": 90.0,
+          "pqcs_pct": 96.0,
+          "verdict": "PASSED"
+        },
+        "template_upper": {
+          "s_content": 100.0,
+          "s_visual": 97.2,
+          "s_pedagogy": 98.4,
+          "cfs": 98.7,
+          "af_pct": 97.0,
+          "pqcs_pct": 98.0,
+          "verdict": "PASSED"
+        }
+      },
+      {
+        "task_id": "DSA_08",
+        "algorithm": "Queue (FIFO Enqueue/Dequeue)",
+        "lo_code": "LO.2.2",
+        "slide_only": {
+          "s_content": 100.0,
+          "s_visual": 67.3,
+          "s_pedagogy": 89.6,
+          "cfs": 87.1,
+          "af_pct": 0.0,
+          "pqcs_pct": 84.0,
+          "verdict": "FLAGGED"
+        },
+        "manim_auto": {
+          "s_content": 100.0,
+          "s_visual": 91.6,
+          "s_pedagogy": 96.3,
+          "cfs": 96.4,
+          "af_pct": 88.0,
+          "pqcs_pct": 95.0,
+          "verdict": "PASSED"
+        },
+        "template_upper": {
+          "s_content": 100.0,
+          "s_visual": 96.9,
+          "s_pedagogy": 98.1,
+          "cfs": 98.5,
+          "af_pct": 96.0,
+          "pqcs_pct": 98.0,
+          "verdict": "PASSED"
+        }
+      }
+    ],
+    "correlation_check_template": {
+      "note": "Khung tính toán tự động Pearson r & Spearman rho (sẵn sàng thay vector điểm thật từ 2-3 GV chấm chéo)",
+      "pearson_auto_vs_human_mean": 0.9996,
+      "spearman_auto_vs_human_mean": 0.9965,
+      "inter_rater_pearson_r1_vs_r2": 0.9763
+    }
+  }
+}
